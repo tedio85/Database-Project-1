@@ -26,12 +26,11 @@ public class VectorTableTest {
 											new Vector<String>(Arrays.asList(attrTypes)),
 											strLen);
 		
-		Vector<String> words = new Vector<String>();
+		Vector<String> wordsB = new Vector<String>();
+		Vector<String> wordsPk = new Vector<String>();
 		for(Integer i=0;i<100;i++) {
-			if(i%2==0)
-				words.add("B"+i.toString());
-			else
-				words.add("pk"+i.toString());
+				wordsB.add("B"+i.toString());
+				wordsPk.add("pk"+i.toString());
 		}
 		
 		
@@ -40,10 +39,10 @@ public class VectorTableTest {
 		for(int i=0;i<10;i++) {
 			Vector<Object> tuple = new Vector<Object>();
 			tuple.add(j++);
-			tuple.add(words.get(j));
-			tuple.add(j++);
-			tuple.add(words.get(j));
-			tuple.add(j++);
+			tuple.add(wordsB.get(j));
+			tuple.add(++j);
+			tuple.add(wordsPk.get(++j));
+			tuple.add(++j);
 			table.insert(tuple);
 			data.add(tuple);
 		}

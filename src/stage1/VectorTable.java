@@ -44,7 +44,7 @@ public class VectorTable implements Table {
 		for(String str : attrTypes) {
 			switch(str.toLowerCase()) {
 				case "int":
-					this.attrTypes.add(Integer.TYPE);
+					this.attrTypes.add(new Integer(0).getClass());
 					break;
 				case "varchar":
 					this.attrTypes.add(new String().getClass());
@@ -64,12 +64,14 @@ public class VectorTable implements Table {
 		}
 		
 		// set strLen
+		for(int i=0;i<attrs.size();i++) this.strLen.add(0);
+		
 		if(strLen.size() != varCharCount)	
 			throw new IllegalArgumentException("length of strLen should match numbers of varchar attributes");
 		int count = 0;
 		for(int i=0;i<attrTypes.size();i++) {
-			if(attrTypes.get(i).equals(new String().getClass())) {
-				this.strLen.set(i, strLen.get(count));
+			if(this.attrTypes.get(i).equals(new String().getClass())) {
+				this.strLen.set(i,strLen.get(count));
 				count++;
 			}
 		}
@@ -100,7 +102,7 @@ public class VectorTable implements Table {
 		return this.attrTypes;
 	}
 	
-	// for debugging, NOT FOR REGULAR USAGE
+	// get the entire table
 	public Vector<Vector<Object>> getTable() {
 		return table;
 	}
@@ -144,7 +146,7 @@ public class VectorTable implements Table {
 		}
 		// check integer range & string length
 		for(int i=0;i<tup.size();i++) {
-			if(tup.get(i).getClass().equals(Integer.TYPE)) {
+			if(tup.get(i).getClass().equals(new Integer(0).getClass())) {
 				// is already integer, do nothing
 			}
 			else if(tup.get(i).getClass().equals(new String().getClass())) {
@@ -161,9 +163,11 @@ public class VectorTable implements Table {
 		
 		
 		// check if primary key is unique
-		for(Vector<Object> t : table) {
-			if(t.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
-				pass = false;
+		if(primaryKey != null) {
+			for(Vector<Object> t : table) {
+				if(t.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
+					pass = false;
+			}
 		}
 		
 		if(pass) {
@@ -190,7 +194,7 @@ public class VectorTable implements Table {
 		// convert numbers in tuple to string
 		Vector<Object> newtup = new Vector<Object>();
 		for(int i=0;i<tup.size();i++) {
-			if(attrTypes.get(i).equals(Integer.TYPE)) {
+			if(attrTypes.get(i).equals(new Integer(0).getClass())) {
 				try {
 					newtup.add(Integer.parseInt(attrs.get(i)));
 				}
@@ -215,43 +219,48 @@ public class VectorTable implements Table {
 	
 	// print the table
 	public void show() {
+		int spacing = 1;
+		int defaultWidth = 10;
 		
-		printBoarder();
-		
+		Vector<Integer> w = new Vector<Integer>();
 		for(String attrName : attrs) {
-			System.out.format("|%s", attrName);
+			int len = attrName.length() + spacing*2;	// the '1' is for the vertical divider
+			if(len < defaultWidth)
+				w.add(defaultWidth);
+			else
+				w.add(len);
+		}
+		
+		printDivider(w);
+		
+		for(int i=0;i<attrs.size();i++) {
+			System.out.printf("|%"+w.get(i)+"s", attrs.get(i));
 		}
 		System.out.println("|");
 		
-		for(Vector<Object> tup : table) {
-			for(Object attr : tup) {
-				System.out.format("| %s", attr.toString());
+		for(Vector<Object> tuple : table) {
+			printDivider(w);
+			for(int i=0;i<tuple.size();i++) {
+				if(tuple.get(i) == null) {
+					String str = "NULL";
+					System.out.printf("|%"+(w.get(i)-str.length())+"s",str);
+				}
+				else {
+					String objStr = tuple.get(i).toString();
+					System.out.printf("|%"+w.get(i)+"s",objStr);
+				}
 			}
 			System.out.println("|");
 		}
 		
-		printBoarder();
+		printDivider(w);
 	}
 	
-	private void printBoarder() {
-		int intWidth = 8;
-		
-		Vector<Integer> w = new Vector<Integer>();
-		for(int i=0;i<attrTypes.size();i++) {
-			if(attrTypes.get(i).equals(Integer.TYPE)) {
-				w.add(intWidth);
-			}
-			else {
-				w.add(strLen.get(i));
-			}
+	private void printDivider(Vector<Integer> w) {
+		for(Integer num : w) {
+			String repeated = new String(new char[num]).replace('\0', '-');
+			System.out.format("+%s",repeated);
 		}
-		
-		for(Integer width : w) {
-			System.out.print("+");
-			for(int i=0;i<width;i++)
-				System.out.print("-");
-			System.out.print("+");
-		}
-		System.out.print("\n");
+		System.out.println("+");
 	}
 }
