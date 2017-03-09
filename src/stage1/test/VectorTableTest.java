@@ -1,4 +1,4 @@
-package stage1;
+package stage1.test;
 
 import static org.junit.Assert.*;
 
@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import org.junit.Test;
+
+import stage1.VectorTable;
 
 public class VectorTableTest {
 
