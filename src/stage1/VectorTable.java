@@ -14,17 +14,7 @@ public class VectorTable implements Table {
 	private HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
 	private Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
 																
-	/**
-	 * 
-	 * @param name							name of table
-	 * @param str_pk						name of primary key
-	 * @param attrs							vector of names of attributes
-	 * @param attrTypes						vector of strings describing the attribute types
-	 * @param strLen						maximum length of varchar in the order of attrs
-	 * @throws IllegalArgumentException		type error / strLen vector length incorrect
-	 * 
-	 * 
-	 * Usage:
+	/**Usage:
 	 *	Creating a table NAME with attributes:
 	 *		"A" int		primary_key
 	 *		"B" varchar[10]
@@ -33,6 +23,14 @@ public class VectorTable implements Table {
 	 *
 	 *	Then type in:
 	 *		new VectorTable(NAME, "A", Vector of(["A","B","C","D"]), Vector of("int","varchar","int","varchar"), Vector of([10,20]) )
+	 * 
+	 * @param name							name of table
+	 * @param str_pk						name of primary key
+	 * @param attrs							vector of names of attributes
+	 * @param attrTypes						vector of strings describing the attribute types
+	 * @param strLen						maximum length of varchar in the order of attrs
+	 * @throws IllegalArgumentException		type error / strLen vector length incorrect
+	 * 
 	 */
 	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
 		this.name = parseString(name);
