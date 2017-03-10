@@ -35,14 +35,17 @@ public class VectorTable implements Table {
 	 *		new VectorTable(NAME, "A", Vector of(["A","B","C","D"]), Vector of("int","varchar","int","varchar"), Vector of([10,20]) )
 	 */
 	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
-		this.name = name;
-		this.primaryKey = str_pk;
+		this.name = parseString(name);
+		this.primaryKey = parseString(str_pk);
 		
 		
 		Vector<String> attrs_ = attrs;								// attribute names
+		attrs_.replaceAll(v -> parseString(v));
 		Vector<Class<?>> attrTypes_ = new Vector<Class<?>>();		// default attribute types
 		Vector<Integer> strLen_ = new Vector<Integer>();			// max length of each attribute
 		
+		
+		attrTypes.replaceAll(v -> parseString(v));
 		
 		// set attrTypes
 		int varCharCount = 0;
@@ -56,6 +59,7 @@ public class VectorTable implements Table {
 					varCharCount++;
 					break;
 				default:
+					System.out.println(str.toLowerCase());
 					throw new IllegalArgumentException("unknown type");
 			}
 		}
@@ -141,7 +145,7 @@ public class VectorTable implements Table {
 				
 				//	string length check
 				if(obj.getClass().equals(new String().getClass())) {
-					String str = (String) obj;
+					String str = parseString((String) obj);
 					if(str.length() > attrs.get(i).getMaxLen()) {
 						pass = false;
 						throw new IllegalArgumentException("maximum string length exceeded");
@@ -160,8 +164,14 @@ public class VectorTable implements Table {
 		if(primaryKey!=null) {
 			int primaryKeyIdx = keyToIdx.get(primaryKey);
 			for(Vector<Object> row : table) {
-				if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
-					pass = false;
+				if(tup.get(primaryKeyIdx).getClass().equals(new String().getClass())) {
+					if(row.get(primaryKeyIdx).equals(parseString((String) tup.get(primaryKeyIdx))))
+						pass = false;
+				}
+				else {
+					if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
+						pass = false;
+				}
 			}
 		}
 		
@@ -206,11 +216,18 @@ public class VectorTable implements Table {
 				}
 				catch(NumberFormatException e) {
 					pass = false;
-					System.out.println("number exceeds int range");
+					System.out.println("number exceeds int range or incorrect type");
+					throw new IllegalArgumentException("number exceeds int range or incorrect type");
 				}
 			}
 			else {	// is string or null
-				newtup.add(tup.get(i));
+				if(tup.get(i) == null)
+					newtup.add(null);
+				else if(isString(tup.get(i)))
+					newtup.add(parseString(tup.get(i)));
+				else {
+					throw new IllegalArgumentException("type mismatch");
+				}
 			}
 		}
 		
@@ -296,5 +313,16 @@ public class VectorTable implements Table {
 			System.out.format("+%s",repeated);
 		}
 		System.out.println("+");
+	}
+	
+	private Boolean isString(String str) {
+		if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
+			return true;
+		else
+			return false;
+	}
+		
+	private String parseString(String str) {
+		return str.replaceAll("\'", "").replaceAll("\"","");
 	}
 }
