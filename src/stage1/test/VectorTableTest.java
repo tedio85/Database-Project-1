@@ -45,7 +45,13 @@ public class VectorTableTest {
 			tuple.add(++j);
 			tuple.add(wordsPk.get(++j));
 			tuple.add(++j);
-			table.insert(tuple);
+			
+			
+			Vector<String> tmp = new Vector<String>();
+			for(Object t: tuple)
+				tmp.add(t.toString());
+
+			table.insert(tmp);
 			data.add(tuple);
 		}
 		

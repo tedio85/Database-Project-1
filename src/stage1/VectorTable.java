@@ -1,17 +1,17 @@
 package stage1;
 
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 import java.lang.IllegalArgumentException;
 import java.lang.NumberFormatException;
 
 public class VectorTable implements Table {
 	private String name = null;											// name of table
 	private String primaryKey = null;									// name of primary key
-	private Class<?> primaryKeyType = null;								// type of primary key
-	private int primaryKeyIdx = 0;										// index of primary key
-	private Vector<String> attrs = new Vector<String>();				// name of attributes 
-	private Vector<Class<?>> attrTypes = new Vector<Class<?>>();		// default attribute types
-	private Vector<Integer> strLen = new Vector<Integer>();				// max length of strings
+	private Vector<Attribute> attrs = new Vector<Attribute>();			// name of attributes
+	private HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
+	private HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
 	private Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
 																
 	/**
@@ -37,17 +37,22 @@ public class VectorTable implements Table {
 	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
 		this.name = name;
 		this.primaryKey = str_pk;
-		this.attrs = attrs;
+		
+		
+		Vector<String> attrs_ = attrs;								// attribute names
+		Vector<Class<?>> attrTypes_ = new Vector<Class<?>>();		// default attribute types
+		Vector<Integer> strLen_ = new Vector<Integer>();			// max length of each attribute
+		
 		
 		// set attrTypes
 		int varCharCount = 0;
 		for(String str : attrTypes) {
 			switch(str.toLowerCase()) {
 				case "int":
-					this.attrTypes.add(new Integer(0).getClass());
+					attrTypes_.add(new Integer(0).getClass());
 					break;
 				case "varchar":
-					this.attrTypes.add(new String().getClass());
+					attrTypes_.add(new String().getClass());
 					varCharCount++;
 					break;
 				default:
@@ -55,26 +60,32 @@ public class VectorTable implements Table {
 			}
 		}
 		
-		// set primaryKeyType
-		for(int i=0;i<this.attrs.size();i++) {
-			if(this.attrs.get(i).equals(primaryKey)) {
-				primaryKeyIdx = i;
-				primaryKeyType = this.attrTypes.get(i); 
-			}
-		}
 		
 		// set strLen
-		for(int i=0;i<attrs.size();i++) this.strLen.add(0);
+		for(int i=0;i<attrs.size();i++) strLen_.add(0);
 		
 		if(strLen.size() != varCharCount)	
 			throw new IllegalArgumentException("length of strLen should match numbers of varchar attributes");
 		int count = 0;
 		for(int i=0;i<attrTypes.size();i++) {
-			if(this.attrTypes.get(i).equals(new String().getClass())) {
-				this.strLen.set(i,strLen.get(count));
+			if(attrTypes_.get(i).equals(new String().getClass())) {
+				strLen_.set(i,strLen.get(count));
 				count++;
 			}
 		}
+		
+		// combine attrs_, attrTypes, strLen to attrs
+		for(int i=0;i<attrs_.size();i++) {
+			Attribute attr = new Attribute(attrs_.get(i), attrTypes_.get(i), strLen_.get(i));
+			this.attrs.add(attr);
+			this.keyToIdx.put(attrs_.get(i), i);
+		}
+		
+		// create inverse mapping of index to key
+		for(Map.Entry<String, Integer> entry : keyToIdx.entrySet()){
+		    idxToKey.put(entry.getValue(), entry.getKey());
+		}
+		
 	}
 	
 	// get name of table
@@ -87,19 +98,9 @@ public class VectorTable implements Table {
 		return this.primaryKey;
 	}
 	
-	// get type of primary key
-	public Class<?> getPrimaryKeyType() {
-		return this.primaryKeyType;
-	}
-	
 	// get names of attributes
-	public Vector<String> getAttrs() {
+	public Vector<Attribute> getAttrs() {
 		return this.attrs;
-	}
-	
-	// get parameter type of all attributes of the table
-	public Vector<Class<?>> getAttrTypes() {
-		return this.attrTypes;
 	}
 	
 	// get the entire table
@@ -112,13 +113,12 @@ public class VectorTable implements Table {
 	 * 
 	 * insert a tuple to table:
 	 * 		performs:
-	 * 			parameter type check
 	 * 			null parameter check
-	 * 			integer range check
+	 * 			parameter type check
 	 * 			string length check
 	 * 			primary key uniqueness check
 	 */
-	public void insert(Vector<Object> tup) throws IllegalArgumentException {
+	private void _insert(Vector<Object> tup) throws IllegalArgumentException {
 		Boolean pass = true;
 		
 		// check numbers of parameters
@@ -126,46 +126,41 @@ public class VectorTable implements Table {
 			pass = false;
 			throw new IllegalArgumentException("tuple size incorrect");
 		}
-			
-		// check parameter type & null check
+		
 		for(int i=0;i<tup.size();i++) {
-			Object tupAttr = tup.get(i);
-			Class<?> requiredClassType = attrTypes.get(i);
-			if(tupAttr != null) {
-				if(!requiredClassType.equals(tupAttr.getClass())) {
+			Object obj = tup.get(i);
+			
+			// null parameter check
+			if(obj != null) {
+				
+				// parameter type check
+				if(! obj.getClass().equals(attrs.get(i).getClass_())) {
 					pass = false;
 					throw new IllegalArgumentException("attribute class unmatch");
 				}
+				
+				//	string length check
+				if(obj.getClass().equals(new String().getClass())) {
+					String str = (String) obj;
+					if(str.length() > attrs.get(i).getMaxLen()) {
+						pass = false;
+						throw new IllegalArgumentException("maximum string length exceeded");
+					}
+				}
+				
 			}
 			else {
-				if(primaryKey!=null && attrs.get(i).equals(primaryKey)) {	// primary key attribute in tuple is null
+				if(idxToKey.get(i).equals(primaryKey))	// primary key of tuple is null
 					pass = false;
-					throw new IllegalArgumentException("primary key cannot be null");
-				}
-			}
-		}
-		// check integer range & string length
-		for(int i=0;i<tup.size();i++) {
-			if(tup.get(i).getClass().equals(new Integer(0).getClass())) {
-				// is already integer, do nothing
-			}
-			else if(tup.get(i).getClass().equals(new String().getClass())) {
-				String str = (String) tup.get(i);
-				if(str.length() > strLen.get(i)) {
-					pass = false;
-					throw new IllegalArgumentException("maximum string length exceeded");
-				}
-			}
-			else {
-				throw new IllegalArgumentException("unknown type");
 			}
 		}
 		
 		
-		// check if primary key is unique
-		if(primaryKey != null) {
-			for(Vector<Object> t : table) {
-				if(t.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
+		//	primary key uniqueness check
+		if(primaryKey!=null) {
+			int primaryKeyIdx = keyToIdx.get(primaryKey);
+			for(Vector<Object> row : table) {
+				if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
 					pass = false;
 			}
 		}
@@ -179,9 +174,19 @@ public class VectorTable implements Table {
 	}
 	
 	/**
+	 * 
 	 * @param tup vector of string, where numbers are not yet converted to integers
+	 * 
+	 * Insert a tuple with numbers as strings.
+	 * 
+	 * 		For a string of number:	
+	 * 			tests if the string can be converted to integer 
+	 * 			(integer range check)
+	 * 
+	 * 		For a normal string or null attribute:
+	 * 			copies and inserts directly
 	 */
-	public void insertStr(Vector<String> tup) {
+	public void insert(Vector<String> tup) {
 	
 		Boolean pass = true;
 		
@@ -192,20 +197,47 @@ public class VectorTable implements Table {
 		}
 		
 		// convert numbers in tuple to string
+		// adds normal strings and null attributes directly
 		Vector<Object> newtup = new Vector<Object>();
 		for(int i=0;i<tup.size();i++) {
-			if(attrTypes.get(i).equals(new Integer(0).getClass())) {
+			if(attrs.get(i).getClass_().equals(new Integer(0).getClass())) {	//is number
 				try {
-					newtup.add(Integer.parseInt(attrs.get(i)));
+					newtup.add(Integer.parseInt(tup.get(i)));
 				}
 				catch(NumberFormatException e) {
 					pass = false;
 					System.out.println("number exceeds int range");
 				}
 			}
-			else {
+			else {	// is string or null
 				newtup.add(tup.get(i));
 			}
+		}
+		
+		if(pass) {
+			_insert(newtup);
+		}
+		else {
+			System.out.println("tuple NOT inserted");
+		}
+	}
+	
+	// insert tuple with specified attributes
+	public void insert(Vector<String> attrNames, Vector<String> tup) throws IllegalArgumentException {
+		Boolean pass = true;
+		
+		Vector<String> newtup = new Vector<String>();
+		for(int i=0;i<attrs.size();i++)	newtup.add(null);
+		
+		// check attrNames.length() == tup.length()
+		if(attrNames.size() != tup.size()) {
+			pass = false;
+			throw new IllegalArgumentException("length of attrNames should match length of tup");
+		}
+		// put attributes at corresponding position
+		for(int i=0;i<tup.size();i++) {
+			int idx = keyToIdx.get(attrNames.get(i));
+			newtup.set(idx, tup.get(i));
 		}
 		
 		if(pass) {
@@ -216,15 +248,15 @@ public class VectorTable implements Table {
 		}
 	}
 	
-	
 	// print the table
 	public void show() {
 		int spacing = 1;
 		int defaultWidth = 10;
 		
+		// calculate width of each column
 		Vector<Integer> w = new Vector<Integer>();
-		for(String attrName : attrs) {
-			int len = attrName.length() + spacing*2;	// the '1' is for the vertical divider
+		for(Attribute attr : attrs) {
+			int len = attr.getName().length() + spacing*2;	// the '1' is for the vertical divider
 			if(len < defaultWidth)
 				w.add(defaultWidth);
 			else
@@ -233,11 +265,13 @@ public class VectorTable implements Table {
 		
 		printDivider(w);
 		
+		// print attribute names
 		for(int i=0;i<attrs.size();i++) {
-			System.out.printf("|%"+w.get(i)+"s", attrs.get(i));
+			System.out.printf("|%"+w.get(i)+"s", attrs.get(i).getName());
 		}
 		System.out.println("|");
 		
+		// print table content
 		for(Vector<Object> tuple : table) {
 			printDivider(w);
 			for(int i=0;i<tuple.size();i++) {
