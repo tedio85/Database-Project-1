@@ -1,2 +1,2 @@
-/bin/
-.settings/
+.DS_Store
+bin
