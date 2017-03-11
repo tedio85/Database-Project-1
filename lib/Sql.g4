@@ -53,8 +53,7 @@ sql_stmt
 
 create_table_stmt
  : K_CREATE K_TABLE table_name
-   '(' column_def ( ',' column_def )*
-   
+   '(' column_def ( ',' column_def )*')'
  ;
 
 insert_stmt
