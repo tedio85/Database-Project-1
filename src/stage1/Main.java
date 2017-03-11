@@ -2,6 +2,7 @@ package stage1;
 
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.LinkedList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,14 +58,22 @@ public class Main {
 	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();	// map attribute name to index
     
 	public static void main(String[] args) throws IOException {
-        while(true) {
-			System.out.print("Enter a SQL statement: ");
+		String input = new String();
+		System.out.println("Enter SQL statements: ");
+		while(true) {
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	        String input = br.readLine();
-	        Vector<String> sql_stmt = parse(input);
-	        if(sql_stmt.get(0).toUpperCase().equals("CREATE")) processCreate(sql_stmt);
-	        else if(sql_stmt.get(0).toUpperCase().equals("INSERT")) processInsert(sql_stmt);
-	        TableMap.get("Student").show();
+	        String buffer = br.readLine();
+	        if(!buffer.equals(">>")) {
+	        	input = input + " " +buffer ;
+	        	continue;
+	        }
+	        LinkedList<Vector<String>> sql_stmt = parse(input);
+	        for(int i=0; i<sql_stmt.size(); i++) {
+	        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) processCreate(sql_stmt.get(i));
+    	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) processInsert(sql_stmt.get(i));
+    	        TableMap.get("Student").show();
+	        }
+	        input = "";
         }
        // TableMap.get("Student").show();
     }
@@ -137,7 +146,7 @@ public class Main {
 		}
 	}
 
-    public static Vector<String> parse (String string) {    	
+    public static LinkedList<Vector<String>> parse (String string) {    	
     	// Create a stream of characters from the string
         CharStream stream = new ANTLRInputStream(string);
 
@@ -167,18 +176,29 @@ public class Main {
 }
 
 class MakeStmt implements SqlListener {
-	private Vector<String> sql_stmt = new Vector<String>();
-
-    public Vector<String> getStmt() {
+	private LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+	//private Vector<String> buffer = new Vector<String>();
+	private Vector<String> cur_stmt = new Vector<String>();
+	
+    public LinkedList<Vector<String>> getStmt() {
         return sql_stmt;
     }
     @Override public void visitTerminal(TerminalNode arg0) {
-        //System.out.println("terminal " + arg0.getText());  
-        if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(",") 
-        		&& !arg0.toString().equals(";") && !arg0.toString().equals("<EOF>"))
-			sql_stmt.add(arg0.toString());
+        //System.out.println("terminal " + arg0.getText());
+    	if(arg0.toString().equals(";")) {
+    		sql_stmt.add(cur_stmt);
+    		cur_stmt = new Vector<String>();
+    	}
+    	else if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(",") 
+        		&& !arg0.toString().equals("<EOF>"))
+    		cur_stmt.add(arg0.toString());
+    	
     }
-    
+    @Override public void exitSql_stmt_list(Sql_stmt_listContext ctx) {
+		if(!cur_stmt.isEmpty()) {
+			sql_stmt.add(cur_stmt);
+		}
+	}
     // don't need these here, so just make them empty implementations
     @Override public void enterEveryRule(ParserRuleContext context) { }
     @Override public void exitEveryRule(ParserRuleContext context) { }
@@ -187,13 +207,7 @@ class MakeStmt implements SqlListener {
 	@Override public void exitParse(ParseContext ctx) {}
 	@Override public void enterError(ErrorContext ctx) {}
 	@Override public void exitError(ErrorContext ctx) {}
-	@Override public void enterSql_stmt_list(Sql_stmt_listContext ctx) {
-		//System.out.println("Sql_stmt_list " + ctx.getText());
-	}
-	@Override public void exitSql_stmt_list(Sql_stmt_listContext ctx) {
-		//System.out.println("Sql_stmt_list " + ctx.getText());
-
-	}
+	@Override public void enterSql_stmt_list(Sql_stmt_listContext ctx) {}
 	@Override public void enterSql_stmt(Sql_stmtContext ctx) {}
 	@Override public void exitSql_stmt(Sql_stmtContext ctx) {}
 	@Override public void enterCreate_table_stmt(Create_table_stmtContext ctx) {}
