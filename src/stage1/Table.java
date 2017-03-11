@@ -1,13 +1,12 @@
 package stage1;
-import java.lang.Object;
-import java.util.Set;
 import java.util.Vector;
 
 public interface Table {
 	
-	String getName();					// get name of table
-	Vector<String> getParams();			// get parameters of table
-	Set<Vector<Object>> getTable();		// return the object itself
-	void insert(Vector<Object> tup);	// insert a tuple
-	void show();						// print the table
+	String getName();										// get name of table
+	String getPrimaryKey();									// get primary key
+	Vector<Attribute> getAttrs();							// get names of all attributes
+	void insert(Vector<String> tup);						// insert a tuple with numbers as strings
+	void insert(Vector<String> attrNames, Vector<String> tup);	// insert tuple with specified attributes
+	void show();											// print the table
 }
