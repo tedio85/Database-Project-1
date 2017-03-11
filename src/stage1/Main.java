@@ -55,19 +55,23 @@ import stage1.SqlParser.View_nameContext;
 
 public class Main {
 	
-	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();	// map attribute name to index
+	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();	
+	// map attribute table name to table
     
 	public static void main(String[] args) throws IOException {
 		String input = new String();
 		System.out.println("Enter SQL statements: ");
 		while(true) {
+			// read input statements; execute if user enter >>
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        String buffer = br.readLine();
 	        if(!buffer.equals(">>")) {
 	        	input = input + " " +buffer ;
 	        	continue;
 	        }
+	        // use LinkedList to linked more than 1 input sql statements
 	        LinkedList<Vector<String>> sql_stmt = parse(input);
+	        //process Create or Insert according to the 1st word of sql_stmt
 	        for(int i=0; i<sql_stmt.size(); i++) {
 	        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) processCreate(sql_stmt.get(i));
     	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) processInsert(sql_stmt.get(i));
@@ -75,9 +79,9 @@ public class Main {
 	        }
 	        input = "";
         }
-       // TableMap.get("Student").show();
     }
 	
+	// process Create statements -> new a table to store it
 	public static void processCreate(Vector<String> sql_stmt) {
 		String name = sql_stmt.get(2);
 		String str_pk = new String();
@@ -102,25 +106,9 @@ public class Main {
 			}
 		}
 		TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
-		/*System.out.println("Table Name:" + name);
-		System.out.println("Primary Key:" + str_pk);
-		System.out.println("attrs");
-		for(int i=0; i<attrs.size(); i++) {
-			System.out.println(attrs.get(i));
-		}
-		System.out.println("attrTypes");
-		for(int i=0; i<attrTypes.size(); i++) {
-			System.out.println(attrTypes.get(i));
-		}
-		System.out.println("strLen");
-		for(int i=0; i<strLen.size(); i++) {
-			System.out.println(strLen.get(i));
-		}*/
-		/*for(int i=0; i<sql_stmt.size(); i++) {
-			System.out.println(sql_stmt.get(i));
-		}*/
 	}
 	
+	// process Insert statements -> call insert() of the specific table according to their syntax
 	public static void processInsert(Vector<String> sql_stmt) {
 		boolean attrOrValue = false; //false -> attr
 		String TableName = sql_stmt.get(2);
@@ -177,14 +165,12 @@ public class Main {
 
 class MakeStmt implements SqlListener {
 	private LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
-	//private Vector<String> buffer = new Vector<String>();
 	private Vector<String> cur_stmt = new Vector<String>();
 	
     public LinkedList<Vector<String>> getStmt() {
         return sql_stmt;
     }
     @Override public void visitTerminal(TerminalNode arg0) {
-        //System.out.println("terminal " + arg0.getText());
     	if(arg0.toString().equals(";")) {
     		sql_stmt.add(cur_stmt);
     		cur_stmt = new Vector<String>();
