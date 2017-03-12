@@ -21,30 +21,32 @@ public class SqlParser extends Parser {
 	public static final int
 		SCOL=1, DOT=2, OPEN_PAR=3, CLOSE_PAR=4, COMMA=5, ASSIGN=6, STAR=7, PLUS=8, 
 		MINUS=9, TILDE=10, PIPE2=11, DIV=12, MOD=13, LT2=14, GT2=15, AMP=16, PIPE=17, 
-		LT=18, LT_EQ=19, GT=20, GT_EQ=21, EQ=22, NOT_EQ1=23, NOT_EQ2=24, K_ABORT=25, 
-		K_ACTION=26, K_ADD=27, K_AFTER=28, K_ALL=29, K_ALTER=30, K_ANALYZE=31, 
-		K_AND=32, K_AS=33, K_ASC=34, K_ATTACH=35, K_AUTOINCREMENT=36, K_BEFORE=37, 
-		K_BEGIN=38, K_BETWEEN=39, K_BY=40, K_CASCADE=41, K_CASE=42, K_CAST=43, 
-		K_CHECK=44, K_COLLATE=45, K_COLUMN=46, K_COMMIT=47, K_CONFLICT=48, K_CONSTRAINT=49, 
-		K_CREATE=50, K_CROSS=51, K_CURRENT_DATE=52, K_CURRENT_TIME=53, K_CURRENT_TIMESTAMP=54, 
-		K_DATABASE=55, K_DEFAULT=56, K_DEFERRABLE=57, K_DEFERRED=58, K_DELETE=59, 
-		K_DESC=60, K_DETACH=61, K_DISTINCT=62, K_DROP=63, K_EACH=64, K_ELSE=65, 
-		K_END=66, K_ESCAPE=67, K_EXCEPT=68, K_EXCLUSIVE=69, K_EXISTS=70, K_EXPLAIN=71, 
-		K_FAIL=72, K_FOR=73, K_FOREIGN=74, K_FROM=75, K_FULL=76, K_GLOB=77, K_GROUP=78, 
-		K_HAVING=79, K_IF=80, K_IGNORE=81, K_IMMEDIATE=82, K_IN=83, K_INDEX=84, 
-		K_INDEXED=85, K_INITIALLY=86, K_INNER=87, K_INSERT=88, K_INSTEAD=89, K_INTERSECT=90, 
-		K_INTO=91, K_IS=92, K_ISNULL=93, K_JOIN=94, K_KEY=95, K_LEFT=96, K_LIKE=97, 
-		K_LIMIT=98, K_MATCH=99, K_NATURAL=100, K_NO=101, K_NOT=102, K_NOTNULL=103, 
-		K_NULL=104, K_OF=105, K_OFFSET=106, K_ON=107, K_OR=108, K_ORDER=109, K_OUTER=110, 
-		K_PLAN=111, K_PRAGMA=112, K_PRIMARY=113, K_QUERY=114, K_RAISE=115, K_RECURSIVE=116, 
-		K_REFERENCES=117, K_REGEXP=118, K_REINDEX=119, K_RELEASE=120, K_RENAME=121, 
-		K_REPLACE=122, K_RESTRICT=123, K_RIGHT=124, K_ROLLBACK=125, K_ROW=126, 
-		K_SAVEPOINT=127, K_SELECT=128, K_SET=129, K_TABLE=130, K_TEMP=131, K_TEMPORARY=132, 
-		K_THEN=133, K_TO=134, K_TRANSACTION=135, K_TRIGGER=136, K_UNION=137, K_UNIQUE=138, 
-		K_UPDATE=139, K_USING=140, K_VACUUM=141, K_VALUES=142, K_VIEW=143, K_VIRTUAL=144, 
-		K_WHEN=145, K_WHERE=146, K_WITH=147, K_WITHOUT=148, IDENTIFIER=149, NUMERIC_LITERAL=150, 
-		BIND_PARAMETER=151, STRING_LITERAL=152, BLOB_LITERAL=153, SINGLE_LINE_COMMENT=154, 
-		MULTILINE_COMMENT=155, SPACES=156, UNEXPECTED_CHAR=157;
+		LT=18, LT_EQ=19, GT=20, GT_EQ=21, EQ=22, NOT_EQ1=23, NOT_EQ2=24, SQUARE=25, 
+		LB0=26, LB1=27, LB2=28, LB3=29, LB4=30, LB5=31, LB6=32, LB7=33, LB8=34, 
+		LB10=35, LB11=36, LB12=37, K_ABORT=38, K_ACTION=39, K_ADD=40, K_AFTER=41, 
+		K_ALL=42, K_ALTER=43, K_ANALYZE=44, K_AND=45, K_AS=46, K_ASC=47, K_ATTACH=48, 
+		K_AUTOINCREMENT=49, K_BEFORE=50, K_BEGIN=51, K_BETWEEN=52, K_BY=53, K_CASCADE=54, 
+		K_CASE=55, K_CAST=56, K_CHECK=57, K_COLLATE=58, K_COLUMN=59, K_COMMIT=60, 
+		K_CONFLICT=61, K_CONSTRAINT=62, K_CREATE=63, K_CROSS=64, K_CURRENT_DATE=65, 
+		K_CURRENT_TIME=66, K_CURRENT_TIMESTAMP=67, K_DATABASE=68, K_DEFAULT=69, 
+		K_DEFERRABLE=70, K_DEFERRED=71, K_DELETE=72, K_DESC=73, K_DETACH=74, K_DISTINCT=75, 
+		K_DROP=76, K_EACH=77, K_ELSE=78, K_END=79, K_ESCAPE=80, K_EXCEPT=81, K_EXCLUSIVE=82, 
+		K_EXISTS=83, K_EXPLAIN=84, K_FAIL=85, K_FOR=86, K_FOREIGN=87, K_FROM=88, 
+		K_FULL=89, K_GLOB=90, K_GROUP=91, K_HAVING=92, K_IF=93, K_IGNORE=94, K_IMMEDIATE=95, 
+		K_IN=96, K_INDEX=97, K_INDEXED=98, K_INITIALLY=99, K_INNER=100, K_INSERT=101, 
+		K_INSTEAD=102, K_INTERSECT=103, K_INTO=104, K_IS=105, K_ISNULL=106, K_JOIN=107, 
+		K_KEY=108, K_LEFT=109, K_LIKE=110, K_LIMIT=111, K_MATCH=112, K_NATURAL=113, 
+		K_NO=114, K_NOT=115, K_NOTNULL=116, K_NULL=117, K_OF=118, K_OFFSET=119, 
+		K_ON=120, K_OR=121, K_ORDER=122, K_OUTER=123, K_PLAN=124, K_PRAGMA=125, 
+		K_PRIMARY=126, K_QUERY=127, K_RAISE=128, K_RECURSIVE=129, K_REFERENCES=130, 
+		K_REGEXP=131, K_REINDEX=132, K_RELEASE=133, K_RENAME=134, K_REPLACE=135, 
+		K_RESTRICT=136, K_RIGHT=137, K_ROLLBACK=138, K_ROW=139, K_SAVEPOINT=140, 
+		K_SELECT=141, K_SET=142, K_TABLE=143, K_TEMP=144, K_TEMPORARY=145, K_THEN=146, 
+		K_TO=147, K_TRANSACTION=148, K_TRIGGER=149, K_UNION=150, K_UNIQUE=151, 
+		K_UPDATE=152, K_USING=153, K_VACUUM=154, K_VALUES=155, K_VIEW=156, K_VIRTUAL=157, 
+		K_WHEN=158, K_WHERE=159, K_WITH=160, K_WITHOUT=161, IDENTIFIER=162, NUMERIC_LITERAL=163, 
+		BIND_PARAMETER=164, STRING_LITERAL=165, BLOB_LITERAL=166, SINGLE_LINE_COMMENT=167, 
+		MULTILINE_COMMENT=168, SPACES=169, UNEXPECTED_CHAR=170;
 	public static final int
 		RULE_parse = 0, RULE_error = 1, RULE_sql_stmt_list = 2, RULE_sql_stmt = 3, 
 		RULE_create_table_stmt = 4, RULE_insert_stmt = 5, RULE_column_def = 6, 
@@ -69,23 +71,25 @@ public class SqlParser extends Parser {
 	private static final String[] _LITERAL_NAMES = {
 		null, "';'", "'.'", "'('", "')'", "','", "'='", "'*'", "'+'", "'-'", "'~'", 
 		"'||'", "'/'", "'%'", "'<<'", "'>>'", "'&'", "'|'", "'<'", "'<='", "'>'", 
-		"'>='", "'=='", "'!='", "'<>'"
+		"'>='", "'=='", "'!='", "'<>'", "'^'", "'`'", "'!'", "'@'", "'#'", "'$'", 
+		"'['", "']'", "'{'", "'}'", "':'", "'\"'", "'\\'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "SCOL", "DOT", "OPEN_PAR", "CLOSE_PAR", "COMMA", "ASSIGN", "STAR", 
 		"PLUS", "MINUS", "TILDE", "PIPE2", "DIV", "MOD", "LT2", "GT2", "AMP", 
-		"PIPE", "LT", "LT_EQ", "GT", "GT_EQ", "EQ", "NOT_EQ1", "NOT_EQ2", "K_ABORT", 
-		"K_ACTION", "K_ADD", "K_AFTER", "K_ALL", "K_ALTER", "K_ANALYZE", "K_AND", 
-		"K_AS", "K_ASC", "K_ATTACH", "K_AUTOINCREMENT", "K_BEFORE", "K_BEGIN", 
-		"K_BETWEEN", "K_BY", "K_CASCADE", "K_CASE", "K_CAST", "K_CHECK", "K_COLLATE", 
-		"K_COLUMN", "K_COMMIT", "K_CONFLICT", "K_CONSTRAINT", "K_CREATE", "K_CROSS", 
-		"K_CURRENT_DATE", "K_CURRENT_TIME", "K_CURRENT_TIMESTAMP", "K_DATABASE", 
-		"K_DEFAULT", "K_DEFERRABLE", "K_DEFERRED", "K_DELETE", "K_DESC", "K_DETACH", 
-		"K_DISTINCT", "K_DROP", "K_EACH", "K_ELSE", "K_END", "K_ESCAPE", "K_EXCEPT", 
-		"K_EXCLUSIVE", "K_EXISTS", "K_EXPLAIN", "K_FAIL", "K_FOR", "K_FOREIGN", 
-		"K_FROM", "K_FULL", "K_GLOB", "K_GROUP", "K_HAVING", "K_IF", "K_IGNORE", 
-		"K_IMMEDIATE", "K_IN", "K_INDEX", "K_INDEXED", "K_INITIALLY", "K_INNER", 
-		"K_INSERT", "K_INSTEAD", "K_INTERSECT", "K_INTO", "K_IS", "K_ISNULL", 
+		"PIPE", "LT", "LT_EQ", "GT", "GT_EQ", "EQ", "NOT_EQ1", "NOT_EQ2", "SQUARE", 
+		"LB0", "LB1", "LB2", "LB3", "LB4", "LB5", "LB6", "LB7", "LB8", "LB10", 
+		"LB11", "LB12", "K_ABORT", "K_ACTION", "K_ADD", "K_AFTER", "K_ALL", "K_ALTER", 
+		"K_ANALYZE", "K_AND", "K_AS", "K_ASC", "K_ATTACH", "K_AUTOINCREMENT", 
+		"K_BEFORE", "K_BEGIN", "K_BETWEEN", "K_BY", "K_CASCADE", "K_CASE", "K_CAST", 
+		"K_CHECK", "K_COLLATE", "K_COLUMN", "K_COMMIT", "K_CONFLICT", "K_CONSTRAINT", 
+		"K_CREATE", "K_CROSS", "K_CURRENT_DATE", "K_CURRENT_TIME", "K_CURRENT_TIMESTAMP", 
+		"K_DATABASE", "K_DEFAULT", "K_DEFERRABLE", "K_DEFERRED", "K_DELETE", "K_DESC", 
+		"K_DETACH", "K_DISTINCT", "K_DROP", "K_EACH", "K_ELSE", "K_END", "K_ESCAPE", 
+		"K_EXCEPT", "K_EXCLUSIVE", "K_EXISTS", "K_EXPLAIN", "K_FAIL", "K_FOR", 
+		"K_FOREIGN", "K_FROM", "K_FULL", "K_GLOB", "K_GROUP", "K_HAVING", "K_IF", 
+		"K_IGNORE", "K_IMMEDIATE", "K_IN", "K_INDEX", "K_INDEXED", "K_INITIALLY", 
+		"K_INNER", "K_INSERT", "K_INSTEAD", "K_INTERSECT", "K_INTO", "K_IS", "K_ISNULL", 
 		"K_JOIN", "K_KEY", "K_LEFT", "K_LIKE", "K_LIMIT", "K_MATCH", "K_NATURAL", 
 		"K_NO", "K_NOT", "K_NOTNULL", "K_NULL", "K_OF", "K_OFFSET", "K_ON", "K_OR", 
 		"K_ORDER", "K_OUTER", "K_PLAN", "K_PRAGMA", "K_PRIMARY", "K_QUERY", "K_RAISE", 
@@ -687,14 +691,14 @@ public class SqlParser extends Parser {
 			setState(166);
 			column_name();
 			setState(168);
-			switch ( getInterpreter().adaptivePredict(_input,13,_ctx) ) {
-			case 1:
+			_la = _input.LA(1);
+			if (_la==IDENTIFIER) {
 				{
 				setState(167);
 				type_name();
 				}
-				break;
 			}
+
 			setState(173);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -752,30 +756,24 @@ public class SqlParser extends Parser {
 	public final Type_nameContext type_name() throws RecognitionException {
 		Type_nameContext _localctx = new Type_nameContext(_ctx, getState());
 		enterRule(_localctx, 14, RULE_type_name);
+		int _la;
 		try {
-			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(177); 
 			_errHandler.sync(this);
-			_alt = 1;
+			_la = _input.LA(1);
 			do {
-				switch (_alt) {
-				case 1:
-					{
-					{
-					setState(176);
-					name();
-					}
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
+				{
+				{
+				setState(176);
+				name();
+				}
 				}
 				setState(179); 
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,15,_ctx);
-			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
+				_la = _input.LA(1);
+			} while ( _la==IDENTIFIER );
 			setState(191);
 			switch ( getInterpreter().adaptivePredict(_input,16,_ctx) ) {
 			case 1:
@@ -922,8 +920,11 @@ public class SqlParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(218);
-			switch ( getInterpreter().adaptivePredict(_input,19,_ctx) ) {
-			case 1:
+			switch (_input.LA(1)) {
+			case PLUS:
+			case MINUS:
+			case TILDE:
+			case K_NOT:
 				{
 				setState(197);
 				unary_operator();
@@ -931,19 +932,25 @@ public class SqlParser extends Parser {
 				expr(11);
 				}
 				break;
-			case 2:
+			case K_CURRENT_DATE:
+			case K_CURRENT_TIME:
+			case K_CURRENT_TIMESTAMP:
+			case K_NULL:
+			case NUMERIC_LITERAL:
+			case STRING_LITERAL:
+			case BLOB_LITERAL:
 				{
 				setState(200);
 				literal_value();
 				}
 				break;
-			case 3:
+			case BIND_PARAMETER:
 				{
 				setState(201);
 				match(BIND_PARAMETER);
 				}
 				break;
-			case 4:
+			case IDENTIFIER:
 				{
 				setState(210);
 				switch ( getInterpreter().adaptivePredict(_input,18,_ctx) ) {
@@ -971,7 +978,7 @@ public class SqlParser extends Parser {
 				column_name();
 				}
 				break;
-			case 5:
+			case OPEN_PAR:
 				{
 				setState(213);
 				match(OPEN_PAR);
@@ -981,12 +988,14 @@ public class SqlParser extends Parser {
 				match(CLOSE_PAR);
 				}
 				break;
-			case 6:
+			case K_RAISE:
 				{
 				setState(217);
 				raise_function();
 				}
 				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 			_ctx.stop = _input.LT(-1);
 			setState(259);
@@ -1364,7 +1373,7 @@ public class SqlParser extends Parser {
 			{
 			setState(277);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << K_CURRENT_DATE) | (1L << K_CURRENT_TIME) | (1L << K_CURRENT_TIMESTAMP))) != 0) || ((((_la - 104)) & ~0x3f) == 0 && ((1L << (_la - 104)) & ((1L << (K_NULL - 104)) | (1L << (NUMERIC_LITERAL - 104)) | (1L << (STRING_LITERAL - 104)) | (1L << (BLOB_LITERAL - 104)))) != 0)) ) {
+			if ( !(((((_la - 65)) & ~0x3f) == 0 && ((1L << (_la - 65)) & ((1L << (K_CURRENT_DATE - 65)) | (1L << (K_CURRENT_TIME - 65)) | (1L << (K_CURRENT_TIMESTAMP - 65)) | (1L << (K_NULL - 65)))) != 0) || ((((_la - 163)) & ~0x3f) == 0 && ((1L << (_la - 163)) & ((1L << (NUMERIC_LITERAL - 163)) | (1L << (STRING_LITERAL - 163)) | (1L << (BLOB_LITERAL - 163)))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -1610,7 +1619,7 @@ public class SqlParser extends Parser {
 			{
 			setState(283);
 			_la = _input.LA(1);
-			if ( !(((((_la - 25)) & ~0x3f) == 0 && ((1L << (_la - 25)) & ((1L << (K_ABORT - 25)) | (1L << (K_ACTION - 25)) | (1L << (K_ADD - 25)) | (1L << (K_AFTER - 25)) | (1L << (K_ALL - 25)) | (1L << (K_ALTER - 25)) | (1L << (K_ANALYZE - 25)) | (1L << (K_AND - 25)) | (1L << (K_AS - 25)) | (1L << (K_ASC - 25)) | (1L << (K_ATTACH - 25)) | (1L << (K_AUTOINCREMENT - 25)) | (1L << (K_BEFORE - 25)) | (1L << (K_BEGIN - 25)) | (1L << (K_BETWEEN - 25)) | (1L << (K_BY - 25)) | (1L << (K_CASCADE - 25)) | (1L << (K_CASE - 25)) | (1L << (K_CAST - 25)) | (1L << (K_CHECK - 25)) | (1L << (K_COLLATE - 25)) | (1L << (K_COLUMN - 25)) | (1L << (K_COMMIT - 25)) | (1L << (K_CONFLICT - 25)) | (1L << (K_CONSTRAINT - 25)) | (1L << (K_CREATE - 25)) | (1L << (K_CROSS - 25)) | (1L << (K_CURRENT_DATE - 25)) | (1L << (K_CURRENT_TIME - 25)) | (1L << (K_CURRENT_TIMESTAMP - 25)) | (1L << (K_DATABASE - 25)) | (1L << (K_DEFAULT - 25)) | (1L << (K_DEFERRABLE - 25)) | (1L << (K_DEFERRED - 25)) | (1L << (K_DELETE - 25)) | (1L << (K_DESC - 25)) | (1L << (K_DETACH - 25)) | (1L << (K_DISTINCT - 25)) | (1L << (K_DROP - 25)) | (1L << (K_EACH - 25)) | (1L << (K_ELSE - 25)) | (1L << (K_END - 25)) | (1L << (K_ESCAPE - 25)) | (1L << (K_EXCEPT - 25)) | (1L << (K_EXCLUSIVE - 25)) | (1L << (K_EXISTS - 25)) | (1L << (K_EXPLAIN - 25)) | (1L << (K_FAIL - 25)) | (1L << (K_FOR - 25)) | (1L << (K_FOREIGN - 25)) | (1L << (K_FROM - 25)) | (1L << (K_FULL - 25)) | (1L << (K_GLOB - 25)) | (1L << (K_GROUP - 25)) | (1L << (K_HAVING - 25)) | (1L << (K_IF - 25)) | (1L << (K_IGNORE - 25)) | (1L << (K_IMMEDIATE - 25)) | (1L << (K_IN - 25)) | (1L << (K_INDEX - 25)) | (1L << (K_INDEXED - 25)) | (1L << (K_INITIALLY - 25)) | (1L << (K_INNER - 25)) | (1L << (K_INSERT - 25)))) != 0) || ((((_la - 89)) & ~0x3f) == 0 && ((1L << (_la - 89)) & ((1L << (K_INSTEAD - 89)) | (1L << (K_INTERSECT - 89)) | (1L << (K_INTO - 89)) | (1L << (K_IS - 89)) | (1L << (K_ISNULL - 89)) | (1L << (K_JOIN - 89)) | (1L << (K_KEY - 89)) | (1L << (K_LEFT - 89)) | (1L << (K_LIKE - 89)) | (1L << (K_LIMIT - 89)) | (1L << (K_MATCH - 89)) | (1L << (K_NATURAL - 89)) | (1L << (K_NO - 89)) | (1L << (K_NOT - 89)) | (1L << (K_NOTNULL - 89)) | (1L << (K_NULL - 89)) | (1L << (K_OF - 89)) | (1L << (K_OFFSET - 89)) | (1L << (K_ON - 89)) | (1L << (K_OR - 89)) | (1L << (K_ORDER - 89)) | (1L << (K_OUTER - 89)) | (1L << (K_PLAN - 89)) | (1L << (K_PRAGMA - 89)) | (1L << (K_PRIMARY - 89)) | (1L << (K_QUERY - 89)) | (1L << (K_RAISE - 89)) | (1L << (K_RECURSIVE - 89)) | (1L << (K_REFERENCES - 89)) | (1L << (K_REGEXP - 89)) | (1L << (K_REINDEX - 89)) | (1L << (K_RELEASE - 89)) | (1L << (K_RENAME - 89)) | (1L << (K_REPLACE - 89)) | (1L << (K_RESTRICT - 89)) | (1L << (K_RIGHT - 89)) | (1L << (K_ROLLBACK - 89)) | (1L << (K_ROW - 89)) | (1L << (K_SAVEPOINT - 89)) | (1L << (K_SELECT - 89)) | (1L << (K_SET - 89)) | (1L << (K_TABLE - 89)) | (1L << (K_TEMP - 89)) | (1L << (K_TEMPORARY - 89)) | (1L << (K_THEN - 89)) | (1L << (K_TO - 89)) | (1L << (K_TRANSACTION - 89)) | (1L << (K_TRIGGER - 89)) | (1L << (K_UNION - 89)) | (1L << (K_UNIQUE - 89)) | (1L << (K_UPDATE - 89)) | (1L << (K_USING - 89)) | (1L << (K_VACUUM - 89)) | (1L << (K_VALUES - 89)) | (1L << (K_VIEW - 89)) | (1L << (K_VIRTUAL - 89)) | (1L << (K_WHEN - 89)) | (1L << (K_WHERE - 89)) | (1L << (K_WITH - 89)) | (1L << (K_WITHOUT - 89)))) != 0)) ) {
+			if ( !(((((_la - 38)) & ~0x3f) == 0 && ((1L << (_la - 38)) & ((1L << (K_ABORT - 38)) | (1L << (K_ACTION - 38)) | (1L << (K_ADD - 38)) | (1L << (K_AFTER - 38)) | (1L << (K_ALL - 38)) | (1L << (K_ALTER - 38)) | (1L << (K_ANALYZE - 38)) | (1L << (K_AND - 38)) | (1L << (K_AS - 38)) | (1L << (K_ASC - 38)) | (1L << (K_ATTACH - 38)) | (1L << (K_AUTOINCREMENT - 38)) | (1L << (K_BEFORE - 38)) | (1L << (K_BEGIN - 38)) | (1L << (K_BETWEEN - 38)) | (1L << (K_BY - 38)) | (1L << (K_CASCADE - 38)) | (1L << (K_CASE - 38)) | (1L << (K_CAST - 38)) | (1L << (K_CHECK - 38)) | (1L << (K_COLLATE - 38)) | (1L << (K_COLUMN - 38)) | (1L << (K_COMMIT - 38)) | (1L << (K_CONFLICT - 38)) | (1L << (K_CONSTRAINT - 38)) | (1L << (K_CREATE - 38)) | (1L << (K_CROSS - 38)) | (1L << (K_CURRENT_DATE - 38)) | (1L << (K_CURRENT_TIME - 38)) | (1L << (K_CURRENT_TIMESTAMP - 38)) | (1L << (K_DATABASE - 38)) | (1L << (K_DEFAULT - 38)) | (1L << (K_DEFERRABLE - 38)) | (1L << (K_DEFERRED - 38)) | (1L << (K_DELETE - 38)) | (1L << (K_DESC - 38)) | (1L << (K_DETACH - 38)) | (1L << (K_DISTINCT - 38)) | (1L << (K_DROP - 38)) | (1L << (K_EACH - 38)) | (1L << (K_ELSE - 38)) | (1L << (K_END - 38)) | (1L << (K_ESCAPE - 38)) | (1L << (K_EXCEPT - 38)) | (1L << (K_EXCLUSIVE - 38)) | (1L << (K_EXISTS - 38)) | (1L << (K_EXPLAIN - 38)) | (1L << (K_FAIL - 38)) | (1L << (K_FOR - 38)) | (1L << (K_FOREIGN - 38)) | (1L << (K_FROM - 38)) | (1L << (K_FULL - 38)) | (1L << (K_GLOB - 38)) | (1L << (K_GROUP - 38)) | (1L << (K_HAVING - 38)) | (1L << (K_IF - 38)) | (1L << (K_IGNORE - 38)) | (1L << (K_IMMEDIATE - 38)) | (1L << (K_IN - 38)) | (1L << (K_INDEX - 38)) | (1L << (K_INDEXED - 38)) | (1L << (K_INITIALLY - 38)) | (1L << (K_INNER - 38)) | (1L << (K_INSERT - 38)))) != 0) || ((((_la - 102)) & ~0x3f) == 0 && ((1L << (_la - 102)) & ((1L << (K_INSTEAD - 102)) | (1L << (K_INTERSECT - 102)) | (1L << (K_INTO - 102)) | (1L << (K_IS - 102)) | (1L << (K_ISNULL - 102)) | (1L << (K_JOIN - 102)) | (1L << (K_KEY - 102)) | (1L << (K_LEFT - 102)) | (1L << (K_LIKE - 102)) | (1L << (K_LIMIT - 102)) | (1L << (K_MATCH - 102)) | (1L << (K_NATURAL - 102)) | (1L << (K_NO - 102)) | (1L << (K_NOT - 102)) | (1L << (K_NOTNULL - 102)) | (1L << (K_NULL - 102)) | (1L << (K_OF - 102)) | (1L << (K_OFFSET - 102)) | (1L << (K_ON - 102)) | (1L << (K_OR - 102)) | (1L << (K_ORDER - 102)) | (1L << (K_OUTER - 102)) | (1L << (K_PLAN - 102)) | (1L << (K_PRAGMA - 102)) | (1L << (K_PRIMARY - 102)) | (1L << (K_QUERY - 102)) | (1L << (K_RAISE - 102)) | (1L << (K_RECURSIVE - 102)) | (1L << (K_REFERENCES - 102)) | (1L << (K_REGEXP - 102)) | (1L << (K_REINDEX - 102)) | (1L << (K_RELEASE - 102)) | (1L << (K_RENAME - 102)) | (1L << (K_REPLACE - 102)) | (1L << (K_RESTRICT - 102)) | (1L << (K_RIGHT - 102)) | (1L << (K_ROLLBACK - 102)) | (1L << (K_ROW - 102)) | (1L << (K_SAVEPOINT - 102)) | (1L << (K_SELECT - 102)) | (1L << (K_SET - 102)) | (1L << (K_TABLE - 102)) | (1L << (K_TEMP - 102)) | (1L << (K_TEMPORARY - 102)) | (1L << (K_THEN - 102)) | (1L << (K_TO - 102)) | (1L << (K_TRANSACTION - 102)) | (1L << (K_TRIGGER - 102)) | (1L << (K_UNION - 102)) | (1L << (K_UNIQUE - 102)) | (1L << (K_UPDATE - 102)) | (1L << (K_USING - 102)) | (1L << (K_VACUUM - 102)) | (1L << (K_VALUES - 102)) | (1L << (K_VIEW - 102)) | (1L << (K_VIRTUAL - 102)) | (1L << (K_WHEN - 102)) | (1L << (K_WHERE - 102)) | (1L << (K_WITH - 102)) | (1L << (K_WITHOUT - 102)))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -2293,13 +2302,6 @@ public class SqlParser extends Parser {
 
 	public static class Any_nameContext extends ParserRuleContext {
 		public TerminalNode IDENTIFIER() { return getToken(SqlParser.IDENTIFIER, 0); }
-		public KeywordContext keyword() {
-			return getRuleContext(KeywordContext.class,0);
-		}
-		public TerminalNode STRING_LITERAL() { return getToken(SqlParser.STRING_LITERAL, 0); }
-		public Any_nameContext any_name() {
-			return getRuleContext(Any_nameContext.class,0);
-		}
 		public Any_nameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -2318,165 +2320,10 @@ public class SqlParser extends Parser {
 		Any_nameContext _localctx = new Any_nameContext(_ctx, getState());
 		enterRule(_localctx, 66, RULE_any_name);
 		try {
-			setState(326);
-			switch (_input.LA(1)) {
-			case IDENTIFIER:
-				enterOuterAlt(_localctx, 1);
-				{
-				setState(319);
-				match(IDENTIFIER);
-				}
-				break;
-			case K_ABORT:
-			case K_ACTION:
-			case K_ADD:
-			case K_AFTER:
-			case K_ALL:
-			case K_ALTER:
-			case K_ANALYZE:
-			case K_AND:
-			case K_AS:
-			case K_ASC:
-			case K_ATTACH:
-			case K_AUTOINCREMENT:
-			case K_BEFORE:
-			case K_BEGIN:
-			case K_BETWEEN:
-			case K_BY:
-			case K_CASCADE:
-			case K_CASE:
-			case K_CAST:
-			case K_CHECK:
-			case K_COLLATE:
-			case K_COLUMN:
-			case K_COMMIT:
-			case K_CONFLICT:
-			case K_CONSTRAINT:
-			case K_CREATE:
-			case K_CROSS:
-			case K_CURRENT_DATE:
-			case K_CURRENT_TIME:
-			case K_CURRENT_TIMESTAMP:
-			case K_DATABASE:
-			case K_DEFAULT:
-			case K_DEFERRABLE:
-			case K_DEFERRED:
-			case K_DELETE:
-			case K_DESC:
-			case K_DETACH:
-			case K_DISTINCT:
-			case K_DROP:
-			case K_EACH:
-			case K_ELSE:
-			case K_END:
-			case K_ESCAPE:
-			case K_EXCEPT:
-			case K_EXCLUSIVE:
-			case K_EXISTS:
-			case K_EXPLAIN:
-			case K_FAIL:
-			case K_FOR:
-			case K_FOREIGN:
-			case K_FROM:
-			case K_FULL:
-			case K_GLOB:
-			case K_GROUP:
-			case K_HAVING:
-			case K_IF:
-			case K_IGNORE:
-			case K_IMMEDIATE:
-			case K_IN:
-			case K_INDEX:
-			case K_INDEXED:
-			case K_INITIALLY:
-			case K_INNER:
-			case K_INSERT:
-			case K_INSTEAD:
-			case K_INTERSECT:
-			case K_INTO:
-			case K_IS:
-			case K_ISNULL:
-			case K_JOIN:
-			case K_KEY:
-			case K_LEFT:
-			case K_LIKE:
-			case K_LIMIT:
-			case K_MATCH:
-			case K_NATURAL:
-			case K_NO:
-			case K_NOT:
-			case K_NOTNULL:
-			case K_NULL:
-			case K_OF:
-			case K_OFFSET:
-			case K_ON:
-			case K_OR:
-			case K_ORDER:
-			case K_OUTER:
-			case K_PLAN:
-			case K_PRAGMA:
-			case K_PRIMARY:
-			case K_QUERY:
-			case K_RAISE:
-			case K_RECURSIVE:
-			case K_REFERENCES:
-			case K_REGEXP:
-			case K_REINDEX:
-			case K_RELEASE:
-			case K_RENAME:
-			case K_REPLACE:
-			case K_RESTRICT:
-			case K_RIGHT:
-			case K_ROLLBACK:
-			case K_ROW:
-			case K_SAVEPOINT:
-			case K_SELECT:
-			case K_SET:
-			case K_TABLE:
-			case K_TEMP:
-			case K_TEMPORARY:
-			case K_THEN:
-			case K_TO:
-			case K_TRANSACTION:
-			case K_TRIGGER:
-			case K_UNION:
-			case K_UNIQUE:
-			case K_UPDATE:
-			case K_USING:
-			case K_VACUUM:
-			case K_VALUES:
-			case K_VIEW:
-			case K_VIRTUAL:
-			case K_WHEN:
-			case K_WHERE:
-			case K_WITH:
-			case K_WITHOUT:
-				enterOuterAlt(_localctx, 2);
-				{
-				setState(320);
-				keyword();
-				}
-				break;
-			case STRING_LITERAL:
-				enterOuterAlt(_localctx, 3);
-				{
-				setState(321);
-				match(STRING_LITERAL);
-				}
-				break;
-			case OPEN_PAR:
-				enterOuterAlt(_localctx, 4);
-				{
-				setState(322);
-				match(OPEN_PAR);
-				setState(323);
-				any_name();
-				setState(324);
-				match(CLOSE_PAR);
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(319);
+			match(IDENTIFIER);
 			}
 		}
 		catch (RecognitionException re) {
@@ -2520,7 +2367,7 @@ public class SqlParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\u009f\u014b\4\2\t"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\u00ac\u0144\4\2\t"+
 		"\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -2543,96 +2390,93 @@ public class SqlParser extends Parser {
 		"\f\u010f\n\f\3\f\3\f\3\r\5\r\u0114\n\r\3\r\3\r\3\16\3\16\3\17\3\17\3\20"+
 		"\3\20\3\21\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\25\3\25\3\26\3\26\3\27"+
 		"\3\27\3\30\3\30\3\31\3\31\3\32\3\32\3\33\3\33\3\34\3\34\3\35\3\35\3\36"+
-		"\3\36\3\37\3\37\3 \3 \3!\3!\3\"\3\"\3#\3#\3#\3#\3#\3#\3#\5#\u0149\n#\3"+
-		"#\2\3\24$\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\66"+
-		"8:<>@BD\2\n\4\2\t\t\16\17\3\2\n\13\3\2\20\23\3\2\24\27\5\2\33\33JJ\177"+
-		"\177\6\2\668jj\u0098\u0098\u009a\u009b\4\2\n\fhh\3\2\33\u0096\u0158\2"+
-		"J\3\2\2\2\4O\3\2\2\2\6U\3\2\2\2\bl\3\2\2\2\nn\3\2\2\2\f|\3\2\2\2\16\u00a8"+
-		"\3\2\2\2\20\u00b3\3\2\2\2\22\u00c3\3\2\2\2\24\u00dc\3\2\2\2\26\u0108\3"+
-		"\2\2\2\30\u0113\3\2\2\2\32\u0117\3\2\2\2\34\u0119\3\2\2\2\36\u011b\3\2"+
-		"\2\2 \u011d\3\2\2\2\"\u011f\3\2\2\2$\u0121\3\2\2\2&\u0123\3\2\2\2(\u0125"+
-		"\3\2\2\2*\u0127\3\2\2\2,\u0129\3\2\2\2.\u012b\3\2\2\2\60\u012d\3\2\2\2"+
-		"\62\u012f\3\2\2\2\64\u0131\3\2\2\2\66\u0133\3\2\2\28\u0135\3\2\2\2:\u0137"+
-		"\3\2\2\2<\u0139\3\2\2\2>\u013b\3\2\2\2@\u013d\3\2\2\2B\u013f\3\2\2\2D"+
-		"\u0148\3\2\2\2FI\5\6\4\2GI\5\4\3\2HF\3\2\2\2HG\3\2\2\2IL\3\2\2\2JH\3\2"+
-		"\2\2JK\3\2\2\2KM\3\2\2\2LJ\3\2\2\2MN\7\2\2\3N\3\3\2\2\2OP\7\u009f\2\2"+
-		"PQ\b\3\1\2Q\5\3\2\2\2RT\7\3\2\2SR\3\2\2\2TW\3\2\2\2US\3\2\2\2UV\3\2\2"+
-		"\2VX\3\2\2\2WU\3\2\2\2Xa\5\b\5\2Y[\7\3\2\2ZY\3\2\2\2[\\\3\2\2\2\\Z\3\2"+
-		"\2\2\\]\3\2\2\2]^\3\2\2\2^`\5\b\5\2_Z\3\2\2\2`c\3\2\2\2a_\3\2\2\2ab\3"+
-		"\2\2\2bg\3\2\2\2ca\3\2\2\2df\7\3\2\2ed\3\2\2\2fi\3\2\2\2ge\3\2\2\2gh\3"+
-		"\2\2\2h\7\3\2\2\2ig\3\2\2\2jm\5\n\6\2km\5\f\7\2lj\3\2\2\2lk\3\2\2\2m\t"+
-		"\3\2\2\2no\7\64\2\2op\7\u0084\2\2pq\5(\25\2qr\7\5\2\2rw\5\16\b\2st\7\7"+
-		"\2\2tv\5\16\b\2us\3\2\2\2vy\3\2\2\2wu\3\2\2\2wx\3\2\2\2xz\3\2\2\2yw\3"+
-		"\2\2\2z{\7\6\2\2{\13\3\2\2\2|}\7Z\2\2}~\7]\2\2~\u008a\5(\25\2\177\u0080"+
-		"\7\5\2\2\u0080\u0085\5.\30\2\u0081\u0082\7\7\2\2\u0082\u0084\5.\30\2\u0083"+
-		"\u0081\3\2\2\2\u0084\u0087\3\2\2\2\u0085\u0083\3\2\2\2\u0085\u0086\3\2"+
-		"\2\2\u0086\u0088\3\2\2\2\u0087\u0085\3\2\2\2\u0088\u0089\7\6\2\2\u0089"+
-		"\u008b\3\2\2\2\u008a\177\3\2\2\2\u008a\u008b\3\2\2\2\u008b\u008c\3\2\2"+
-		"\2\u008c\u008d\7\u0090\2\2\u008d\u008e\7\5\2\2\u008e\u0093\5\24\13\2\u008f"+
-		"\u0090\7\7\2\2\u0090\u0092\5\24\13\2\u0091\u008f\3\2\2\2\u0092\u0095\3"+
-		"\2\2\2\u0093\u0091\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0096\3\2\2\2\u0095"+
-		"\u0093\3\2\2\2\u0096\u00a5\7\6\2\2\u0097\u0098\7\7\2\2\u0098\u0099\7\5"+
-		"\2\2\u0099\u009e\5\24\13\2\u009a\u009b\7\7\2\2\u009b\u009d\5\24\13\2\u009c"+
-		"\u009a\3\2\2\2\u009d\u00a0\3\2\2\2\u009e\u009c\3\2\2\2\u009e\u009f\3\2"+
-		"\2\2\u009f\u00a1\3\2\2\2\u00a0\u009e\3\2\2\2\u00a1\u00a2\7\6\2\2\u00a2"+
-		"\u00a4\3\2\2\2\u00a3\u0097\3\2\2\2\u00a4\u00a7\3\2\2\2\u00a5\u00a3\3\2"+
-		"\2\2\u00a5\u00a6\3\2\2\2\u00a6\r\3\2\2\2\u00a7\u00a5\3\2\2\2\u00a8\u00aa"+
-		"\5.\30\2\u00a9\u00ab\5\20\t\2\u00aa\u00a9\3\2\2\2\u00aa\u00ab\3\2\2\2"+
-		"\u00ab\u00af\3\2\2\2\u00ac\u00ae\5\22\n\2\u00ad\u00ac\3\2\2\2\u00ae\u00b1"+
-		"\3\2\2\2\u00af\u00ad\3\2\2\2\u00af\u00b0\3\2\2\2\u00b0\17\3\2\2\2\u00b1"+
-		"\u00af\3\2\2\2\u00b2\u00b4\5\"\22\2\u00b3\u00b2\3\2\2\2\u00b4\u00b5\3"+
-		"\2\2\2\u00b5\u00b3\3\2\2\2\u00b5\u00b6\3\2\2\2\u00b6\u00c1\3\2\2\2\u00b7"+
-		"\u00b8\7\5\2\2\u00b8\u00b9\5\30\r\2\u00b9\u00ba\7\6\2\2\u00ba\u00c2\3"+
-		"\2\2\2\u00bb\u00bc\7\5\2\2\u00bc\u00bd\5\30\r\2\u00bd\u00be\7\7\2\2\u00be"+
-		"\u00bf\5\30\r\2\u00bf\u00c0\7\6\2\2\u00c0\u00c2\3\2\2\2\u00c1\u00b7\3"+
-		"\2\2\2\u00c1\u00bb\3\2\2\2\u00c1\u00c2\3\2\2\2\u00c2\21\3\2\2\2\u00c3"+
-		"\u00c4\7s\2\2\u00c4\u00c5\7a\2\2\u00c5\23\3\2\2\2\u00c6\u00c7\b\13\1\2"+
-		"\u00c7\u00c8\5\34\17\2\u00c8\u00c9\5\24\13\r\u00c9\u00dd\3\2\2\2\u00ca"+
-		"\u00dd\5\32\16\2\u00cb\u00dd\7\u0099\2\2\u00cc\u00cd\5&\24\2\u00cd\u00ce"+
-		"\7\4\2\2\u00ce\u00d0\3\2\2\2\u00cf\u00cc\3\2\2\2\u00cf\u00d0\3\2\2\2\u00d0"+
-		"\u00d1\3\2\2\2\u00d1\u00d2\5(\25\2\u00d2\u00d3\7\4\2\2\u00d3\u00d5\3\2"+
-		"\2\2\u00d4\u00cf\3\2\2\2\u00d4\u00d5\3\2\2\2\u00d5\u00d6\3\2\2\2\u00d6"+
-		"\u00dd\5.\30\2\u00d7\u00d8\7\5\2\2\u00d8\u00d9\5\24\13\2\u00d9\u00da\7"+
-		"\6\2\2\u00da\u00dd\3\2\2\2\u00db\u00dd\5\26\f\2\u00dc\u00c6\3\2\2\2\u00dc"+
-		"\u00ca\3\2\2\2\u00dc\u00cb\3\2\2\2\u00dc\u00d4\3\2\2\2\u00dc\u00d7\3\2"+
-		"\2\2\u00dc\u00db\3\2\2\2\u00dd\u0105\3\2\2\2\u00de\u00df\f\f\2\2\u00df"+
-		"\u00e0\7\r\2\2\u00e0\u0104\5\24\13\r\u00e1\u00e2\f\13\2\2\u00e2\u00e3"+
-		"\t\2\2\2\u00e3\u0104\5\24\13\f\u00e4\u00e5\f\n\2\2\u00e5\u00e6\t\3\2\2"+
-		"\u00e6\u0104\5\24\13\13\u00e7\u00e8\f\t\2\2\u00e8\u00e9\t\4\2\2\u00e9"+
-		"\u0104\5\24\13\n\u00ea\u00eb\f\b\2\2\u00eb\u00ec\t\5\2\2\u00ec\u0104\5"+
-		"\24\13\t\u00ed\u00fa\f\7\2\2\u00ee\u00fb\7\b\2\2\u00ef\u00fb\7\30\2\2"+
-		"\u00f0\u00fb\7\31\2\2\u00f1\u00fb\7\32\2\2\u00f2\u00fb\7^\2\2\u00f3\u00f4"+
-		"\7^\2\2\u00f4\u00fb\7h\2\2\u00f5\u00fb\7U\2\2\u00f6\u00fb\7c\2\2\u00f7"+
-		"\u00fb\7O\2\2\u00f8\u00fb\7e\2\2\u00f9\u00fb\7x\2\2\u00fa\u00ee\3\2\2"+
-		"\2\u00fa\u00ef\3\2\2\2\u00fa\u00f0\3\2\2\2\u00fa\u00f1\3\2\2\2\u00fa\u00f2"+
-		"\3\2\2\2\u00fa\u00f3\3\2\2\2\u00fa\u00f5\3\2\2\2\u00fa\u00f6\3\2\2\2\u00fa"+
-		"\u00f7\3\2\2\2\u00fa\u00f8\3\2\2\2\u00fa\u00f9\3\2\2\2\u00fb\u00fc\3\2"+
-		"\2\2\u00fc\u0104\5\24\13\b\u00fd\u00fe\f\6\2\2\u00fe\u00ff\7\"\2\2\u00ff"+
-		"\u0104\5\24\13\7\u0100\u0101\f\5\2\2\u0101\u0102\7n\2\2\u0102\u0104\5"+
-		"\24\13\6\u0103\u00de\3\2\2\2\u0103\u00e1\3\2\2\2\u0103\u00e4\3\2\2\2\u0103"+
-		"\u00e7\3\2\2\2\u0103\u00ea\3\2\2\2\u0103\u00ed\3\2\2\2\u0103\u00fd\3\2"+
-		"\2\2\u0103\u0100\3\2\2\2\u0104\u0107\3\2\2\2\u0105\u0103\3\2\2\2\u0105"+
-		"\u0106\3\2\2\2\u0106\25\3\2\2\2\u0107\u0105\3\2\2\2\u0108\u0109\7u\2\2"+
-		"\u0109\u010e\7\5\2\2\u010a\u010f\7S\2\2\u010b\u010c\t\6\2\2\u010c\u010d"+
-		"\7\7\2\2\u010d\u010f\5\36\20\2\u010e\u010a\3\2\2\2\u010e\u010b\3\2\2\2"+
-		"\u010f\u0110\3\2\2\2\u0110\u0111\7\6\2\2\u0111\27\3\2\2\2\u0112\u0114"+
-		"\t\3\2\2\u0113\u0112\3\2\2\2\u0113\u0114\3\2\2\2\u0114\u0115\3\2\2\2\u0115"+
-		"\u0116\7\u0098\2\2\u0116\31\3\2\2\2\u0117\u0118\t\7\2\2\u0118\33\3\2\2"+
-		"\2\u0119\u011a\t\b\2\2\u011a\35\3\2\2\2\u011b\u011c\7\u009a\2\2\u011c"+
-		"\37\3\2\2\2\u011d\u011e\t\t\2\2\u011e!\3\2\2\2\u011f\u0120\5D#\2\u0120"+
-		"#\3\2\2\2\u0121\u0122\5D#\2\u0122%\3\2\2\2\u0123\u0124\5D#\2\u0124\'\3"+
-		"\2\2\2\u0125\u0126\5D#\2\u0126)\3\2\2\2\u0127\u0128\5D#\2\u0128+\3\2\2"+
-		"\2\u0129\u012a\5D#\2\u012a-\3\2\2\2\u012b\u012c\5D#\2\u012c/\3\2\2\2\u012d"+
-		"\u012e\5D#\2\u012e\61\3\2\2\2\u012f\u0130\5D#\2\u0130\63\3\2\2\2\u0131"+
-		"\u0132\5D#\2\u0132\65\3\2\2\2\u0133\u0134\5D#\2\u0134\67\3\2\2\2\u0135"+
-		"\u0136\5D#\2\u01369\3\2\2\2\u0137\u0138\5D#\2\u0138;\3\2\2\2\u0139\u013a"+
-		"\5D#\2\u013a=\3\2\2\2\u013b\u013c\5D#\2\u013c?\3\2\2\2\u013d\u013e\5D"+
-		"#\2\u013eA\3\2\2\2\u013f\u0140\5D#\2\u0140C\3\2\2\2\u0141\u0149\7\u0097"+
-		"\2\2\u0142\u0149\5 \21\2\u0143\u0149\7\u009a\2\2\u0144\u0145\7\5\2\2\u0145"+
-		"\u0146\5D#\2\u0146\u0147\7\6\2\2\u0147\u0149\3\2\2\2\u0148\u0141\3\2\2"+
-		"\2\u0148\u0142\3\2\2\2\u0148\u0143\3\2\2\2\u0148\u0144\3\2\2\2\u0149E"+
-		"\3\2\2\2\34HJU\\aglw\u0085\u008a\u0093\u009e\u00a5\u00aa\u00af\u00b5\u00c1"+
-		"\u00cf\u00d4\u00dc\u00fa\u0103\u0105\u010e\u0113\u0148";
+		"\3\36\3\37\3\37\3 \3 \3!\3!\3\"\3\"\3#\3#\3#\2\3\24$\2\4\6\b\n\f\16\20"+
+		"\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BD\2\n\4\2\t\t\16\17\3"+
+		"\2\n\13\3\2\20\23\3\2\24\27\5\2((WW\u008c\u008c\6\2CEww\u00a5\u00a5\u00a7"+
+		"\u00a8\4\2\n\fuu\3\2(\u00a3\u014e\2J\3\2\2\2\4O\3\2\2\2\6U\3\2\2\2\bl"+
+		"\3\2\2\2\nn\3\2\2\2\f|\3\2\2\2\16\u00a8\3\2\2\2\20\u00b3\3\2\2\2\22\u00c3"+
+		"\3\2\2\2\24\u00dc\3\2\2\2\26\u0108\3\2\2\2\30\u0113\3\2\2\2\32\u0117\3"+
+		"\2\2\2\34\u0119\3\2\2\2\36\u011b\3\2\2\2 \u011d\3\2\2\2\"\u011f\3\2\2"+
+		"\2$\u0121\3\2\2\2&\u0123\3\2\2\2(\u0125\3\2\2\2*\u0127\3\2\2\2,\u0129"+
+		"\3\2\2\2.\u012b\3\2\2\2\60\u012d\3\2\2\2\62\u012f\3\2\2\2\64\u0131\3\2"+
+		"\2\2\66\u0133\3\2\2\28\u0135\3\2\2\2:\u0137\3\2\2\2<\u0139\3\2\2\2>\u013b"+
+		"\3\2\2\2@\u013d\3\2\2\2B\u013f\3\2\2\2D\u0141\3\2\2\2FI\5\6\4\2GI\5\4"+
+		"\3\2HF\3\2\2\2HG\3\2\2\2IL\3\2\2\2JH\3\2\2\2JK\3\2\2\2KM\3\2\2\2LJ\3\2"+
+		"\2\2MN\7\2\2\3N\3\3\2\2\2OP\7\u00ac\2\2PQ\b\3\1\2Q\5\3\2\2\2RT\7\3\2\2"+
+		"SR\3\2\2\2TW\3\2\2\2US\3\2\2\2UV\3\2\2\2VX\3\2\2\2WU\3\2\2\2Xa\5\b\5\2"+
+		"Y[\7\3\2\2ZY\3\2\2\2[\\\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]^\3\2\2\2^`\5\b"+
+		"\5\2_Z\3\2\2\2`c\3\2\2\2a_\3\2\2\2ab\3\2\2\2bg\3\2\2\2ca\3\2\2\2df\7\3"+
+		"\2\2ed\3\2\2\2fi\3\2\2\2ge\3\2\2\2gh\3\2\2\2h\7\3\2\2\2ig\3\2\2\2jm\5"+
+		"\n\6\2km\5\f\7\2lj\3\2\2\2lk\3\2\2\2m\t\3\2\2\2no\7A\2\2op\7\u0091\2\2"+
+		"pq\5(\25\2qr\7\5\2\2rw\5\16\b\2st\7\7\2\2tv\5\16\b\2us\3\2\2\2vy\3\2\2"+
+		"\2wu\3\2\2\2wx\3\2\2\2xz\3\2\2\2yw\3\2\2\2z{\7\6\2\2{\13\3\2\2\2|}\7g"+
+		"\2\2}~\7j\2\2~\u008a\5(\25\2\177\u0080\7\5\2\2\u0080\u0085\5.\30\2\u0081"+
+		"\u0082\7\7\2\2\u0082\u0084\5.\30\2\u0083\u0081\3\2\2\2\u0084\u0087\3\2"+
+		"\2\2\u0085\u0083\3\2\2\2\u0085\u0086\3\2\2\2\u0086\u0088\3\2\2\2\u0087"+
+		"\u0085\3\2\2\2\u0088\u0089\7\6\2\2\u0089\u008b\3\2\2\2\u008a\177\3\2\2"+
+		"\2\u008a\u008b\3\2\2\2\u008b\u008c\3\2\2\2\u008c\u008d\7\u009d\2\2\u008d"+
+		"\u008e\7\5\2\2\u008e\u0093\5\24\13\2\u008f\u0090\7\7\2\2\u0090\u0092\5"+
+		"\24\13\2\u0091\u008f\3\2\2\2\u0092\u0095\3\2\2\2\u0093\u0091\3\2\2\2\u0093"+
+		"\u0094\3\2\2\2\u0094\u0096\3\2\2\2\u0095\u0093\3\2\2\2\u0096\u00a5\7\6"+
+		"\2\2\u0097\u0098\7\7\2\2\u0098\u0099\7\5\2\2\u0099\u009e\5\24\13\2\u009a"+
+		"\u009b\7\7\2\2\u009b\u009d\5\24\13\2\u009c\u009a\3\2\2\2\u009d\u00a0\3"+
+		"\2\2\2\u009e\u009c\3\2\2\2\u009e\u009f\3\2\2\2\u009f\u00a1\3\2\2\2\u00a0"+
+		"\u009e\3\2\2\2\u00a1\u00a2\7\6\2\2\u00a2\u00a4\3\2\2\2\u00a3\u0097\3\2"+
+		"\2\2\u00a4\u00a7\3\2\2\2\u00a5\u00a3\3\2\2\2\u00a5\u00a6\3\2\2\2\u00a6"+
+		"\r\3\2\2\2\u00a7\u00a5\3\2\2\2\u00a8\u00aa\5.\30\2\u00a9\u00ab\5\20\t"+
+		"\2\u00aa\u00a9\3\2\2\2\u00aa\u00ab\3\2\2\2\u00ab\u00af\3\2\2\2\u00ac\u00ae"+
+		"\5\22\n\2\u00ad\u00ac\3\2\2\2\u00ae\u00b1\3\2\2\2\u00af\u00ad\3\2\2\2"+
+		"\u00af\u00b0\3\2\2\2\u00b0\17\3\2\2\2\u00b1\u00af\3\2\2\2\u00b2\u00b4"+
+		"\5\"\22\2\u00b3\u00b2\3\2\2\2\u00b4\u00b5\3\2\2\2\u00b5\u00b3\3\2\2\2"+
+		"\u00b5\u00b6\3\2\2\2\u00b6\u00c1\3\2\2\2\u00b7\u00b8\7\5\2\2\u00b8\u00b9"+
+		"\5\30\r\2\u00b9\u00ba\7\6\2\2\u00ba\u00c2\3\2\2\2\u00bb\u00bc\7\5\2\2"+
+		"\u00bc\u00bd\5\30\r\2\u00bd\u00be\7\7\2\2\u00be\u00bf\5\30\r\2\u00bf\u00c0"+
+		"\7\6\2\2\u00c0\u00c2\3\2\2\2\u00c1\u00b7\3\2\2\2\u00c1\u00bb\3\2\2\2\u00c1"+
+		"\u00c2\3\2\2\2\u00c2\21\3\2\2\2\u00c3\u00c4\7\u0080\2\2\u00c4\u00c5\7"+
+		"n\2\2\u00c5\23\3\2\2\2\u00c6\u00c7\b\13\1\2\u00c7\u00c8\5\34\17\2\u00c8"+
+		"\u00c9\5\24\13\r\u00c9\u00dd\3\2\2\2\u00ca\u00dd\5\32\16\2\u00cb\u00dd"+
+		"\7\u00a6\2\2\u00cc\u00cd\5&\24\2\u00cd\u00ce\7\4\2\2\u00ce\u00d0\3\2\2"+
+		"\2\u00cf\u00cc\3\2\2\2\u00cf\u00d0\3\2\2\2\u00d0\u00d1\3\2\2\2\u00d1\u00d2"+
+		"\5(\25\2\u00d2\u00d3\7\4\2\2\u00d3\u00d5\3\2\2\2\u00d4\u00cf\3\2\2\2\u00d4"+
+		"\u00d5\3\2\2\2\u00d5\u00d6\3\2\2\2\u00d6\u00dd\5.\30\2\u00d7\u00d8\7\5"+
+		"\2\2\u00d8\u00d9\5\24\13\2\u00d9\u00da\7\6\2\2\u00da\u00dd\3\2\2\2\u00db"+
+		"\u00dd\5\26\f\2\u00dc\u00c6\3\2\2\2\u00dc\u00ca\3\2\2\2\u00dc\u00cb\3"+
+		"\2\2\2\u00dc\u00d4\3\2\2\2\u00dc\u00d7\3\2\2\2\u00dc\u00db\3\2\2\2\u00dd"+
+		"\u0105\3\2\2\2\u00de\u00df\f\f\2\2\u00df\u00e0\7\r\2\2\u00e0\u0104\5\24"+
+		"\13\r\u00e1\u00e2\f\13\2\2\u00e2\u00e3\t\2\2\2\u00e3\u0104\5\24\13\f\u00e4"+
+		"\u00e5\f\n\2\2\u00e5\u00e6\t\3\2\2\u00e6\u0104\5\24\13\13\u00e7\u00e8"+
+		"\f\t\2\2\u00e8\u00e9\t\4\2\2\u00e9\u0104\5\24\13\n\u00ea\u00eb\f\b\2\2"+
+		"\u00eb\u00ec\t\5\2\2\u00ec\u0104\5\24\13\t\u00ed\u00fa\f\7\2\2\u00ee\u00fb"+
+		"\7\b\2\2\u00ef\u00fb\7\30\2\2\u00f0\u00fb\7\31\2\2\u00f1\u00fb\7\32\2"+
+		"\2\u00f2\u00fb\7k\2\2\u00f3\u00f4\7k\2\2\u00f4\u00fb\7u\2\2\u00f5\u00fb"+
+		"\7b\2\2\u00f6\u00fb\7p\2\2\u00f7\u00fb\7\\\2\2\u00f8\u00fb\7r\2\2\u00f9"+
+		"\u00fb\7\u0085\2\2\u00fa\u00ee\3\2\2\2\u00fa\u00ef\3\2\2\2\u00fa\u00f0"+
+		"\3\2\2\2\u00fa\u00f1\3\2\2\2\u00fa\u00f2\3\2\2\2\u00fa\u00f3\3\2\2\2\u00fa"+
+		"\u00f5\3\2\2\2\u00fa\u00f6\3\2\2\2\u00fa\u00f7\3\2\2\2\u00fa\u00f8\3\2"+
+		"\2\2\u00fa\u00f9\3\2\2\2\u00fb\u00fc\3\2\2\2\u00fc\u0104\5\24\13\b\u00fd"+
+		"\u00fe\f\6\2\2\u00fe\u00ff\7/\2\2\u00ff\u0104\5\24\13\7\u0100\u0101\f"+
+		"\5\2\2\u0101\u0102\7{\2\2\u0102\u0104\5\24\13\6\u0103\u00de\3\2\2\2\u0103"+
+		"\u00e1\3\2\2\2\u0103\u00e4\3\2\2\2\u0103\u00e7\3\2\2\2\u0103\u00ea\3\2"+
+		"\2\2\u0103\u00ed\3\2\2\2\u0103\u00fd\3\2\2\2\u0103\u0100\3\2\2\2\u0104"+
+		"\u0107\3\2\2\2\u0105\u0103\3\2\2\2\u0105\u0106\3\2\2\2\u0106\25\3\2\2"+
+		"\2\u0107\u0105\3\2\2\2\u0108\u0109\7\u0082\2\2\u0109\u010e\7\5\2\2\u010a"+
+		"\u010f\7`\2\2\u010b\u010c\t\6\2\2\u010c\u010d\7\7\2\2\u010d\u010f\5\36"+
+		"\20\2\u010e\u010a\3\2\2\2\u010e\u010b\3\2\2\2\u010f\u0110\3\2\2\2\u0110"+
+		"\u0111\7\6\2\2\u0111\27\3\2\2\2\u0112\u0114\t\3\2\2\u0113\u0112\3\2\2"+
+		"\2\u0113\u0114\3\2\2\2\u0114\u0115\3\2\2\2\u0115\u0116\7\u00a5\2\2\u0116"+
+		"\31\3\2\2\2\u0117\u0118\t\7\2\2\u0118\33\3\2\2\2\u0119\u011a\t\b\2\2\u011a"+
+		"\35\3\2\2\2\u011b\u011c\7\u00a7\2\2\u011c\37\3\2\2\2\u011d\u011e\t\t\2"+
+		"\2\u011e!\3\2\2\2\u011f\u0120\5D#\2\u0120#\3\2\2\2\u0121\u0122\5D#\2\u0122"+
+		"%\3\2\2\2\u0123\u0124\5D#\2\u0124\'\3\2\2\2\u0125\u0126\5D#\2\u0126)\3"+
+		"\2\2\2\u0127\u0128\5D#\2\u0128+\3\2\2\2\u0129\u012a\5D#\2\u012a-\3\2\2"+
+		"\2\u012b\u012c\5D#\2\u012c/\3\2\2\2\u012d\u012e\5D#\2\u012e\61\3\2\2\2"+
+		"\u012f\u0130\5D#\2\u0130\63\3\2\2\2\u0131\u0132\5D#\2\u0132\65\3\2\2\2"+
+		"\u0133\u0134\5D#\2\u0134\67\3\2\2\2\u0135\u0136\5D#\2\u01369\3\2\2\2\u0137"+
+		"\u0138\5D#\2\u0138;\3\2\2\2\u0139\u013a\5D#\2\u013a=\3\2\2\2\u013b\u013c"+
+		"\5D#\2\u013c?\3\2\2\2\u013d\u013e\5D#\2\u013eA\3\2\2\2\u013f\u0140\5D"+
+		"#\2\u0140C\3\2\2\2\u0141\u0142\7\u00a4\2\2\u0142E\3\2\2\2\33HJU\\aglw"+
+		"\u0085\u008a\u0093\u009e\u00a5\u00aa\u00af\u00b5\u00c1\u00cf\u00d4\u00dc"+
+		"\u00fa\u0103\u0105\u010e\u0113";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
