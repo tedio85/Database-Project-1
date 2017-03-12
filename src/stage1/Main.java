@@ -66,7 +66,25 @@ public class Main {
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        String buffer = br.readLine();
 	        if(!buffer.equals(">>")) {
-	        	input = input + " " +buffer ;
+	        	// handle nonsense input
+	        	if(buffer.length()<4) System.err.println("What do you mean ?");
+	        	// Show Table according to "Table name"
+	        	else if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+	        		System.out.println("--Shut Down--");
+	        		break;
+	        	}
+	        	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
+	        		// Allow user to enter multiple spaces between "show" and "Table name"
+	        		buffer = buffer.replaceAll("\\s","");
+	        		if(TableMap.get(buffer.substring(4))==null) {
+	        			System.err.println("Table do not exist !!");
+	        		} else {
+	        			System.out.println("Table Name :" + buffer.substring(4));
+	        			TableMap.get(buffer.substring(4)).show();
+	        		}
+	        	}
+	        	// allow enter multiple sql statements
+	        	else input = input + " " +buffer ;
 	        	continue;
 	        }
 	        // use LinkedList to linked more than 1 input sql statements
@@ -75,7 +93,6 @@ public class Main {
 	        for(int i=0; i<sql_stmt.size(); i++) {
 	        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) processCreate(sql_stmt.get(i));
     	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) processInsert(sql_stmt.get(i));
-    	        TableMap.get("Student").show();
 	        }
 	        input = "";
         }
