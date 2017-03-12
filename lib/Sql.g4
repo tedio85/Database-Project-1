@@ -334,20 +334,20 @@ transaction_name
 
 any_name
  : IDENTIFIER 
- | keyword
- | STRING_LITERAL
- | '(' any_name ')'
+ //| keyword
+ //| STRING_LITERAL
+ //| '(' any_name ')'
  ;
 
-SCOL : ';';
+SCOL : ';';    //something wrong
 DOT : '.';
-OPEN_PAR : '(';
+OPEN_PAR : '('; //something wrong
 CLOSE_PAR : ')';
 COMMA : ',';
 ASSIGN : '=';
 STAR : '*';
 PLUS : '+';
-MINUS : '-';
+MINUS : '-'; //something wrong
 TILDE : '~';
 PIPE2 : '||';
 DIV : '/';
@@ -363,6 +363,23 @@ GT_EQ : '>=';
 EQ : '==';
 NOT_EQ1 : '!=';
 NOT_EQ2 : '<>';
+// added by Cheupei
+SQUARE : '^';
+LB0 : '`';
+LB1 : '!';
+LB2 : '@';
+LB3 : '#';
+LB4 : '$';
+LB5 : '[';
+LB6 : ']';
+LB7 : '{';
+LB8 : '}';
+//LB9 : '\'';  //**
+LB10 : ':';
+LB11 : '"';
+LB12 : '\\' ;//**
+//LB13 : '?';
+
 
 // http://www.sqlite.org/lang_keywords.html
 K_ABORT : A B O R T;
@@ -491,10 +508,10 @@ K_WITH : W I T H;
 K_WITHOUT : W I T H O U T;
 
 IDENTIFIER
- : '"' (~'"' | '""')* '"'
+ : /*'"' (~'"' | '""')* '"'
  | '`' (~'`' | '``')* '`'
- | '[' ~']'* ']'
- | [a-zA-Z_] [a-zA-Z_0-9]* // TODO check: needs more chars in set
+ | '[' ~']'* ']'*/
+ [a-zA-Z_0-9] [a-zA-Z_0-9]* // TODO check: needs more chars in set
  ;
 
 NUMERIC_LITERAL
