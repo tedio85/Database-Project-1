@@ -81,7 +81,7 @@ insert_stmt
  ;
 
 column_def
- : column_name type_name? column_constraint*
+ : column_name type_name column_constraint?
  ;
 
 type_name
