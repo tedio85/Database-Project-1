@@ -30,16 +30,6 @@ public interface SqlListener extends ParseTreeListener {
 	 */
 	void exitError(SqlParser.ErrorContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SqlParser#sql_stmt_list}.
-	 * @param ctx the parse tree
-	 */
-	void enterSql_stmt_list(SqlParser.Sql_stmt_listContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SqlParser#sql_stmt_list}.
-	 * @param ctx the parse tree
-	 */
-	void exitSql_stmt_list(SqlParser.Sql_stmt_listContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SqlParser#sql_stmt}.
 	 * @param ctx the parse tree
 	 */

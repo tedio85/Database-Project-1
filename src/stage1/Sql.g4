@@ -30,8 +30,26 @@
  */
 grammar Sql;
 
+@parser::members 
+{
+  @Override
+  public void notifyErrorListeners(Token offendingToken, String msg, RecognitionException ex)
+  {
+    throw new RuntimeException(msg); 
+  }
+}
+
+@lexer::members 
+{
+  @Override
+  public void recover(RecognitionException ex) 
+  {
+    throw new RuntimeException(ex.getMessage()); 
+  }
+}
+
 parse
- : ( sql_stmt_list | error )* EOF
+ : ( sql_stmt | error )* EOF
  ;
 
 error
@@ -41,9 +59,9 @@ error
    }
  ;
 
-sql_stmt_list
+/*sql_stmt_list
  : ';'* sql_stmt ( ';'+ sql_stmt )* ';'*
- ;
+ ;*/
 
 sql_stmt
  : ( create_table_stmt

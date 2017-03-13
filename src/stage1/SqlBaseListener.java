@@ -2,6 +2,7 @@
 
 package stage1;
 
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -36,18 +37,6 @@ public class SqlBaseListener implements SqlListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitError(SqlParser.ErrorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSql_stmt_list(SqlParser.Sql_stmt_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSql_stmt_list(SqlParser.Sql_stmt_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

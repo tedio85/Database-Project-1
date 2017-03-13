@@ -150,6 +150,13 @@ public class SqlLexer extends Lexer {
 	}
 
 
+	  @Override
+	  public void recover(RecognitionException ex) 
+	  {
+	    throw new RuntimeException(ex.getMessage()); 
+	  }
+
+
 	public SqlLexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
