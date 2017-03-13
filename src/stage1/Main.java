@@ -68,11 +68,12 @@ public class Main {
 	        if(!buffer.equals(">>")) {
 	        	// handle nonsense input
 	        	if(buffer.length()<4) System.err.println("What do you mean ?");
-	        	// Show Table according to "Table name"
+	        	// Exit System
 	        	else if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
 	        		System.out.println("--Shut Down--");
 	        		break;
 	        	}
+	        	// Show Table
 	        	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
 	        		// Allow user to enter multiple spaces between "show" and "Table name"
 	        		buffer = buffer.replaceAll("\\s","");
@@ -107,6 +108,15 @@ public class Main {
         }
     }
 	
+	public static boolean createSyntaxErrorHandler(Vector<String> sql_stmt) { //error occur -> true
+		if(sql_stmt.size()<5) { //minimum needs 5 elements
+			return true;
+		}
+		else if (sql_stmt.get(3).toUpperCase().equals("VARCHAR") || sql_stmt.get(3).toUpperCase().equals("INT")) {
+			return true;             // if all table name are not allowed words
+		}
+		return false;
+	}
 	// process Create statements -> new a table to store it
 	public static boolean processCreate(Vector<String> sql_stmt) {
 		System.out.println(" ' ' ' '");
@@ -114,12 +124,7 @@ public class Main {
 			System.out.println(sql_stmt.get(i));
 		}
 		// table name exception occur - parser will ignore the table name we assign
-		if(sql_stmt.size()<5) {    // one or zero attr and no table name
-			return false;
-			// multiple attr and no table name
-		} else if (sql_stmt.get(3).toUpperCase()=="VARCHAR" || sql_stmt.get(3).toUpperCase()=="INT") {
-			return false;
-		}
+		if(createSyntaxErrorHandler(sql_stmt)) return false;
 		String name = sql_stmt.get(2);
 		String str_pk = new String();
 		Vector<String> attrs = new Vector<>();
@@ -180,9 +185,9 @@ public class Main {
         SqlParser parser = makeParser(stream);
         
         // Generate the parse tree using the starter rule.
-        ParseTree tree = parser.parse();
-        
-        MakeStmt stmtMaker = new MakeStmt();
+        ParseTree tree;
+        tree = parser.parse();
+       	MakeStmt stmtMaker = new MakeStmt();
         new ParseTreeWalker().walk(stmtMaker, tree);
         return stmtMaker.getStmt();
     }
@@ -222,25 +227,33 @@ class MakeStmt implements SqlListener {
     }
     @Override public void exitSql_stmt(Sql_stmtContext ctx) {
     	if(semicolonFlag) {
-    		sql_stmt.add(cur_stmt);
-    	} else {
-    		if(firstStatFlag) {
-    			firstStatFlag = false;
-    			sql_stmt.add(cur_stmt);
-    		} else {
-    			sql_stmt.pollLast();
-    		}
-    	}
-		cur_stmt = new Vector<String>();
-    	semicolonFlag = false;
+       		sql_stmt.add(cur_stmt);
+       	} else {
+        	if(firstStatFlag) {
+        		firstStatFlag = false;
+        		sql_stmt.add(cur_stmt);
+        	} else {
+        		sql_stmt.pollLast();
+        	}
+        }
+    	cur_stmt = new Vector<String>();
+        semicolonFlag = false;
     }
+    @Override public void enterTable_name(Table_nameContext ctx) {
+    	System.out.println("Table Name = "+ctx.getText());
+    }
+    @Override public void exitTable_name(Table_nameContext ctx) {}
     // don't need these here, so just make them empty implementations
     @Override public void enterEveryRule(ParserRuleContext context) { }
     @Override public void exitEveryRule(ParserRuleContext context) { }
-    @Override public void visitErrorNode(ErrorNode node) {}
+    @Override public void visitErrorNode(ErrorNode node) {
+    	//System.out.println("Hey, u r wrong");
+    }
 	@Override public void enterParse(ParseContext ctx) {}
 	@Override public void exitParse(ParseContext ctx) {}
-	@Override public void enterError(ErrorContext ctx) {}
+	@Override public void enterError(ErrorContext ctx) {
+		//System.out.println("Hey, u r wrong");
+	}
 	@Override public void exitError(ErrorContext ctx) {}
 	@Override public void enterSql_stmt_list(Sql_stmt_listContext ctx) {}
     @Override public void exitSql_stmt_list(Sql_stmt_listContext ctx) {}
@@ -304,10 +317,6 @@ class MakeStmt implements SqlListener {
 	public void enterDatabase_name(Database_nameContext ctx) {}
 	@Override
 	public void exitDatabase_name(Database_nameContext ctx) {}
-	@Override
-	public void enterTable_name(Table_nameContext ctx) {}
-	@Override
-	public void exitTable_name(Table_nameContext ctx) {}
 	@Override
 	public void enterTable_or_index_name(Table_or_index_nameContext ctx) {}
 	@Override
