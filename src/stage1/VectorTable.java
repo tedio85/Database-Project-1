@@ -47,6 +47,8 @@ public class VectorTable implements Table {
 		
 		// set attrTypes
 		int varCharCount = 0;
+		if(attrs.size() != attrTypes.size())	
+			throw new IllegalArgumentException("attrs.size()!=attrTypes.size()");
 		for(String str : attrTypes) {
 			switch(str.toLowerCase()) {
 				case "int":
@@ -152,15 +154,25 @@ public class VectorTable implements Table {
 				
 			}
 			else {
-				if(idxToKey.get(i).equals(primaryKey))	// primary key of tuple is null
+				if(idxToKey.get(i).equals(primaryKey)) {	// primary key of tuple is null
 					pass = false;
+					throw new IllegalArgumentException("primay key of tuple cannot be null");
+				}
 			}
 		}
 		
 		
-		//	primary key uniqueness check
+		// primary key uniqueness check
+		// check all tuples if primary key does not exist
 		if(primaryKey!=null) {
-			int primaryKeyIdx = keyToIdx.get(primaryKey);
+			int primaryKeyIdx = Integer.MAX_VALUE;
+			try {
+				primaryKeyIdx = keyToIdx.get(primaryKey);
+			}
+			catch(NullPointerException e) {
+				throw new NullPointerException("primary key is not in attribute list"); 
+			}
+			
 			for(Vector<Object> row : table) {
 				if(tup.get(primaryKeyIdx).getClass().equals(new String().getClass())) {
 					if(row.get(primaryKeyIdx).equals(parseString((String) tup.get(primaryKeyIdx))))
@@ -170,6 +182,12 @@ public class VectorTable implements Table {
 					if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
 						pass = false;
 				}
+			}
+		}
+		else {
+			if(table.contains(tup)) {
+				pass = false;				
+				throw new IllegalArgumentException("cannot insert a duplicated record");
 			}
 		}
 		
@@ -208,17 +226,20 @@ public class VectorTable implements Table {
 		// adds normal strings and null attributes directly
 		Vector<Object> newtup = new Vector<Object>();
 		for(int i=0;i<tup.size();i++) {
-			if(attrs.get(i).getClass_().equals(new Integer(0).getClass())) {	//is number
-				try {
-					newtup.add(Integer.parseInt(tup.get(i)));
-				}
-				catch(NumberFormatException e) {
-					pass = false;
-					System.out.println("number exceeds int range or incorrect type");
-					throw new IllegalArgumentException("number exceeds int range or incorrect type");
+			if(attrs.get(i).getClass_().equals(new Integer(0).getClass())) {	//should be a number or null
+				if(tup.get(i) == null)
+					newtup.add(null);
+				else {
+					try {
+						newtup.add(Integer.parseInt(tup.get(i)));
+					}
+					catch(NumberFormatException e) {
+						System.out.println("number exceeds int range or incorrect type");
+						throw new IllegalArgumentException("number exceeds int range or incorrect type");
+					}
 				}
 			}
-			else {	// is string or null
+			else {	// should be string or null
 				if(tup.get(i) == null)
 					newtup.add(null);
 				else if(isString(tup.get(i)))
@@ -251,8 +272,14 @@ public class VectorTable implements Table {
 		}
 		// put attributes at corresponding position
 		for(int i=0;i<tup.size();i++) {
-			int idx = keyToIdx.get(attrNames.get(i));
-			newtup.set(idx, tup.get(i));
+			try {
+				int idx = keyToIdx.get( parseString(attrNames.get(i)) );
+				newtup.set(idx, tup.get(i));
+			}
+			catch(NullPointerException e) {
+				pass = false;				
+				throw new NullPointerException("attribute does not exist");
+			}
 		}
 		
 		if(pass) {
@@ -278,6 +305,9 @@ public class VectorTable implements Table {
 				w.add(len);
 		}
 		
+		// print table name
+		System.out.println(this.name);
+		
 		printDivider(w);
 		
 		// print attribute names
@@ -292,7 +322,7 @@ public class VectorTable implements Table {
 			for(int i=0;i<tuple.size();i++) {
 				if(tuple.get(i) == null) {
 					String str = "NULL";
-					System.out.printf("|%"+(w.get(i)-str.length())+"s",str);
+					System.out.printf("|%"+w.get(i)+"s",str);
 				}
 				else {
 					String objStr = tuple.get(i).toString();
@@ -321,6 +351,9 @@ public class VectorTable implements Table {
 	}
 		
 	private String parseString(String str) {
-		return str.replaceAll("\'", "").replaceAll("\"","");
+		if(str == null)
+			return null;
+		else
+			return str.replaceAll("\'", "").replaceAll("\"","");
 	}
 }
