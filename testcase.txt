@@ -1,12 +1,16 @@
-Create Table A (v int) Create Table B (v int); Create Table C (v int);
-Create Table --- (v int); Create Table a (v int);
-Create Table 4857S436^ (v int); Create Table a (v int);
-Create Table ^394843D (v int); Create Table a (v int);
-Create Table 442^dsf (v int); Create Table a (v int);
-Create Table         (v int); Create Table a (v int);
-Create Table     a    (v i); Create Table a (v int);
 CREATE TABLE Student (
 	studentId int PRIMARY KEY, name varchar(15),
 	gender varchar(1),
 	age int
 );
+
+INSERT INTO Student
+VALUES (10, 'John Smith', 'M', 22);
+INSERT INTO Student
+VALUES (11, 'Hsu You-Ting', 'F', 23);
+INSERT INTO Student (name, age, studentId, gender) VALUES ('Ai Toshiko', 21, 12, 'F');
+INSERT INTO Student (age, studentId, gender, name) VALUES (20, 13, 'M', 'Fernando Sierra');
+INSERT INTO Student
+VALUES (14, 'Mohammed Ali', 'M', 25);
+
+INSERT INTO Student VALUES (10, 'Huang Hao-Wei', 'M', 26)
