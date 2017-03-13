@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.antlr.v4.gui.Trees;
 //import org.antlr.v4.gui.Trees;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -23,45 +24,91 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import stage1.SqlParser.Alter_table_stmtContext;
+import stage1.SqlParser.Analyze_stmtContext;
 import stage1.SqlParser.Any_nameContext;
+import stage1.SqlParser.Attach_stmtContext;
+import stage1.SqlParser.Begin_stmtContext;
 import stage1.SqlParser.Collation_nameContext;
+import stage1.SqlParser.Column_aliasContext;
 import stage1.SqlParser.Column_constraintContext;
 import stage1.SqlParser.Column_defContext;
 import stage1.SqlParser.Column_nameContext;
+import stage1.SqlParser.Commit_stmtContext;
+import stage1.SqlParser.Common_table_expressionContext;
+import stage1.SqlParser.Compound_operatorContext;
+import stage1.SqlParser.Compound_select_stmtContext;
+import stage1.SqlParser.Conflict_clauseContext;
+import stage1.SqlParser.Create_index_stmtContext;
 import stage1.SqlParser.Create_table_stmtContext;
+import stage1.SqlParser.Create_trigger_stmtContext;
+import stage1.SqlParser.Create_view_stmtContext;
+import stage1.SqlParser.Create_virtual_table_stmtContext;
+import stage1.SqlParser.Cte_table_nameContext;
 import stage1.SqlParser.Database_nameContext;
+import stage1.SqlParser.Delete_stmtContext;
+import stage1.SqlParser.Delete_stmt_limitedContext;
+import stage1.SqlParser.Detach_stmtContext;
+import stage1.SqlParser.Drop_index_stmtContext;
+import stage1.SqlParser.Drop_table_stmtContext;
+import stage1.SqlParser.Drop_trigger_stmtContext;
+import stage1.SqlParser.Drop_view_stmtContext;
 import stage1.SqlParser.ErrorContext;
 import stage1.SqlParser.Error_messageContext;
 import stage1.SqlParser.ExprContext;
+import stage1.SqlParser.Factored_select_stmtContext;
+import stage1.SqlParser.Foreign_key_clauseContext;
 import stage1.SqlParser.Foreign_tableContext;
 import stage1.SqlParser.Function_nameContext;
 import stage1.SqlParser.Index_nameContext;
+import stage1.SqlParser.Indexed_columnContext;
 import stage1.SqlParser.Insert_stmtContext;
+import stage1.SqlParser.Join_clauseContext;
+import stage1.SqlParser.Join_constraintContext;
+import stage1.SqlParser.Join_operatorContext;
 import stage1.SqlParser.KeywordContext;
 import stage1.SqlParser.Literal_valueContext;
+import stage1.SqlParser.Module_argumentContext;
 import stage1.SqlParser.Module_nameContext;
 import stage1.SqlParser.NameContext;
 import stage1.SqlParser.New_table_nameContext;
+import stage1.SqlParser.Ordering_termContext;
 import stage1.SqlParser.ParseContext;
 import stage1.SqlParser.Pragma_nameContext;
+import stage1.SqlParser.Pragma_stmtContext;
+import stage1.SqlParser.Pragma_valueContext;
+import stage1.SqlParser.Qualified_table_nameContext;
 import stage1.SqlParser.Raise_functionContext;
+import stage1.SqlParser.Reindex_stmtContext;
+import stage1.SqlParser.Release_stmtContext;
+import stage1.SqlParser.Result_columnContext;
+import stage1.SqlParser.Rollback_stmtContext;
 import stage1.SqlParser.Savepoint_nameContext;
+import stage1.SqlParser.Savepoint_stmtContext;
+import stage1.SqlParser.Select_coreContext;
+import stage1.SqlParser.Select_or_valuesContext;
+import stage1.SqlParser.Select_stmtContext;
 import stage1.SqlParser.Signed_numberContext;
+import stage1.SqlParser.Simple_select_stmtContext;
 import stage1.SqlParser.Sql_stmtContext;
 import stage1.SqlParser.Table_aliasContext;
+import stage1.SqlParser.Table_constraintContext;
 import stage1.SqlParser.Table_nameContext;
 import stage1.SqlParser.Table_or_index_nameContext;
+import stage1.SqlParser.Table_or_subqueryContext;
 import stage1.SqlParser.Transaction_nameContext;
 import stage1.SqlParser.Trigger_nameContext;
 import stage1.SqlParser.Type_nameContext;
 import stage1.SqlParser.Unary_operatorContext;
-import stage1.SqlParser.Unsigned_numberContext;
+import stage1.SqlParser.Update_stmtContext;
+import stage1.SqlParser.Update_stmt_limitedContext;
+import stage1.SqlParser.Vacuum_stmtContext;
 import stage1.SqlParser.View_nameContext;
+import stage1.SqlParser.With_clauseContext;
 
 public class Main {
 	
 	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();
-	
 	// map attribute table name to table
     
 	public static void main(String[] args) throws IOException {
@@ -78,6 +125,26 @@ public class Main {
 			System.out.print("Please enter your file name : ");
 			fileName = s.nextLine();
 			fileInput(fileName);
+			while(true) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		        String buffer = br.readLine();
+		        // Exit System
+		        if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+		        	System.out.println("--Shut Down--");
+		        	break;
+		        }
+		        // Show Table
+		        else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
+		        	// Allow user to enter multiple spaces between "show" and "Table name"
+		        	buffer = buffer.replaceAll("\\s","");
+		        	if(TableMap.get(buffer.substring(4))==null) {
+		        		System.err.println("Table do not exist !!");
+		        	} else {
+		        		System.out.println("Table Name :" + buffer.substring(4));
+		        		TableMap.get(buffer.substring(4)).show();
+		        	}
+		        }		        
+			}
 		}
 		
 		while(true && !fileInputFlag) {
@@ -85,10 +152,12 @@ public class Main {
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        String buffer = br.readLine();
 	        if(!buffer.equals(">>")) {
-	        	// handle nonsense input
-	        	if(buffer.length()<4) System.err.println("What do you mean ?");
+	        	if(buffer.length()<4) {
+	        		input = input + " " + buffer;
+	        		continue;
+	        	}
 	        	// Exit System
-	        	else if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+	        	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
 	        		System.out.println("--Shut Down--");
 	        		break;
 	        	}
@@ -108,6 +177,7 @@ public class Main {
 	        }
 	        else {
 	        	// classify input string into multiple sql statements
+	        	System.out.println("input = "+input);
 		        String[] classifyInput = input.split(";");
 		        inputParse(classifyInput);
 		        input = "";
@@ -232,10 +302,12 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
+        	//Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker.getStmt();
         } catch(Exception e) {
+        	System.out.println("Parsing statement "+string);
         	System.err.println(string +" : " +e.getMessage().replace("\n", "").replace("\r", ""));
         	return null;
         }
@@ -339,6 +411,484 @@ class MakeStmt implements SqlListener {
 	@Override public void exitTransaction_name(Transaction_nameContext ctx) {}
 	@Override public void enterAny_name(Any_nameContext ctx) {}
 	@Override public void exitAny_name(Any_nameContext ctx) {}
-	@Override public void enterUnsigned_number(Unsigned_numberContext ctx) {}
-	@Override public void exitUnsigned_number(Unsigned_numberContext ctx) {}         
+	@Override
+	public void enterAlter_table_stmt(Alter_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitAlter_table_stmt(Alter_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterAnalyze_stmt(Analyze_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitAnalyze_stmt(Analyze_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterAttach_stmt(Attach_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitAttach_stmt(Attach_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterBegin_stmt(Begin_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitBegin_stmt(Begin_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCommit_stmt(Commit_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCommit_stmt(Commit_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCompound_select_stmt(Compound_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCompound_select_stmt(Compound_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCreate_index_stmt(Create_index_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCreate_index_stmt(Create_index_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCreate_trigger_stmt(Create_trigger_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCreate_trigger_stmt(Create_trigger_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCreate_view_stmt(Create_view_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCreate_view_stmt(Create_view_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCreate_virtual_table_stmt(Create_virtual_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCreate_virtual_table_stmt(Create_virtual_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDelete_stmt(Delete_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDelete_stmt(Delete_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDelete_stmt_limited(Delete_stmt_limitedContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDelete_stmt_limited(Delete_stmt_limitedContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDetach_stmt(Detach_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDetach_stmt(Detach_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDrop_index_stmt(Drop_index_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDrop_index_stmt(Drop_index_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDrop_table_stmt(Drop_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDrop_table_stmt(Drop_table_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDrop_trigger_stmt(Drop_trigger_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDrop_trigger_stmt(Drop_trigger_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterDrop_view_stmt(Drop_view_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitDrop_view_stmt(Drop_view_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterFactored_select_stmt(Factored_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitFactored_select_stmt(Factored_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterPragma_stmt(Pragma_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitPragma_stmt(Pragma_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterReindex_stmt(Reindex_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitReindex_stmt(Reindex_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterRelease_stmt(Release_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitRelease_stmt(Release_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterRollback_stmt(Rollback_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitRollback_stmt(Rollback_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterSavepoint_stmt(Savepoint_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitSavepoint_stmt(Savepoint_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterSimple_select_stmt(Simple_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitSimple_select_stmt(Simple_select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterSelect_stmt(Select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitSelect_stmt(Select_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterSelect_or_values(Select_or_valuesContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitSelect_or_values(Select_or_valuesContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterUpdate_stmt(Update_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitUpdate_stmt(Update_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterUpdate_stmt_limited(Update_stmt_limitedContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitUpdate_stmt_limited(Update_stmt_limitedContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterVacuum_stmt(Vacuum_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitVacuum_stmt(Vacuum_stmtContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterConflict_clause(Conflict_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitConflict_clause(Conflict_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterForeign_key_clause(Foreign_key_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitForeign_key_clause(Foreign_key_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterIndexed_column(Indexed_columnContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitIndexed_column(Indexed_columnContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterTable_constraint(Table_constraintContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitTable_constraint(Table_constraintContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterWith_clause(With_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitWith_clause(With_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterQualified_table_name(Qualified_table_nameContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitQualified_table_name(Qualified_table_nameContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterOrdering_term(Ordering_termContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitOrdering_term(Ordering_termContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterPragma_value(Pragma_valueContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitPragma_value(Pragma_valueContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCommon_table_expression(Common_table_expressionContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCommon_table_expression(Common_table_expressionContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterResult_column(Result_columnContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitResult_column(Result_columnContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterTable_or_subquery(Table_or_subqueryContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitTable_or_subquery(Table_or_subqueryContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterJoin_clause(Join_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitJoin_clause(Join_clauseContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterJoin_operator(Join_operatorContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitJoin_operator(Join_operatorContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterJoin_constraint(Join_constraintContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitJoin_constraint(Join_constraintContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterSelect_core(Select_coreContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitSelect_core(Select_coreContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCompound_operator(Compound_operatorContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCompound_operator(Compound_operatorContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterCte_table_name(Cte_table_nameContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitCte_table_name(Cte_table_nameContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterModule_argument(Module_argumentContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitModule_argument(Module_argumentContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void enterColumn_alias(Column_aliasContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void exitColumn_alias(Column_aliasContext ctx) {
+		// TODO Auto-generated method stub
+		
+	}
 }
