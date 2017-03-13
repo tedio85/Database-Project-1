@@ -43,7 +43,6 @@ import stage1.SqlParser.Raise_functionContext;
 import stage1.SqlParser.Savepoint_nameContext;
 import stage1.SqlParser.Signed_numberContext;
 import stage1.SqlParser.Sql_stmtContext;
-import stage1.SqlParser.Sql_stmt_listContext;
 import stage1.SqlParser.Table_aliasContext;
 import stage1.SqlParser.Table_nameContext;
 import stage1.SqlParser.Table_or_index_nameContext;
@@ -88,8 +87,18 @@ public class Main {
 	        	else input = input + " " +buffer ;
 	        	continue;
 	        }
-	        // use LinkedList to linked more than 1 input sql statements
-	        LinkedList<Vector<String>> sql_stmt = parse(input);
+	        //classify input string into multiple sql statements
+	        String[] classifyInput = {};
+	        classifyInput = input.split(";");
+	        
+	     // use LinkedList to linked more than 1 input sql statement
+	        LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+	        for(int i=0; i<classifyInput.length; i++) {
+	        	Vector<String> parseOutput = parse(classifyInput[i]);
+	        	if (parseOutput!=null) {
+	        		sql_stmt.add(parseOutput);
+	        	}
+	        }
 	        //process Create or Insert according to the 1st word of sql_stmt
 	        if(sql_stmt.isEmpty()) System.out.println("parse output is empty");
 	        for(int i=0; i<sql_stmt.size(); i++) {
@@ -98,33 +107,21 @@ public class Main {
 	        		continue;
 	        	}
 	        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) 
-	        		if( !processCreate(sql_stmt.get(i)) ) {
-	        			System.out.println("Create Table fail");
-	        		}
+	        		processCreate(sql_stmt.get(i));
     	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
     	        	processInsert(sql_stmt.get(i));
 	        }
 	        input = "";
         }
     }
-	
-	public static boolean createSyntaxErrorHandler(Vector<String> sql_stmt) { //error occur -> true
-		if(sql_stmt.size()<5) { //minimum needs 5 elements
-			return true;
-		}
-		else if (sql_stmt.get(3).toUpperCase().equals("VARCHAR") || sql_stmt.get(3).toUpperCase().equals("INT")) {
-			return true;             // if all table name are not allowed words
-		}
-		return false;
-	}
+
 	// process Create statements -> new a table to store it
-	public static boolean processCreate(Vector<String> sql_stmt) {
+	public static void processCreate(Vector<String> sql_stmt) {
 		System.out.println(" ' ' ' '");
 		for(int i=0; i<sql_stmt.size(); i++) {
 			System.out.println(sql_stmt.get(i));
 		}
 		// table name exception occur - parser will ignore the table name we assign
-		if(createSyntaxErrorHandler(sql_stmt)) return false;
 		String name = sql_stmt.get(2);
 		String str_pk = new String();
 		Vector<String> attrs = new Vector<>();
@@ -148,7 +145,6 @@ public class Main {
 			}
 		}
 		TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
-		return true;
 	}
 	
 	// process Insert statements -> call insert() of the specific table according to their syntax
@@ -177,7 +173,7 @@ public class Main {
 		}
 	}
 
-    public static LinkedList<Vector<String>> parse (String string) {    	
+    public static Vector<String> parse (String string) {    	
     	// Create a stream of characters from the string
         CharStream stream = new ANTLRInputStream(string);
 
@@ -186,10 +182,16 @@ public class Main {
         
         // Generate the parse tree using the starter rule.
         ParseTree tree;
-        tree = parser.parse();
-       	MakeStmt stmtMaker = new MakeStmt();
-        new ParseTreeWalker().walk(stmtMaker, tree);
-        return stmtMaker.getStmt();
+        try {
+        	tree = parser.parse();
+           	MakeStmt stmtMaker = new MakeStmt();
+            new ParseTreeWalker().walk(stmtMaker, tree);
+            return stmtMaker.getStmt();
+        } catch(Exception e) {
+        	System.err.println(e.getMessage());
+        	return null;
+        }
+        
     }
     
     private static SqlParser makeParser(CharStream stream) {
@@ -207,26 +209,23 @@ public class Main {
 }
 
 class MakeStmt implements SqlListener {
-	private LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+	//private LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
 	private Vector<String> cur_stmt = new Vector<String>();
-	private boolean semicolonFlag = false;     // false if there is not a semicolon ahead. ex: (;) b
-	private boolean firstStatFlag = true;
+	//private boolean semicolonFlag = false;     // false if there is not a semicolon ahead. ex: (;) b
+	//private boolean firstStatFlag = true;
 	
-    public LinkedList<Vector<String>> getStmt() {
-        return sql_stmt;
+    public Vector<String> getStmt() {
+        return cur_stmt;
     }
     @Override public void visitTerminal(TerminalNode arg0) {
-    	if(arg0.toString().equals(";")) {
-    		semicolonFlag = true;
-    	}
-    	else if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(",") 
+    	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(",") 
     	&& !arg0.toString().equals("<EOF>")) {
     		cur_stmt.add(arg0.toString());
     	}
     	
     }
     @Override public void exitSql_stmt(Sql_stmtContext ctx) {
-    	if(semicolonFlag) {
+    	/*if(semicolonFlag) {
        		sql_stmt.add(cur_stmt);
        	} else {
         	if(firstStatFlag) {
@@ -237,10 +236,10 @@ class MakeStmt implements SqlListener {
         	}
         }
     	cur_stmt = new Vector<String>();
-        semicolonFlag = false;
+        semicolonFlag = false;*/
     }
     @Override public void enterTable_name(Table_nameContext ctx) {
-    	System.out.println("Table Name = "+ctx.getText());
+    	//System.out.println("Table Name = "+ctx.getText());
     }
     @Override public void exitTable_name(Table_nameContext ctx) {}
     // don't need these here, so just make them empty implementations
@@ -255,8 +254,6 @@ class MakeStmt implements SqlListener {
 		//System.out.println("Hey, u r wrong");
 	}
 	@Override public void exitError(ErrorContext ctx) {}
-	@Override public void enterSql_stmt_list(Sql_stmt_listContext ctx) {}
-    @Override public void exitSql_stmt_list(Sql_stmt_listContext ctx) {}
 	@Override public void enterSql_stmt(Sql_stmtContext ctx) {}
 	@Override public void enterCreate_table_stmt(Create_table_stmtContext ctx) {}
 	@Override
