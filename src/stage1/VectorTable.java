@@ -7,12 +7,12 @@ import java.lang.IllegalArgumentException;
 import java.lang.NumberFormatException;
 
 public class VectorTable implements Table {
-	private String name = null;											// name of table
-	private String primaryKey = null;									// name of primary key
-	private Vector<Attribute> attrs = new Vector<Attribute>();			// name of attributes
-	private HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
-	private HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
-	private Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
+	protected String name = null;													// name of table
+	protected String primaryKey = null;												// name of primary key
+	protected Vector<Attribute> attrs = new Vector<Attribute>();					// name of attributes
+	protected HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
+	protected HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
+	protected Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
 																
 	/**Usage:
 	 *	Creating a table NAME with attributes:
@@ -122,7 +122,7 @@ public class VectorTable implements Table {
 	 * 			string length check
 	 * 			primary key uniqueness check
 	 */
-	private void _insert(Vector<Object> tup) throws IllegalArgumentException {
+	protected void _insert(Vector<Object> tup) throws IllegalArgumentException {
 		Boolean pass = true;
 		
 		// check numbers of parameters
@@ -335,7 +335,7 @@ public class VectorTable implements Table {
 		printDivider(w);
 	}
 	
-	private void printDivider(Vector<Integer> w) {
+	protected void printDivider(Vector<Integer> w) {
 		for(Integer num : w) {
 			String repeated = new String(new char[num]).replace('\0', '-');
 			System.out.format("+%s",repeated);
@@ -343,14 +343,14 @@ public class VectorTable implements Table {
 		System.out.println("+");
 	}
 	
-	private Boolean isString(String str) {
+	protected Boolean isString(String str) {
 		if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
 			return true;
 		else
 			return false;
 	}
 		
-	private String parseString(String str) {
+	protected String parseString(String str) {
 		if(str == null)
 			return null;
 		else
