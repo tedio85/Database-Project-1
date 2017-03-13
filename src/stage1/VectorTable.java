@@ -175,12 +175,16 @@ public class VectorTable implements Table {
 			
 			for(Vector<Object> row : table) {
 				if(tup.get(primaryKeyIdx).getClass().equals(new String().getClass())) {
-					if(row.get(primaryKeyIdx).equals(parseString((String) tup.get(primaryKeyIdx))))
+					if(row.get(primaryKeyIdx).equals(parseString((String) tup.get(primaryKeyIdx)))) {
 						pass = false;
+						throw new IllegalArgumentException("primary key duplicated");
+					}
 				}
 				else {
-					if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx)))
+					if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx))) {
 						pass = false;
+						throw new IllegalArgumentException("primary key duplicated");
+					}
 				}
 			}
 		}
