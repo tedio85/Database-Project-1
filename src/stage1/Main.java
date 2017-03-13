@@ -253,6 +253,10 @@ public class Main {
 		try{
 			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
 		} catch (Exception e) {
+			for(int i=0; i<sql_stmt.size(); i++) {
+				System.out.println(sql_stmt.get(i)+" ");
+			}
+			System.out.println();
 			System.err.println("Table create fail : "+e.getMessage());
 		}
 	}
@@ -280,12 +284,20 @@ public class Main {
 			try{
 				TableMap.get(TableName).insert(tup);
 			} catch(Exception e) {
+				for(int i=0; i<sql_stmt.size(); i++) {
+					System.out.println(sql_stmt.get(i)+" ");
+				}
+				System.out.println();
 				System.err.println("Table insertion fail : "+e.getMessage());
 			}
 		} else {
 			try{
 				TableMap.get(TableName).insert(attrs, tup);
 			} catch(Exception e) {
+				for(int i=0; i<sql_stmt.size(); i++) {
+					System.out.println(sql_stmt.get(i)+" ");
+				}
+				System.out.println();
 				System.err.println("Table insertion fail : "+e.getMessage());
 			}
 		}
