@@ -49,7 +49,7 @@ grammar Sql;
 }
 
 parse
- : ( sql_stmt | error )* EOF
+ : ( sql_stmt | error ) EOF
  ;
 
 error
@@ -85,12 +85,14 @@ column_def
  ;
 
 type_name
- : K_INT
-   | K_VARCHAR + '(' unsigned_number ')'
-	/*name+ ( '(' signed_number ')'
-         | '(' signed_number ',' signed_number ')' )?
-	*/
+ : ( K_INT
+   | (K_VARCHAR '(' unsigned_number ')') )
  ;
+ 
+/*type_name
+ : name+ ( '(' signed_number ')'
+         | '(' signed_number ',' signed_number ')' )?
+ ;*/
 
 column_constraint
  : K_PRIMARY K_KEY 
@@ -134,6 +136,7 @@ raise_function
 unsigned_number
  : NUMERIC_LITERAL
  ;
+ 
 signed_number
  : ( '+' | '-' )? NUMERIC_LITERAL
  ;

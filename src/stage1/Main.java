@@ -61,7 +61,6 @@ import stage1.SqlParser.View_nameContext;
 public class Main {
 	
 	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();
-	
 	// map attribute table name to table
     
 	public static void main(String[] args) throws IOException {
@@ -85,10 +84,12 @@ public class Main {
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        String buffer = br.readLine();
 	        if(!buffer.equals(">>")) {
-	        	// handle nonsense input
-	        	if(buffer.length()<4) System.err.println("What do you mean ?");
+	        	if(buffer.length()<4) {
+	        		input = input + " " + buffer;
+	        		continue;
+	        	}
 	        	// Exit System
-	        	else if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+	        	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
 	        		System.out.println("--Shut Down--");
 	        		break;
 	        	}
@@ -108,6 +109,7 @@ public class Main {
 	        }
 	        else {
 	        	// classify input string into multiple sql statements
+	        	System.out.println("input = "+input);
 		        String[] classifyInput = input.split(";");
 		        inputParse(classifyInput);
 		        input = "";
@@ -287,7 +289,9 @@ class MakeStmt implements SqlListener {
 	@Override public void exitInsert_stmt(Insert_stmtContext ctx) {}
 	@Override public void enterColumn_def(Column_defContext ctx) {}
 	@Override public void exitColumn_def(Column_defContext ctx) {}
-	@Override public void enterType_name(Type_nameContext ctx) {}
+	@Override public void enterType_name(Type_nameContext ctx) {
+		System.out.println("type name = " + ctx.getText());
+	}
 	@Override public void exitType_name(Type_nameContext ctx) {}
 	@Override public void enterColumn_constraint(Column_constraintContext ctx) {}
 	@Override public void exitColumn_constraint(Column_constraintContext ctx) {}
@@ -340,5 +344,5 @@ class MakeStmt implements SqlListener {
 	@Override public void enterAny_name(Any_nameContext ctx) {}
 	@Override public void exitAny_name(Any_nameContext ctx) {}
 	@Override public void enterUnsigned_number(Unsigned_numberContext ctx) {}
-	@Override public void exitUnsigned_number(Unsigned_numberContext ctx) {}         
+	@Override public void exitUnsigned_number(Unsigned_numberContext ctx) {}
 }

@@ -5,3 +5,8 @@ Create Table ^394843D (v int); Create Table a (v int);
 Create Table 442^dsf (v int); Create Table a (v int);
 Create Table         (v int); Create Table a (v int);
 Create Table     a    (v i); Create Table a (v int);
+CREATE TABLE Student (
+	studentId int PRIMARY KEY, name varchar(15),
+	gender varchar(1),
+	age int
+);
