@@ -254,7 +254,7 @@ public class Main {
 			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
 		} catch (Exception e) {
 			for(int i=0; i<sql_stmt.size(); i++) {
-				System.out.println(sql_stmt.get(i)+" ");
+				System.out.print(sql_stmt.get(i)+" ");
 			}
 			System.out.println();
 			System.err.println("Table create fail : "+e.getMessage());
@@ -285,7 +285,7 @@ public class Main {
 				TableMap.get(TableName).insert(tup);
 			} catch(Exception e) {
 				for(int i=0; i<sql_stmt.size(); i++) {
-					System.out.println(sql_stmt.get(i)+" ");
+					System.out.print(sql_stmt.get(i)+" ");
 				}
 				System.out.println();
 				System.err.println("Table insertion fail : "+e.getMessage());
@@ -295,7 +295,7 @@ public class Main {
 				TableMap.get(TableName).insert(attrs, tup);
 			} catch(Exception e) {
 				for(int i=0; i<sql_stmt.size(); i++) {
-					System.out.println(sql_stmt.get(i)+" ");
+					System.out.print(sql_stmt.get(i)+" ");
 				}
 				System.out.println();
 				System.err.println("Table insertion fail : "+e.getMessage());
@@ -320,7 +320,7 @@ public class Main {
             return stmtMaker.getStmt();
         } catch(Exception e) {
         	System.out.println("Parsing statement "+string);
-        	System.err.println(string +" : " +e.getMessage().replace("\n", "").replace("\r", ""));
+        	System.err.println(e.getMessage().replace("\n", "").replace("\r", ""));
         	return null;
         }
         
