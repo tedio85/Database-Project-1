@@ -110,6 +110,16 @@ public interface SqlListener extends ParseTreeListener {
 	 */
 	void exitRaise_function(SqlParser.Raise_functionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SqlParser#unsigned_number}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnsigned_number(SqlParser.Unsigned_numberContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SqlParser#unsigned_number}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnsigned_number(SqlParser.Unsigned_numberContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SqlParser#signed_number}.
 	 * @param ctx the parse tree
 	 */

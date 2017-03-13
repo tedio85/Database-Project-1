@@ -81,12 +81,15 @@ insert_stmt
  ;
 
 column_def
- : column_name type_name? column_constraint*
+ : column_name type_name column_constraint?
  ;
 
 type_name
- : name+ ( '(' signed_number ')'
+ : K_INT
+   | K_VARCHAR + '(' unsigned_number ')'
+	/*name+ ( '(' signed_number ')'
          | '(' signed_number ',' signed_number ')' )?
+	*/
  ;
 
 column_constraint
@@ -127,7 +130,10 @@ raise_function
                | ( K_ROLLBACK | K_ABORT | K_FAIL ) ',' error_message )
            ')'
  ;
-
+ 
+unsigned_number
+ : NUMERIC_LITERAL
+ ;
 signed_number
  : ( '+' | '-' )? NUMERIC_LITERAL
  ;
@@ -278,6 +284,9 @@ keyword
  | K_WHERE
  | K_WITH
  | K_WITHOUT
+ /*add by cheupei*/
+ | K_INT
+ | K_VARCHAR
  ;
 
 // TODO check all names below
@@ -524,6 +533,10 @@ K_WHEN : W H E N;
 K_WHERE : W H E R E;
 K_WITH : W I T H;
 K_WITHOUT : W I T H O U T;
+/*add by cheupei*/
+K_INT : I N T;
+K_VARCHAR : V A R C H A R;
+
 
 IDENTIFIER
  : /*'"' (~'"' | '""')* '"'

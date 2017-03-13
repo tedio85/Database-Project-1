@@ -3,9 +3,14 @@ package stage1;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.LinkedList;
+import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 //import org.antlr.v4.gui.Trees;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -50,17 +55,32 @@ import stage1.SqlParser.Transaction_nameContext;
 import stage1.SqlParser.Trigger_nameContext;
 import stage1.SqlParser.Type_nameContext;
 import stage1.SqlParser.Unary_operatorContext;
+import stage1.SqlParser.Unsigned_numberContext;
 import stage1.SqlParser.View_nameContext;
 
 public class Main {
 	
-	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();	
+	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();
+	
 	// map attribute table name to table
     
 	public static void main(String[] args) throws IOException {
 		String input = new String();
-		System.out.println("Enter SQL statements: ");
-		while(true) {
+		String fileName = new String();
+		@SuppressWarnings("resource")
+		Scanner s = new Scanner(System.in);
+		boolean fileInputFlag = false;
+		System.out.println("Do you want to input with file? (Y/N)");
+		String a = s.nextLine();
+		if(a.equals("Y")) fileInputFlag=true;
+		if(!fileInputFlag) System.out.println("Enter SQL statements : ");
+		else {
+			System.out.print("Please enter your file name : ");
+			fileName = s.nextLine();
+			fileInput(fileName);
+		}
+		
+		while(true && !fileInputFlag) {
 			// read input statements; execute if user enter >>
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	        String buffer = br.readLine();
@@ -85,42 +105,58 @@ public class Main {
 	        	}
 	        	// allow enter multiple sql statements
 	        	else input = input + " " +buffer ;
-	        	continue;
 	        }
-	        //classify input string into multiple sql statements
-	        String[] classifyInput = {};
-	        classifyInput = input.split(";");
-	        
-	     // use LinkedList to linked more than 1 input sql statement
-	        LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
-	        for(int i=0; i<classifyInput.length; i++) {
-	        	Vector<String> parseOutput = parse(classifyInput[i]);
-	        	if (parseOutput!=null) {
-	        		sql_stmt.add(parseOutput);
-	        	}
+	        else {
+	        	// classify input string into multiple sql statements
+		        String[] classifyInput = input.split(";");
+		        inputParse(classifyInput);
+		        input = "";
 	        }
-	        //process Create or Insert according to the 1st word of sql_stmt
-	        if(sql_stmt.isEmpty()) System.out.println("parse output is empty");
-	        for(int i=0; i<sql_stmt.size(); i++) {
-	        	if(sql_stmt.get(i).isEmpty()) {
-	        		System.out.println("Parse fail - no statement");
-	        		continue;
-	        	}
-	        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) 
-	        		processCreate(sql_stmt.get(i));
-    	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
-    	        	processInsert(sql_stmt.get(i));
-	        }
-	        input = "";
         }
     }
-
+	
+	// use file input 
+	public static void fileInput(String fileName) {
+		try {
+			String content = readFile(fileName, StandardCharsets.UTF_8);
+			// classify input string into multiple sql statements
+	        String[] classifyInput = content.split(";");
+	        inputParse(classifyInput);
+		} catch (IOException e) {
+			e.printStackTrace();
+			//System.err.println(e.getMessage());
+		}
+	}
+	
+	// process file reading
+	public static String readFile(String path, Charset encoding) throws IOException 
+	{
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		  return new String(encoded, encoding);
+	}
+			
+	// put classified input to parser
+	public static void inputParse(String [] classifyInput) {
+		// use LinkedList to linked more than 1 input sql statement
+        LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+        for(int i=0; i<classifyInput.length; i++) {
+        	Vector<String> parseOutput = parse(classifyInput[i]);
+        	if (parseOutput!=null) {
+        		sql_stmt.add(parseOutput);
+        	}
+        }
+        // process Create or Insert according to the 1st word of sql_stmt
+        if(sql_stmt.isEmpty()) System.out.println("parse output is empty");
+        for(int i=0; i<sql_stmt.size(); i++) {
+        	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) 
+        		processCreate(sql_stmt.get(i));
+	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
+	        	processInsert(sql_stmt.get(i));
+        }
+	}
+	
 	// process Create statements -> new a table to store it
 	public static void processCreate(Vector<String> sql_stmt) {
-		System.out.println(" ' ' ' '");
-		for(int i=0; i<sql_stmt.size(); i++) {
-			System.out.println(sql_stmt.get(i));
-		}
 		// table name exception occur - parser will ignore the table name we assign
 		String name = sql_stmt.get(2);
 		String str_pk = new String();
@@ -144,7 +180,11 @@ public class Main {
 				attrs.add(sql_stmt.get(i));
 			}
 		}
-		TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
+		try{
+			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
+		} catch (Exception e) {
+			System.err.println("Table create fail : "+e.getMessage());
+		}
 	}
 	
 	// process Insert statements -> call insert() of the specific table according to their syntax
@@ -167,12 +207,20 @@ public class Main {
 		}
 		
 		if(attrs.isEmpty()) {
-			TableMap.get(TableName).insert(tup);
+			try{
+				TableMap.get(TableName).insert(tup);
+			} catch(Exception e) {
+				System.err.println("Table insertion fail : "+e.getMessage());
+			}
 		} else {
-			TableMap.get(TableName).insert(attrs, tup);
+			try{
+				TableMap.get(TableName).insert(attrs, tup);
+			} catch(Exception e) {
+				System.err.println("Table insertion fail : "+e.getMessage());
+			}
 		}
 	}
-
+	
     public static Vector<String> parse (String string) {    	
     	// Create a stream of characters from the string
         CharStream stream = new ANTLRInputStream(string);
@@ -188,7 +236,7 @@ public class Main {
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker.getStmt();
         } catch(Exception e) {
-        	System.err.println(e.getMessage());
+        	System.err.println(string +" : " +e.getMessage().replace("\n", "").replace("\r", ""));
         	return null;
         }
         
@@ -209,11 +257,8 @@ public class Main {
 }
 
 class MakeStmt implements SqlListener {
-	//private LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
 	private Vector<String> cur_stmt = new Vector<String>();
-	//private boolean semicolonFlag = false;     // false if there is not a semicolon ahead. ex: (;) b
-	//private boolean firstStatFlag = true;
-	
+
     public Vector<String> getStmt() {
         return cur_stmt;
     }
@@ -222,152 +267,78 @@ class MakeStmt implements SqlListener {
     	&& !arg0.toString().equals("<EOF>")) {
     		cur_stmt.add(arg0.toString());
     	}
-    	
     }
-    @Override public void exitSql_stmt(Sql_stmtContext ctx) {
-    	/*if(semicolonFlag) {
-       		sql_stmt.add(cur_stmt);
-       	} else {
-        	if(firstStatFlag) {
-        		firstStatFlag = false;
-        		sql_stmt.add(cur_stmt);
-        	} else {
-        		sql_stmt.pollLast();
-        	}
-        }
-    	cur_stmt = new Vector<String>();
-        semicolonFlag = false;*/
-    }
-    @Override public void enterTable_name(Table_nameContext ctx) {
-    	//System.out.println("Table Name = "+ctx.getText());
-    }
-    @Override public void exitTable_name(Table_nameContext ctx) {}
+    
     // don't need these here, so just make them empty implementations
     @Override public void enterEveryRule(ParserRuleContext context) { }
     @Override public void exitEveryRule(ParserRuleContext context) { }
-    @Override public void visitErrorNode(ErrorNode node) {
-    	//System.out.println("Hey, u r wrong");
-    }
+    @Override public void visitErrorNode(ErrorNode node) {}
 	@Override public void enterParse(ParseContext ctx) {}
 	@Override public void exitParse(ParseContext ctx) {}
-	@Override public void enterError(ErrorContext ctx) {
-		//System.out.println("Hey, u r wrong");
-	}
+	@Override public void enterError(ErrorContext ctx) {}
 	@Override public void exitError(ErrorContext ctx) {}
 	@Override public void enterSql_stmt(Sql_stmtContext ctx) {}
+	@Override public void exitSql_stmt(Sql_stmtContext ctx) {}
+	@Override public void enterTable_name(Table_nameContext ctx) {}
+    @Override public void exitTable_name(Table_nameContext ctx) {}
 	@Override public void enterCreate_table_stmt(Create_table_stmtContext ctx) {}
-	@Override
-	public void exitCreate_table_stmt(Create_table_stmtContext ctx) {}
-	@Override
-	public void enterInsert_stmt(Insert_stmtContext ctx) {}
-	@Override
-	public void exitInsert_stmt(Insert_stmtContext ctx) {}
-	@Override
-	public void enterColumn_def(Column_defContext ctx) {}
-	@Override
-	public void exitColumn_def(Column_defContext ctx) {}
-	@Override
-	public void enterType_name(Type_nameContext ctx) {}
-	@Override
-	public void exitType_name(Type_nameContext ctx) {}
-	@Override
-	public void enterColumn_constraint(Column_constraintContext ctx) {}
-	@Override
-	public void exitColumn_constraint(Column_constraintContext ctx) {}
-	@Override
-	public void enterExpr(ExprContext ctx) {}
-	@Override
-	public void exitExpr(ExprContext ctx) {}
-	@Override
-	public void enterRaise_function(Raise_functionContext ctx) {}
-	@Override
-	public void exitRaise_function(Raise_functionContext ctx) {}
-	@Override
-	public void enterSigned_number(Signed_numberContext ctx) {}
-	@Override
-	public void exitSigned_number(Signed_numberContext ctx) {}
-	@Override
-	public void enterLiteral_value(Literal_valueContext ctx) {}
-	@Override
-	public void exitLiteral_value(Literal_valueContext ctx) {}
-	@Override
-	public void enterUnary_operator(Unary_operatorContext ctx) {}
-	@Override
-	public void exitUnary_operator(Unary_operatorContext ctx) {}
-	@Override
-	public void enterError_message(Error_messageContext ctx) {}
-	@Override
-	public void exitError_message(Error_messageContext ctx) {}
-	@Override
-	public void enterKeyword(KeywordContext ctx) {}
-	@Override
-	public void exitKeyword(KeywordContext ctx) {}
-	@Override
-	public void enterName(NameContext ctx) {}
-	@Override
-	public void exitName(NameContext ctx) {}
-	@Override
-	public void enterFunction_name(Function_nameContext ctx) {}
-	@Override
-	public void exitFunction_name(Function_nameContext ctx) {}
-	@Override
-	public void enterDatabase_name(Database_nameContext ctx) {}
-	@Override
-	public void exitDatabase_name(Database_nameContext ctx) {}
-	@Override
-	public void enterTable_or_index_name(Table_or_index_nameContext ctx) {}
-	@Override
-	public void exitTable_or_index_name(Table_or_index_nameContext ctx) {}
-	@Override
-	public void enterNew_table_name(New_table_nameContext ctx) {}
-	@Override
-	public void exitNew_table_name(New_table_nameContext ctx) {}
-	@Override
-	public void enterColumn_name(Column_nameContext ctx) {}
-	@Override
-	public void exitColumn_name(Column_nameContext ctx) {}
-	@Override
-	public void enterCollation_name(Collation_nameContext ctx) {}
-	@Override
-	public void exitCollation_name(Collation_nameContext ctx) {}
-	@Override
-	public void enterForeign_table(Foreign_tableContext ctx) {}
-	@Override
-	public void exitForeign_table(Foreign_tableContext ctx) {}
-	@Override
-	public void enterIndex_name(Index_nameContext ctx) {}
-	@Override
-	public void exitIndex_name(Index_nameContext ctx) {}
-	@Override
-	public void enterTrigger_name(Trigger_nameContext ctx) {}
-	@Override
-	public void exitTrigger_name(Trigger_nameContext ctx) {}
-	@Override
-	public void enterView_name(View_nameContext ctx) {}
-	@Override
-	public void exitView_name(View_nameContext ctx) {}
-	@Override
-	public void enterModule_name(Module_nameContext ctx) {}
-	@Override
-	public void exitModule_name(Module_nameContext ctx) {}
-	@Override
-	public void enterPragma_name(Pragma_nameContext ctx) {}
-	@Override
-	public void exitPragma_name(Pragma_nameContext ctx) {}
-	@Override
-	public void enterSavepoint_name(Savepoint_nameContext ctx) {}
-	@Override
-	public void exitSavepoint_name(Savepoint_nameContext ctx) {}
-	@Override
-	public void enterTable_alias(Table_aliasContext ctx) {}
-	@Override
-	public void exitTable_alias(Table_aliasContext ctx) {}
-	@Override
-	public void enterTransaction_name(Transaction_nameContext ctx) {}
-	@Override
-	public void exitTransaction_name(Transaction_nameContext ctx) {}
-	@Override
-	public void enterAny_name(Any_nameContext ctx) {}
-	@Override
-	public void exitAny_name(Any_nameContext ctx) {}         
+	@Override public void exitCreate_table_stmt(Create_table_stmtContext ctx) {}
+	@Override public void enterInsert_stmt(Insert_stmtContext ctx) {}
+	@Override public void exitInsert_stmt(Insert_stmtContext ctx) {}
+	@Override public void enterColumn_def(Column_defContext ctx) {}
+	@Override public void exitColumn_def(Column_defContext ctx) {}
+	@Override public void enterType_name(Type_nameContext ctx) {}
+	@Override public void exitType_name(Type_nameContext ctx) {}
+	@Override public void enterColumn_constraint(Column_constraintContext ctx) {}
+	@Override public void exitColumn_constraint(Column_constraintContext ctx) {}
+	@Override public void enterExpr(ExprContext ctx) {}
+	@Override public void exitExpr(ExprContext ctx) {}
+	@Override public void enterRaise_function(Raise_functionContext ctx) {}
+	@Override public void exitRaise_function(Raise_functionContext ctx) {}
+	@Override public void enterSigned_number(Signed_numberContext ctx) {}
+	@Override public void exitSigned_number(Signed_numberContext ctx) {}
+	@Override public void enterLiteral_value(Literal_valueContext ctx) {}
+	@Override public void exitLiteral_value(Literal_valueContext ctx) {}
+	@Override public void enterUnary_operator(Unary_operatorContext ctx) {}
+	@Override public void exitUnary_operator(Unary_operatorContext ctx) {}
+	@Override public void enterError_message(Error_messageContext ctx) {}
+	@Override public void exitError_message(Error_messageContext ctx) {}
+	@Override public void enterKeyword(KeywordContext ctx) {}
+	@Override public void exitKeyword(KeywordContext ctx) {}
+	@Override public void enterName(NameContext ctx) {}
+	@Override public void exitName(NameContext ctx) {}
+	@Override public void enterFunction_name(Function_nameContext ctx) {}
+	@Override public void exitFunction_name(Function_nameContext ctx) {}
+	@Override public void enterDatabase_name(Database_nameContext ctx) {}
+	@Override public void exitDatabase_name(Database_nameContext ctx) {}
+	@Override public void enterTable_or_index_name(Table_or_index_nameContext ctx) {}
+	@Override public void exitTable_or_index_name(Table_or_index_nameContext ctx) {}
+	@Override public void enterNew_table_name(New_table_nameContext ctx) {}
+	@Override public void exitNew_table_name(New_table_nameContext ctx) {}
+	@Override public void enterColumn_name(Column_nameContext ctx) {}
+	@Override public void exitColumn_name(Column_nameContext ctx) {}
+	@Override public void enterCollation_name(Collation_nameContext ctx) {}
+	@Override public void exitCollation_name(Collation_nameContext ctx) {}
+	@Override public void enterForeign_table(Foreign_tableContext ctx) {}
+	@Override public void exitForeign_table(Foreign_tableContext ctx) {}
+	@Override public void enterIndex_name(Index_nameContext ctx) {}
+	@Override public void exitIndex_name(Index_nameContext ctx) {}
+	@Override public void enterTrigger_name(Trigger_nameContext ctx) {}
+	@Override public void exitTrigger_name(Trigger_nameContext ctx) {}
+	@Override public void enterView_name(View_nameContext ctx) {}
+	@Override public void exitView_name(View_nameContext ctx) {}
+	@Override public void enterModule_name(Module_nameContext ctx) {}
+	@Override public void exitModule_name(Module_nameContext ctx) {}
+	@Override public void enterPragma_name(Pragma_nameContext ctx) {}
+	@Override public void exitPragma_name(Pragma_nameContext ctx) {}
+	@Override public void enterSavepoint_name(Savepoint_nameContext ctx) {}
+	@Override public void exitSavepoint_name(Savepoint_nameContext ctx) {}
+	@Override public void enterTable_alias(Table_aliasContext ctx) {}
+	@Override public void exitTable_alias(Table_aliasContext ctx) {}
+	@Override public void enterTransaction_name(Transaction_nameContext ctx) {}
+	@Override public void exitTransaction_name(Transaction_nameContext ctx) {}
+	@Override public void enterAny_name(Any_nameContext ctx) {}
+	@Override public void exitAny_name(Any_nameContext ctx) {}
+	@Override public void enterUnsigned_number(Unsigned_numberContext ctx) {}
+	@Override public void exitUnsigned_number(Unsigned_numberContext ctx) {}         
 }
