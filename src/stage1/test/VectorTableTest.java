@@ -115,5 +115,65 @@ public class VectorTableTest {
 		assertArrayEquals(correct.toArray(), t.get(0).toArray());
 		
 	}
-
+	
+	// test for tuples with null attributes
+	@Test
+	public void test3() {
+		String name = "test3";
+		String pk = "pk";
+		String[] attrs = {"A","B","C","pk","D"};
+		String[] attrTypes = {"int", "varchar", "int", "varchar", "int"};
+		Vector<Integer> strLen = new Vector<Integer>();
+		strLen.add(10);
+		strLen.add(40);
+		VectorTable table = new VectorTable(name,
+											pk,
+											new Vector<String>(Arrays.asList(attrs)),
+											new Vector<String>(Arrays.asList(attrTypes)),
+											strLen);
+		
+		Vector<String> attrName = new Vector<String>();
+		attrName.add("\'A\'");
+		attrName.add("\'pk\'");
+		attrName.add("\'D\'");
+		
+		Vector<String> tup = new Vector<String>();
+		tup.add(new Integer(1).toString());
+		tup.add("\'pk!\'");
+		tup.add(new Integer(3).toString());
+		
+		Vector<Object> ans = new Vector<Object>();
+		ans.add(1);
+		ans.add(null);
+		ans.add(null);
+		ans.add("pk!");
+		ans.add(3);
+			
+		table.insert(attrName, tup);
+		
+		table.show();
+		Vector<Vector<Object>> t = table.getTable();
+		assertArrayEquals(ans.toArray(), t.get(0).toArray());
+	}
+	
+	// test for duplicated records with NULL primary key
+	@Test(expected=IllegalArgumentException.class)
+	public void test4() {
+		String name = "test4";
+		String[] attrs = {"DogId","Territory","BD"};
+		String[] attrTypes = {"int", "int", "int"};
+		VectorTable table = new VectorTable(name,
+											null,
+											new Vector<String>(Arrays.asList(attrs)),
+											new Vector<String>(Arrays.asList(attrTypes)),
+											new Vector<Integer>());
+		
+		Vector<String> vec = new Vector<String>();
+		for(int i=0;i<attrs.length;i++) {
+			vec.add(new Integer(i).toString());
+		}
+			
+		table.insert(new Vector<String>(Arrays.asList(attrs)), vec);
+		table.insert(new Vector<String>(Arrays.asList(attrs)), vec);		
+	}
 }
