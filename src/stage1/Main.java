@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.antlr.v4.gui.Trees;
-//import org.antlr.v4.gui.Trees;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -177,7 +176,6 @@ public class Main {
 	        }
 	        else {
 	        	// classify input string into multiple sql statements
-	        	System.out.println("input = "+input);
 		        String[] classifyInput = input.split(";");
 		        inputParse(classifyInput);
 		        input = "";
@@ -229,6 +227,15 @@ public class Main {
 	public static void processCreate(Vector<String> sql_stmt) {
 		// table name exception occur - parser will ignore the table name we assign
 		String name = sql_stmt.get(2);
+		// check whether table name already exist
+		if(TableMap.containsKey(name)) {
+			for(int i=0; i<sql_stmt.size(); i++) {
+				System.out.print(sql_stmt.get(i)+" ");
+			}
+			System.out.println();
+			System.err.println("You have already created a table with this name : " + name);
+			return;
+		}
 		String str_pk = new String();
 		Vector<String> attrs = new Vector<>();
 		Vector<String> attrTypes = new Vector<>();
