@@ -4,3 +4,4 @@ Create Table 4857S436^ (v int); Create Table a (v int);
 Create Table ^394843D (v int); Create Table a (v int);
 Create Table 442^dsf (v int); Create Table a (v int);
 Create Table         (v int); Create Table a (v int);
+Create Table     a    (v i); Create Table a (v int);

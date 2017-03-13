@@ -137,6 +137,18 @@ public class SqlBaseListener implements SqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterUnsigned_number(SqlParser.Unsigned_numberContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnsigned_number(SqlParser.Unsigned_numberContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSigned_number(SqlParser.Signed_numberContext ctx) { }
 	/**
 	 * {@inheritDoc}
