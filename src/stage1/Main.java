@@ -55,6 +55,7 @@ import stage1.SqlParser.Transaction_nameContext;
 import stage1.SqlParser.Trigger_nameContext;
 import stage1.SqlParser.Type_nameContext;
 import stage1.SqlParser.Unary_operatorContext;
+import stage1.SqlParser.Unsigned_numberContext;
 import stage1.SqlParser.View_nameContext;
 
 public class Main {
@@ -235,7 +236,7 @@ public class Main {
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker.getStmt();
         } catch(Exception e) {
-        	System.err.println(string +" : " +e.getMessage());
+        	System.err.println(string +" : " +e.getMessage().replace("\n", "").replace("\r", ""));
         	return null;
         }
         
@@ -337,5 +338,7 @@ class MakeStmt implements SqlListener {
 	@Override public void enterTransaction_name(Transaction_nameContext ctx) {}
 	@Override public void exitTransaction_name(Transaction_nameContext ctx) {}
 	@Override public void enterAny_name(Any_nameContext ctx) {}
-	@Override public void exitAny_name(Any_nameContext ctx) {}         
+	@Override public void exitAny_name(Any_nameContext ctx) {}
+	@Override public void enterUnsigned_number(Unsigned_numberContext ctx) {}
+	@Override public void exitUnsigned_number(Unsigned_numberContext ctx) {}         
 }
