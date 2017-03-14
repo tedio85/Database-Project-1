@@ -1,16 +1,13 @@
 CREATE TABLE Student (
-	studentId int PRIMARY KEY, name varchar(15),
+	studentId int, 
+	name varchar(15),
 	gender varchar(1),
 	age int
 );
 
 INSERT INTO Student
-VALUES (10, 'John Smith', 'M', 22);
-INSERT INTO Student
-VALUES (11, 'Hsu You-Ting', 'F', 23);
-INSERT INTO Student (name, age, studentId, gender) VALUES ('Ai Toshiko', 21, 12, 'F');
-INSERT INTO Student (age, studentId, gender, name) VALUES (20, 13, 'M', 'Fernando Sierra');
-INSERT INTO Student
-VALUES (14, 'Mohammed Ali', 'M', 25);
+VALUES (10, '', 'M', 22);
 
-INSERT INTO Student VALUES (10, 'Huang Hao-Wei', 'M', 26)
+INSERT INTO Student
+VALUES (10, '', 'M', 22);
+

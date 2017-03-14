@@ -242,6 +242,10 @@ public class Main {
 	
 	// process Create statements -> new a table to store it
 	public static void processCreate(Vector<String> sql_stmt) {
+		for(int i=0; i<sql_stmt.size(); i++) {
+			System.out.print(sql_stmt.get(i)+" ");
+		}
+		System.out.println();
 		// table name exception occur - parser will ignore the table name we assign
 		String name = sql_stmt.get(2);
 		// check whether table name already exist
@@ -253,7 +257,7 @@ public class Main {
 			System.err.println("You have already created a table with this name : " + name);
 			return;
 		}
-		String str_pk = new String();
+		String str_pk = null;
 		Vector<String> attrs = new Vector<>();
 		Vector<String> attrTypes = new Vector<>();
 		Vector<Integer> strLen = new Vector<>();
@@ -277,11 +281,11 @@ public class Main {
 		try{
 			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
 		} catch (Exception e) {
+			System.err.println("Table create fail : "+e.getMessage());
 			for(int i=0; i<sql_stmt.size(); i++) {
 				System.out.print(sql_stmt.get(i)+" ");
 			}
 			System.out.println();
-			System.err.println("Table create fail : "+e.getMessage());
 		}
 	}
 	
@@ -308,21 +312,21 @@ public class Main {
 			try{
 				TableMap.get(TableName).insert(tup);
 			} catch(Exception e) {
+				System.err.println("Table insertion fail : "+e.getMessage());
 				for(int i=0; i<sql_stmt.size(); i++) {
 					System.out.print(sql_stmt.get(i)+" ");
 				}
 				System.out.println();
-				System.err.println("Table insertion fail : "+e.getMessage());
 			}
 		} else {
 			try{
 				TableMap.get(TableName).insert(attrs, tup);
 			} catch(Exception e) {
+				System.err.println("Table insertion fail : "+e.getMessage());
 				for(int i=0; i<sql_stmt.size(); i++) {
 					System.out.print(sql_stmt.get(i)+" ");
 				}
 				System.out.println();
-				System.err.println("Table insertion fail : "+e.getMessage());
 			}
 		}
 	}
