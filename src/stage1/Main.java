@@ -129,9 +129,14 @@ public class Main {
 		        String buffer = br.readLine();
 		        // Exit System
 		        if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+		        	dumpFile();
 		        	System.out.println("--Shut Down--");
 		        	break;
 		        }
+		        // Dump CSV File 
+	        	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")) {
+	        		dumpFile();
+	        	} 
 		        // Show Table
 		        else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
 		        	// Allow user to enter multiple spaces between "show" and "Table name"
@@ -157,9 +162,14 @@ public class Main {
 	        	}
 	        	// Exit System
 	        	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
+	        		dumpFile();
 	        		System.out.println("--Shut Down--");
 	        		break;
 	        	}
+	        	// Dump CSV File 
+	        	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")) {
+	        		dumpFile();
+	        	} 
 	        	// Show Table
 	        	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
 	        		// Allow user to enter multiple spaces between "show" and "Table name"
@@ -182,7 +192,14 @@ public class Main {
 	        }
         }
     }
-	
+	//dump CSV file
+	public static void dumpFile() {
+		System.out.println("--Dump CSV File--");
+    	for (HashMap.Entry<String, VectorTable> entry : TableMap.entrySet())
+    	{
+    	    TableMap.get(entry.getKey()).exportToCSV();
+    	}
+	}
 	// use file input 
 	public static void fileInput(String fileName) {
 		try {
