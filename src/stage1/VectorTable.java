@@ -1,8 +1,11 @@
 package stage1;
 
 import java.util.Vector;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.lang.NumberFormatException;
 
@@ -13,6 +16,7 @@ public class VectorTable implements Table {
 	protected HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
 	protected HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
 	protected Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
+	private int[] longestStr = new int[20];
 																
 	/**Usage:
 	 *	Creating a table NAME with attributes:
@@ -38,12 +42,17 @@ public class VectorTable implements Table {
 		
 		
 		Vector<String> attrs_ = attrs;								// attribute names
-		attrs_.replaceAll(v -> parseString(v));
 		Vector<Class<?>> attrTypes_ = new Vector<Class<?>>();		// default attribute types
 		Vector<Integer> strLen_ = new Vector<Integer>();			// max length of each attribute
 		
 		
+		// remove "
+		attrs_.replaceAll(v -> parseString(v));
 		attrTypes.replaceAll(v -> parseString(v));
+		
+		// set longestStr
+		for(int i=0;i<attrs_.size();i++)
+			longestStr[i] = attrs_.get(i).length()+2;
 		
 		// set attrTypes
 		int varCharCount = 0;
@@ -197,6 +206,13 @@ public class VectorTable implements Table {
 		
 		if(pass) {
 			table.add(tup);
+			
+			for(int i=0;i<tup.size();i++) {
+				if(tup.get(i) != null)
+					longestStr[i] = Math.max(tup.get(i).toString().length()+2, longestStr[i]);
+				else
+					longestStr[i] = Math.max("NULL".length()+2, longestStr[i]);
+			}
 		}
 		else {
 			System.out.println("tuple NOT inserted");
@@ -296,55 +312,87 @@ public class VectorTable implements Table {
 	
 	// print the table
 	public void show() {
-		int spacing = 1;
-		int defaultWidth = 10;
-		
-		// calculate width of each column
-		Vector<Integer> w = new Vector<Integer>();
-		for(Attribute attr : attrs) {
-			int len = attr.getName().length() + spacing*2;	// the '1' is for the vertical divider
-			if(len < defaultWidth)
-				w.add(defaultWidth);
-			else
-				w.add(len);
-		}
 		
 		// print table name
 		System.out.println(this.name);
 		
-		printDivider(w);
+		printDivider(longestStr);
 		
 		// print attribute names
 		for(int i=0;i<attrs.size();i++) {
-			System.out.printf("|%"+w.get(i)+"s", attrs.get(i).getName());
+			System.out.printf("|%"+longestStr[i]+"s", attrs.get(i).getName());
 		}
 		System.out.println("|");
 		
 		// print table content
 		for(Vector<Object> tuple : table) {
-			printDivider(w);
+			printDivider(longestStr);
 			for(int i=0;i<tuple.size();i++) {
 				if(tuple.get(i) == null) {
 					String str = "NULL";
-					System.out.printf("|%"+w.get(i)+"s",str);
+					System.out.printf("|%"+longestStr[i]+"s",str);
 				}
 				else {
 					String objStr = tuple.get(i).toString();
-					System.out.printf("|%"+w.get(i)+"s",objStr);
+					System.out.printf("|%"+longestStr[i]+"s",objStr);
 				}
 			}
 			System.out.println("|");
 		}
 		
-		printDivider(w);
+		printDivider(longestStr);
 	}
 	
-	protected void printDivider(Vector<Integer> w) {
-		for(Integer num : w) {
+	private void printDivider(int[] w) {
+		for(int i=0;i<attrs.size();i++) {
+			int num = w[i];
 			String repeated = new String(new char[num]).replace('\0', '-');
 			System.out.format("+%s",repeated);
 		}
 		System.out.println("+");
+	}
+	
+	public void exportToCSV() {
+		
+		String csvFile = "./output/" + this.name + ".csv";
+		FileWriter writer = null;
+        try {
+			writer = new FileWriter(csvFile);
+		} catch (IOException e) {
+			System.out.println("failed to create file");
+			e.printStackTrace();
+		}
+		// write attribute names to file
+        Vector<String> anames = new Vector<String>();
+        for(Attribute a : attrs) {
+        	anames.add(a.getName());
+        }
+        try {
+			String s = anames.toString();
+			CSVUtils.writeLine(writer, Arrays.asList(s.substring(1,s.length()-1)));
+		} catch (IOException e) {
+			System.out.println("name writeLine failed");
+			e.printStackTrace();
+		}
+        
+        // write table content to file
+		for(Vector<Object> tup : table) {
+			try {
+				String s = tup.toString();
+				CSVUtils.writeLine(writer, Arrays.asList(s.substring(1,s.length()-1)));
+			} catch (IOException e) {
+				System.out.println("table content writeLine failed");
+				e.printStackTrace();
+			}
+		}
+		
+        try {
+        	writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("failed to close writer");
+			e.printStackTrace();
+		}
 	}
 	
 	protected Boolean isString(String str) {
@@ -360,4 +408,5 @@ public class VectorTable implements Table {
 		else
 			return str.replaceAll("\'", "").replaceAll("\"","");
 	}
+	
 }

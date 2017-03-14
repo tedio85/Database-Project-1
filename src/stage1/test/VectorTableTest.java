@@ -71,6 +71,8 @@ public class VectorTableTest {
 		for(int i=0;i<data.size();i++) {
 			assertArrayEquals(data.get(i).toArray(), t.get(i).toArray());
 		}
+		
+		table.exportToCSV();
 	}
 	
 	// test for unmatched types
