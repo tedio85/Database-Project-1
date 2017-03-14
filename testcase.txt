@@ -28,15 +28,3 @@ VALUES ('IJK', 1000000, 83987, 'M', 'Computer Science', 3, 'Z', 150, 8578374, 'T
 INSERT INTO Student(name, student_id, personal_id, personal_id)
 VALUES ('A__', 123123123, 100, 101);
 
-CREATE TABLE STUDENT (
-	studentId int, 
-	name varchar(15),
-	gender varchar(1),
-	age int
-);
-
-INSERT INTO STUDENT
-VALUES (10, '', 'M', 22);
-
-INSERT INTO STUDENT
-VALUES (10, '', 'M', 22);
