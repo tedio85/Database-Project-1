@@ -11,3 +11,5 @@ VALUES (10, '', 'M', 22);
 INSERT INTO Student
 VALUES (10, '', 'M', 22);
 
+INSERT INTO Student (studentId, gender, age)
+VALUES (10, 'M', 22);
