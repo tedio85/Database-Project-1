@@ -241,11 +241,7 @@ public class Main {
 	}
 	
 	// process Create statements -> new a table to store it
-	public static void processCreate(Vector<String> sql_stmt) {
-		for(int i=0; i<sql_stmt.size(); i++) {
-			System.out.print(sql_stmt.get(i)+" ");
-		}
-		System.out.println();
+	public static void processCreate(Vector<String> sql_stmt) {		
 		// table name exception occur - parser will ignore the table name we assign
 		String name = sql_stmt.get(2);
 		// check whether table name already exist
@@ -305,6 +301,11 @@ public class Main {
 				attrs.add(sql_stmt.get(i));
 			} else {
 				tup.add(sql_stmt.get(i));
+			}
+		}
+		if(tup.size()==0) {
+			for(int i=0; i<TableMap.get(TableName).getAttrs().size(); i++) {
+				tup.add(null);
 			}
 		}
 		
