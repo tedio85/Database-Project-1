@@ -3,6 +3,7 @@ package stage1;
 import java.util.Vector;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -299,6 +300,14 @@ public class VectorTable implements Table {
 			pass = false;
 			throw new IllegalArgumentException("length of attrNames should match length of tup");
 		}
+		
+		// check for duplicated attributes
+		HashSet<String> set = new HashSet<String>();
+		for(String s : attrNames) {
+			if(set.add(s) == false)
+				throw new IllegalArgumentException("duplicated attribute");		
+		}
+		
 		// put attributes at corresponding position
 		for(int i=0;i<tup.size();i++) {
 			try {

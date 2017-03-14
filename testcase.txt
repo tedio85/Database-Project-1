@@ -1,16 +1,42 @@
-CREATE TABLE Student (
-	studentId int PRIMARY KEY, name varchar(15),
+CREATE TABLE Student (name varchar(10),
+					student_id int PRIMARY KEY,
+					personal_id int,
+					gender varchar(1),
+					Dept varchar(40),
+					grade int,
+					class varchar(1),
+					avg_score int,
+					car_no int,
+					professor varchar(20));
+
+INSERT INTO Student(name, student_id, personal_id, gender)
+VALUES ('ABC', 1000000, 839284);
+
+INSERT INTO Student(name, student_id)
+VALUES ('CBA', 98765 , 839282);
+
+INSERT INTO Student(name, student_id, personal_id, gender)
+VALUES ('ABC', 1000000, 839284, 'M');
+
+
+INSERT INTO Student
+VALUES ('IJK', 1000000, 83987, 'M', 'Computer Science', 3, 'Z', 150, 8578374, 'Tim');
+
+INSERT INTO Student
+VALUES ('IJK', 1000000, 83987, 'M', 'Computer Science', 3, 'Z', 150, 8578374, 'Tim');
+
+INSERT INTO Student(name, student_id, personal_id, personal_id)
+VALUES ('A__', 123123123, 100, 101);
+
+CREATE TABLE STUDENT (
+	studentId int, 
+	name varchar(15),
 	gender varchar(1),
 	age int
 );
 
-INSERT INTO Student
-VALUES (10, 'John Smith', 'M', 22);
-INSERT INTO Student
-VALUES (11, 'Hsu You-Ting', 'F', 23);
-INSERT INTO Student (name, age, studentId, gender) VALUES ('Ai Toshiko', 21, 12, 'F');
-INSERT INTO Student (age, studentId, gender, name) VALUES (20, 13, 'M', 'Fernando Sierra');
-INSERT INTO Student
-VALUES (14, 'Mohammed Ali', 'M', 25);
+INSERT INTO STUDENT
+VALUES (10, '', 'M', 22);
 
-INSERT INTO Student VALUES (10, 'Huang Hao-Wei', 'M', 26)
+INSERT INTO STUDENT
+VALUES (10, '', 'M', 22);
