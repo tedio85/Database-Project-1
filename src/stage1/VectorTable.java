@@ -82,8 +82,13 @@ public class VectorTable implements Table {
 		int count = 0;
 		for(int i=0;i<attrTypes.size();i++) {
 			if(attrTypes_.get(i).equals(new String().getClass())) {
-				strLen_.set(i,strLen.get(count));
-				count++;
+				if(strLen.get(count)>0 && strLen.get(count)<=40) {
+					strLen_.set(i,strLen.get(count));
+					count++;
+				}
+				else {
+					throw new IllegalArgumentException("varchar should be 1 to 40 characters");
+				}
 			}
 		}
 		
