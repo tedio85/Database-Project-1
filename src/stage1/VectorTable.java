@@ -88,10 +88,14 @@ public class VectorTable implements Table {
 		}
 		
 		// combine attrs_, attrTypes, strLen to attrs
+		// also check for duplicated attribute name
 		for(int i=0;i<attrs_.size();i++) {
 			Attribute attr = new Attribute(attrs_.get(i), attrTypes_.get(i), strLen_.get(i));
 			this.attrs.add(attr);
-			this.keyToIdx.put(attrs_.get(i), i);
+			if(!keyToIdx.containsKey(attrs_.get(i)))
+				this.keyToIdx.put(attrs_.get(i), i);
+			else
+				throw new IllegalArgumentException("found duplicated attribute");
 		}
 		
 		// create inverse mapping of index to key
