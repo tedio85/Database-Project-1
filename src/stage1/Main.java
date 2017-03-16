@@ -247,7 +247,7 @@ public class Main {
 		// check whether table name already exist
 		if(TableMap.containsKey(name)) {
 			for(int i=0; i<sql_stmt.size(); i++) {
-				System.out.print(sql_stmt.get(i)+" ");
+				System.err.print(sql_stmt.get(i)+" ");
 			}
 			System.out.println();
 			System.err.println("You have already created a table with this name : " + name);
@@ -258,6 +258,7 @@ public class Main {
 		Vector<String> attrTypes = new Vector<>();
 		Vector<Integer> strLen = new Vector<>();
 		for(int i=3; i<sql_stmt.size(); i++) {
+			if(sql_stmt.get(i).equals(",")) continue;
 			if(sql_stmt.get(i).toUpperCase().equals("PRIMARY")) {
 				str_pk = sql_stmt.get(i-2);
 				i++;
@@ -277,9 +278,9 @@ public class Main {
 		try{
 			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
 		} catch (Exception e) {
-			System.err.println("Table create fail : "+e.getMessage());
+			System.err.print("Table create fail : "+e.getMessage()+" -");
 			for(int i=0; i<sql_stmt.size(); i++) {
-				System.out.print(sql_stmt.get(i)+" ");
+				System.err.print(" "+sql_stmt.get(i));
 			}
 			System.out.println();
 		}
@@ -293,6 +294,7 @@ public class Main {
 		Vector<String> tup = new Vector<>();
 		
 		for(int i=3; i<sql_stmt.size(); i++) {
+			if(sql_stmt.get(i).equals(",")) continue;
 			if(sql_stmt.get(i).toUpperCase().equals("VALUES")) {
 				attrOrValue = true;
 				continue;
@@ -303,19 +305,46 @@ public class Main {
 				tup.add(sql_stmt.get(i));
 			}
 		}
-		if(tup.size()==0) {
-			for(int i=0; i<TableMap.get(TableName).getAttrs().size(); i++) {
-				tup.add(null);
+		// Handle (, , , ) or (, , 2, 1)
+		if(attrOrValue) {
+			int attrsNum = TableMap.get(TableName).getAttrs().size();
+			if(tup.size()==0) {
+				for(int i=0; i<attrsNum; i++) {
+					tup.add(null);
+				}
+			}
+			else if(tup.size()<attrsNum) {
+				tup.removeAllElements();
+				for(int i=4; i<sql_stmt.size(); i++) {
+					if(sql_stmt.get(i).equals(",")) {
+						if(i==4) {
+							tup.add(null);
+							tup.add(null);
+						}
+						else {
+							tup.add(null);
+						}
+					} else {
+						if(i==4) {
+							tup.add(sql_stmt.get(i));
+						} else {
+							tup.remove(tup.size()-1);
+							tup.add(sql_stmt.get(i));
+						}
+						
+					}
+				}
 			}
 		}
+		
 		
 		if(attrs.isEmpty()) {
 			try{
 				TableMap.get(TableName).insert(tup);
 			} catch(Exception e) {
-				System.err.println("Table insertion fail : "+e.getMessage());
+				System.err.print("Table insertion fail : "+e.getMessage()+" -");
 				for(int i=0; i<sql_stmt.size(); i++) {
-					System.out.print(sql_stmt.get(i)+" ");
+					System.err.print(" "+sql_stmt.get(i));
 				}
 				System.out.println();
 			}
@@ -323,9 +352,9 @@ public class Main {
 			try{
 				TableMap.get(TableName).insert(attrs, tup);
 			} catch(Exception e) {
-				System.err.println("Table insertion fail : "+e.getMessage());
+				System.err.println("Table insertion fail : "+e.getMessage()+" -");
 				for(int i=0; i<sql_stmt.size(); i++) {
-					System.out.print(sql_stmt.get(i)+" ");
+					System.err.print(sql_stmt.get(i)+" ");
 				}
 				System.out.println();
 			}
@@ -348,8 +377,8 @@ public class Main {
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker.getStmt();
         } catch(Exception e) {
+        	System.err.print(e.getMessage().replace("\n", "").replace("\r", "")+" :");
         	System.out.println("Parsing statement "+string);
-        	System.err.println(e.getMessage().replace("\n", "").replace("\r", ""));
         	return null;
         }
         
@@ -376,7 +405,7 @@ class MakeStmt implements SqlListener {
         return cur_stmt;
     }
     @Override public void visitTerminal(TerminalNode arg0) {
-    	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(",") 
+    	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") /*&& !arg0.toString().equals(",")*/ 
     	&& !arg0.toString().equals("<EOF>")) {
     		cur_stmt.add(arg0.toString());
     	}
