@@ -113,12 +113,14 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		String input = new String();
 		String fileName = new String();
-		@SuppressWarnings("resource")
 		Scanner s = new Scanner(System.in);
 		boolean fileInputFlag = false;
+		// 2 mode : file input & console input
 		System.out.println("Do you want to input with file? (Y/N)");
 		String a = s.nextLine();
 		if(a.equals("Y")) fileInputFlag=true;
+		
+		// file input mode
 		if(!fileInputFlag) System.out.println("Enter SQL statements : ");
 		else {
 			System.out.print("Please enter your file name : ");
@@ -127,30 +129,11 @@ public class Main {
 			while(true) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		        String buffer = br.readLine();
-		        // Exit System
-		        if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
-		        	dumpFile();
-		        	System.out.println("--Shut Down--");
-		        	break;
-		        }
-		        // Dump CSV File 
-	        	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")) {
-	        		dumpFile();
-	        	} 
-		        // Show Table
-		        else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
-		        	// Allow user to enter multiple spaces between "show" and "Table name"
-		        	buffer = buffer.replaceAll("\\s","");
-		        	if(TableMap.get(buffer.substring(4))==null) {
-		        		System.err.println("Table do not exist !!");
-		        	} else {
-		        		System.out.println("Table Name :" + buffer.substring(4));
-		        		TableMap.get(buffer.substring(4)).show();
-		        	}
-		        }		        
+		        if(userInput(buffer)) break;		        
 			}
 		}
 		
+		// console input mode
 		while(true && !fileInputFlag) {
 			// read input statements; execute if user enter >>
 	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -160,27 +143,7 @@ public class Main {
 	        		input = input + " " + buffer;
 	        		continue;
 	        	}
-	        	// Exit System
-	        	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
-	        		dumpFile();
-	        		System.out.println("--Shut Down--");
-	        		break;
-	        	}
-	        	// Dump CSV File 
-	        	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")) {
-	        		dumpFile();
-	        	} 
-	        	// Show Table
-	        	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
-	        		// Allow user to enter multiple spaces between "show" and "Table name"
-	        		buffer = buffer.replaceAll("\\s","");
-	        		if(TableMap.get(buffer.substring(4))==null) {
-	        			System.err.println("Table do not exist !!");
-	        		} else {
-	        			System.out.println("Table Name :" + buffer.substring(4));
-	        			TableMap.get(buffer.substring(4)).show();
-	        		}
-	        	}
+	        	if(userInput(buffer)) break;
 	        	// allow enter multiple sql statements
 	        	else input = input + " " +buffer ;
 	        }
@@ -191,7 +154,33 @@ public class Main {
 		        input = "";
 	        }
         }
+		s.close();
     }
+	// user input interface, return false if user want to shut down system
+	public static boolean userInput(String input) {
+		// Exit System
+    	if (input.substring(0, 4).toUpperCase().equals("EXIT")) {
+    		dumpFile();
+    		System.out.println("--Shut Down--");
+    		return true;
+    	}
+    	// Dump CSV File 
+    	else if (input.substring(0, 4).toUpperCase().equals("DUMP")) {
+    		dumpFile();
+    	} 
+    	// Show Table
+    	else if(input.substring(0, 4).toUpperCase().equals("SHOW")) {
+    		// Allow user to enter multiple spaces between "show" and "Table name"
+    		input = input.replaceAll("\\s","");
+    		if(TableMap.get(input.substring(4))==null) {
+    			System.err.println("Table do not exist !!");
+    		} else {
+    			System.out.println("Table Name :" + input.substring(4));
+    			TableMap.get(input.substring(4)).show();
+    		}
+    	}
+    	return false;
+	}
 	//dump CSV file
 	public static void dumpFile() {
 		System.out.println("--Dump CSV File--");
