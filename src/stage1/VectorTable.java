@@ -4,6 +4,7 @@ import java.util.Vector;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -369,6 +370,30 @@ public class VectorTable implements Table {
 		}
 		System.out.println("+");
 	}
+	
+	public Iterator<Vector<Object>> iterator() {
+		Iterator<Vector<Object>> it = new Iterator<Vector<Object>>() {
+
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < table.size();
+            }
+
+            @Override
+            public Vector<Object> next() {
+                return table.get(currentIndex++);
+            }
+            
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        };
+        return it;
+    }
 	
 	public void exportToCSV() {
 		
