@@ -50,20 +50,10 @@ public class TableManager {
 	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
 			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, Queue<String> whe_bool_expr) 
 	{
-		while(whe_table_name.size()!=0) {
+		/*while(whe_table_name.size()!=0) {
 			System.out.println(whe_table_name.poll());
 		}
 		System.out.println();
-		while(whe_operator.size()!=0) {
-			System.out.println(whe_operator.poll());
-		}
-		System.out.println();
-		while(whe_column_name.size()!=0) {
-			System.out.println(whe_column_name.poll());
-		}
-		System.out.println();
-		while(whe_bool_expr.size()!=0) {
-			System.out.println(whe_bool_expr.poll());
-		}
+		*/
 	}
 }
