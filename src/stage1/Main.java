@@ -1,6 +1,5 @@
 package stage1;
 
-import java.util.HashMap;
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -107,7 +106,7 @@ import stage1.SqlParser.With_clauseContext;
 
 public class Main {
 	
-	private static HashMap<String, VectorTable> TableMap = new HashMap<String, VectorTable>();
+	private static TableManager tMgr = new TableManager();
 	// map attribute table name to table
     
 	public static void main(String[] args) throws IOException {
@@ -145,7 +144,7 @@ public class Main {
 	        	}
 	        	if(userInput(buffer)) break;
 	        	// allow enter multiple sql statements
-	        	else input = input + " " +buffer ;
+	        	else input = inputConcat(input, buffer);
 	        }
 	        else {
 	        	// classify input string into multiple sql statements
@@ -157,37 +156,49 @@ public class Main {
 		s.close();
     }
 	// user input interface, return false if user want to shut down system
-	public static boolean userInput(String input) {
+	public static boolean userInput(String buffer) {
 		// Exit System
-    	if (input.substring(0, 4).toUpperCase().equals("EXIT")) {
+    	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")) {
     		dumpFile();
     		System.out.println("--Shut Down--");
     		return true;
     	}
     	// Dump CSV File 
-    	else if (input.substring(0, 4).toUpperCase().equals("DUMP")) {
+    	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")) {
     		dumpFile();
     	} 
     	// Show Table
-    	else if(input.substring(0, 4).toUpperCase().equals("SHOW")) {
+    	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
     		// Allow user to enter multiple spaces between "show" and "Table name"
-    		input = input.replaceAll("\\s","");
-    		if(TableMap.get(input.substring(4))==null) {
+    		buffer = buffer.replaceAll("\\s","");
+    		if(tMgr.getTable(buffer.substring(4))==null) {
     			System.err.println("Table do not exist !!");
     		} else {
-    			System.out.println("Table Name :" + input.substring(4));
-    			TableMap.get(input.substring(4)).show();
+    			System.out.println("Table Name :" + buffer.substring(4));
+    			tMgr.getTable(buffer.substring(4)).show();
     		}
     	}
     	return false;
 	}
+	public static String inputConcat(String input, String buffer) {
+		// Exit System
+    	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")){
+    	}
+    	// Dump CSV File 
+    	else if (buffer.substring(0, 4).toUpperCase().equals("DUMP")){
+    	}
+    	// Show Table
+    	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")){
+    	}
+    	else {
+    		input = input+" "+buffer;
+    	}
+    	return input;
+	}
 	//dump CSV file
 	public static void dumpFile() {
 		System.out.println("--Dump CSV File--");
-    	for (HashMap.Entry<String, VectorTable> entry : TableMap.entrySet())
-    	{
-    	    TableMap.get(entry.getKey()).exportToCSV();
-    	}
+    	tMgr.dumpCSV();
 	}
 	// use file input 
 	public static void fileInput(String fileName) {
@@ -234,7 +245,7 @@ public class Main {
 		// table name exception occur - parser will ignore the table name we assign
 		String name = sql_stmt.get(2);
 		// check whether table name already exist
-		if(TableMap.containsKey(name)) {
+		if(tMgr.isExist(name)) {
 			for(int i=0; i<sql_stmt.size(); i++) {
 				System.err.print(sql_stmt.get(i)+" ");
 			}
@@ -265,7 +276,7 @@ public class Main {
 			}
 		}
 		try{
-			TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
+			tMgr.putTable(name, str_pk, attrs, attrTypes, strLen);
 		} catch (Exception e) {
 			System.err.print("Table create fail : "+e.getMessage()+" -");
 			for(int i=0; i<sql_stmt.size(); i++) {
@@ -296,7 +307,7 @@ public class Main {
 		}
 		// Handle (, , , ) or (, , 2, 1)
 		if(attrOrValue) {
-			int attrsNum = TableMap.get(TableName).getAttrs().size();
+			int attrsNum = tMgr.getTableAttrSize(TableName);
 			if(tup.size()==0) {
 				for(int i=0; i<attrsNum; i++) {
 					tup.add(null);
@@ -329,7 +340,7 @@ public class Main {
 		
 		if(attrs.isEmpty()) {
 			try{
-				TableMap.get(TableName).insert(tup);
+				tMgr.insertTup(TableName, tup);
 			} catch(Exception e) {
 				System.err.print("Table insertion fail : "+e.getMessage()+" -");
 				for(int i=0; i<sql_stmt.size(); i++) {
@@ -339,7 +350,7 @@ public class Main {
 			}
 		} else {
 			try{
-				TableMap.get(TableName).insert(attrs, tup);
+				tMgr.insertTup(TableName, attrs, tup);
 			} catch(Exception e) {
 				System.err.println("Table insertion fail : "+e.getMessage()+" -");
 				for(int i=0; i<sql_stmt.size(); i++) {

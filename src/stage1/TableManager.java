@@ -14,11 +14,11 @@ public class TableManager {
 		TableMap.put(name, new VectorTable(name, str_pk, attrs, attrTypes, strLen));
 	}
 	
-	public void insertTable(String tableName, Vector<String> tup) {
+	public void insertTup(String tableName, Vector<String> tup) {
 		TableMap.get(tableName).insert(tup);
 	}
 	
-	public void insertTable(String tableName, Vector<String> attrs, Vector<String> tup) {
+	public void insertTup(String tableName, Vector<String> attrs, Vector<String> tup) {
 		TableMap.get(tableName).insert(attrs, tup);
 	}
 	
