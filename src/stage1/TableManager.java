@@ -1,10 +1,16 @@
 package stage1;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
 
 public class TableManager {
 	private HashMap<String, VectorTable> TableMap;
+	Queue<String> col_table_name = new LinkedList<String>();
+	Queue<String> col_column_name = new LinkedList<String>();
+	Queue<String> tab_table_name = new LinkedList<String>();
+	Queue<String> tab_alias = new LinkedList<String>();
 	
 	TableManager() {
 		TableMap = new HashMap<String, VectorTable>();
@@ -26,7 +32,6 @@ public class TableManager {
 		return TableMap.get(tableName);
 	}
 	
-	
 	public int getTableAttrSize(String tableName) {
 		return TableMap.get(tableName).getAttrs().size();
 	}
@@ -40,5 +45,25 @@ public class TableManager {
 	
 	public boolean isExist(String tableName) {
 		return TableMap.containsKey(tableName);
+	}
+	
+	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
+			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, Queue<String> whe_bool_expr) 
+	{
+		while(whe_table_name.size()!=0) {
+			System.out.println(whe_table_name.poll());
+		}
+		System.out.println();
+		while(whe_operator.size()!=0) {
+			System.out.println(whe_operator.poll());
+		}
+		System.out.println();
+		while(whe_column_name.size()!=0) {
+			System.out.println(whe_column_name.poll());
+		}
+		System.out.println();
+		while(whe_bool_expr.size()!=0) {
+			System.out.println(whe_bool_expr.poll());
+		}
 	}
 }

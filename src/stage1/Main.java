@@ -2,6 +2,7 @@ package stage1;
 
 import java.util.Vector;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -180,6 +181,7 @@ public class Main {
     	}
     	return false;
 	}
+	
 	public static String inputConcat(String input, String buffer) {
 		// Exit System
     	if (buffer.substring(0, 4).toUpperCase().equals("EXIT")){
@@ -195,11 +197,13 @@ public class Main {
     	}
     	return input;
 	}
+	
 	//dump CSV file
 	public static void dumpFile() {
 		System.out.println("--Dump CSV File--");
     	tMgr.dumpCSV();
 	}
+	
 	// use file input 
 	public static void fileInput(String fileName) {
 		try {
@@ -224,10 +228,30 @@ public class Main {
 	public static void inputParse(String [] classifyInput) {
 		// use LinkedList to linked more than 1 input sql statement
         LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+        Queue<String> col_table_name = new LinkedList<String>();
+    	Queue<String> col_column_name = new LinkedList<String>();
+    	Queue<String> tab_table_name = new LinkedList<String>();
+    	Queue<String> tab_alias = new LinkedList<String>();
+    	Queue<String> whe_table_name = new LinkedList<String>();
+    	Queue<String> whe_operator = new LinkedList<String>();
+    	Queue<String> whe_column_name = new LinkedList<String>();
+    	Queue<String> whe_bool_expr = new LinkedList<String>();
+    	
         for(int i=0; i<classifyInput.length; i++) {
-        	Vector<String> parseOutput = parse(classifyInput[i]);
+        	MakeStmt makeStmt = parse(classifyInput[i]);
+        	Vector<String> parseOutput = makeStmt.getStmt();
         	if (parseOutput!=null) {
         		sql_stmt.add(parseOutput);
+        		if(parseOutput.get(0).toUpperCase().equals("SELECT")) {
+        			col_table_name = makeStmt.getColTabName();
+        			col_column_name = makeStmt.getColColName();
+        			tab_table_name = makeStmt.getTabTabName();
+        			tab_alias = makeStmt.getTabAlias();
+        			whe_table_name = makeStmt.getWheTabName();
+        	    	whe_operator = makeStmt.getWheOper();
+        	    	whe_column_name = makeStmt.getWheColName();
+        	    	whe_bool_expr = makeStmt.getWheBoolExpr();
+        		}
         	}
         }
         // process Create or Insert according to the 1st word of sql_stmt
@@ -237,6 +261,11 @@ public class Main {
         		processCreate(sql_stmt.get(i));
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
 	        	processInsert(sql_stmt.get(i));
+	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("SELECT")) {
+	        	tMgr.select(col_table_name, col_column_name, tab_table_name, tab_alias, 
+	        			whe_table_name, whe_operator, whe_column_name, whe_bool_expr);
+	        }
+	        	
         }
 	}
 	
@@ -361,7 +390,7 @@ public class Main {
 		}
 	}
 	
-    public static Vector<String> parse (String string) {    	
+    public static MakeStmt parse (String string) {    	
     	// Create a stream of characters from the string
         CharStream stream = new ANTLRInputStream(string);
 
@@ -372,16 +401,15 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
-        	//Trees.inspect(tree, parser);
+        	Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
-            return stmtMaker.getStmt();
+            return stmtMaker;
         } catch(Exception e) {
         	System.err.print(e.getMessage().replace("\n", "").replace("\r", "")+" :");
         	System.out.println("Parsing statement "+string);
         	return null;
         }
-        
     }
     
     private static SqlParser makeParser(CharStream stream) {
@@ -399,19 +427,138 @@ public class Main {
 }
 
 class MakeStmt implements SqlListener {
-	private Vector<String> cur_stmt = new Vector<String>();
-
+	Vector<String> cur_stmt = new Vector<String>();
+	Queue<String> col_table_name = new LinkedList<String>();
+	Queue<String> col_column_name = new LinkedList<String>();
+	Queue<String> tab_table_name = new LinkedList<String>();
+	Queue<String> tab_alias = new LinkedList<String>();
+	Queue<String> whe_table_name = new LinkedList<String>();
+	Queue<String> whe_operator = new LinkedList<String>();
+	Queue<String> whe_column_name = new LinkedList<String>();
+	Queue<String> whe_bool_expr = new LinkedList<String>();
+	
+	boolean result_column_flag = false;
+	boolean table_or_subquery_flag = false;
+	boolean table_name_flag = false;
+	boolean column_name_flag = false;
+	boolean table_alias_flag = false;
+	boolean whe_flag = false;
+	
     public Vector<String> getStmt() {
         return cur_stmt;
     }
+    public Queue<String> getColTabName() {
+    	return col_table_name;
+    }
+    public Queue<String> getColColName() {
+    	return col_column_name;
+    }
+    public Queue<String> getTabTabName() {
+    	return tab_table_name;
+    }
+    public Queue<String> getTabAlias() {
+    	return tab_alias;
+    }
+    public Queue<String> getWheTabName() {
+    	return whe_table_name;
+    }
+    public Queue<String> getWheColName() {
+    	return whe_column_name;
+    }
+    public Queue<String> getWheOper() {
+    	return whe_operator;
+    }
+    public Queue<String> getWheBoolExpr() {
+    	return whe_bool_expr;
+    }
+    
     @Override public void visitTerminal(TerminalNode arg0) {
-    	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") /*&& !arg0.toString().equals(",")*/ 
-    	&& !arg0.toString().equals("<EOF>")) {
-    		cur_stmt.add(arg0.toString());
+    	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(".")
+    	&& !arg0.toString().toUpperCase().equals("AS") && !arg0.toString().equals("<EOF>")) {
+    		if(result_column_flag) {
+    			if(table_name_flag) col_table_name.add(arg0.toString());
+    			if(column_name_flag) {
+    				col_column_name.add(arg0.toString());
+    				if(col_column_name.size()!=col_table_name.size()) 
+    					col_table_name.add(null);
+    			}
+    		}
+    		else if(table_or_subquery_flag) {
+    			if(table_name_flag) tab_table_name.add(arg0.toString());
+    			if(table_alias_flag) {
+    				while(tab_alias.size()!=tab_table_name.size()-1) tab_alias.add(null);
+    				tab_alias.add(arg0.toString());
+    			}
+    		}
+    		else if(whe_flag) {
+    			if(table_name_flag) whe_table_name.add(arg0.toString());
+    			else if(column_name_flag) { 
+    				whe_column_name.add(arg0.toString());
+    				if(whe_column_name.size()!=whe_table_name.size()) 
+    					whe_table_name.add(null);
+    			}
+    			else {
+    				if(arg0.toString().toUpperCase().equals("AND")||arg0.toString().toUpperCase().equals("OR"))
+    					whe_bool_expr.add(arg0.toString());
+    				else 
+    					whe_operator.add(arg0.toString());
+    			}
+    		}
+    		else {
+    			if(arg0.toString().toUpperCase().equals("WHERE")) whe_flag=true;
+    			cur_stmt.add(arg0.toString());
+    		}
     	}
     }
     
+    @Override 
+    public void exitSelect_core(Select_coreContext ctx) {
+    	while(tab_alias.size()!=tab_table_name.size()) tab_alias.add(null);
+    }
+    
+	@Override 
+	public void enterTable_alias(Table_aliasContext ctx) {
+		table_alias_flag=true;
+	}
+	@Override 
+	public void exitTable_alias(Table_aliasContext ctx) {
+		table_alias_flag=false;
+	}
+	@Override 
+	public void enterColumn_name(Column_nameContext ctx) {
+		column_name_flag=true;
+	}
+	@Override 
+	public void exitColumn_name(Column_nameContext ctx) {
+		column_name_flag=false;
+	}
+	@Override 
+	public void enterTable_name(Table_nameContext ctx) {
+		table_name_flag=true;
+	}
+	@Override 
+	public void exitTable_name(Table_nameContext ctx) {
+		table_name_flag=false;
+	}
+    @Override
+	public void enterTable_or_subquery(Table_or_subqueryContext ctx) {
+    	table_or_subquery_flag=true;
+	}
+    @Override 
+    public void exitTable_or_subquery(Table_or_subqueryContext ctx) {
+    	table_or_subquery_flag=false;
+    }
+    @Override
+	public void enterResult_column(Result_columnContext ctx) {
+    	result_column_flag = true;
+    }
+    @Override 
+    public void exitResult_column(Result_columnContext ctx) {
+    	result_column_flag = false;
+    }
+    
     // don't need these here, so just make them empty implementations
+    @Override public void enterSelect_core(Select_coreContext ctx) {}
     @Override public void enterEveryRule(ParserRuleContext context) { }
     @Override public void exitEveryRule(ParserRuleContext context) { }
     @Override public void visitErrorNode(ErrorNode node) {}
@@ -421,8 +568,6 @@ class MakeStmt implements SqlListener {
 	@Override public void exitError(ErrorContext ctx) {}
 	@Override public void enterSql_stmt(Sql_stmtContext ctx) {}
 	@Override public void exitSql_stmt(Sql_stmtContext ctx) {}
-	@Override public void enterTable_name(Table_nameContext ctx) {}
-    @Override public void exitTable_name(Table_nameContext ctx) {}
 	@Override public void enterCreate_table_stmt(Create_table_stmtContext ctx) {}
 	@Override public void exitCreate_table_stmt(Create_table_stmtContext ctx) {}
 	@Override public void enterInsert_stmt(Insert_stmtContext ctx) {}
@@ -457,8 +602,6 @@ class MakeStmt implements SqlListener {
 	@Override public void exitTable_or_index_name(Table_or_index_nameContext ctx) {}
 	@Override public void enterNew_table_name(New_table_nameContext ctx) {}
 	@Override public void exitNew_table_name(New_table_nameContext ctx) {}
-	@Override public void enterColumn_name(Column_nameContext ctx) {}
-	@Override public void exitColumn_name(Column_nameContext ctx) {}
 	@Override public void enterCollation_name(Collation_nameContext ctx) {}
 	@Override public void exitCollation_name(Collation_nameContext ctx) {}
 	@Override public void enterForeign_table(Foreign_tableContext ctx) {}
@@ -475,12 +618,11 @@ class MakeStmt implements SqlListener {
 	@Override public void exitPragma_name(Pragma_nameContext ctx) {}
 	@Override public void enterSavepoint_name(Savepoint_nameContext ctx) {}
 	@Override public void exitSavepoint_name(Savepoint_nameContext ctx) {}
-	@Override public void enterTable_alias(Table_aliasContext ctx) {}
-	@Override public void exitTable_alias(Table_aliasContext ctx) {}
 	@Override public void enterTransaction_name(Transaction_nameContext ctx) {}
 	@Override public void exitTransaction_name(Transaction_nameContext ctx) {}
 	@Override public void enterAny_name(Any_nameContext ctx) {}
-	@Override public void exitAny_name(Any_nameContext ctx) {}
+	@Override public void exitAny_name(Any_nameContext ctx) {
+	}
 	@Override
 	public void enterAlter_table_stmt(Alter_table_stmtContext ctx) {
 		// TODO Auto-generated method stub
@@ -862,26 +1004,6 @@ class MakeStmt implements SqlListener {
 		
 	}
 	@Override
-	public void enterResult_column(Result_columnContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void exitResult_column(Result_columnContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void enterTable_or_subquery(Table_or_subqueryContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void exitTable_or_subquery(Table_or_subqueryContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
 	public void enterJoin_clause(Join_clauseContext ctx) {
 		// TODO Auto-generated method stub
 		
@@ -908,16 +1030,6 @@ class MakeStmt implements SqlListener {
 	}
 	@Override
 	public void exitJoin_constraint(Join_constraintContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void enterSelect_core(Select_coreContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void exitSelect_core(Select_coreContext ctx) {
 		// TODO Auto-generated method stub
 		
 	}
