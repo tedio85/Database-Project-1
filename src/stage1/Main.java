@@ -172,11 +172,11 @@ public class Main {
     	else if(buffer.substring(0, 4).toUpperCase().equals("SHOW")) {
     		// Allow user to enter multiple spaces between "show" and "Table name"
     		buffer = buffer.replaceAll("\\s","");
-    		if(tMgr.getTable(buffer.substring(4))==null) {
+    		if(!tMgr.isExist(buffer.substring(4))) {
     			System.err.println("Table do not exist !!");
     		} else {
     			System.out.println("Table Name :" + buffer.substring(4));
-    			tMgr.getTable(buffer.substring(4)).show();
+    			tMgr.showTable(buffer.substring(4));
     		}
     	}
     	return false;

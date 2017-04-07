@@ -11,6 +11,10 @@ public class TableManager {
 	Queue<String> col_column_name = new LinkedList<String>();
 	Queue<String> tab_table_name = new LinkedList<String>();
 	Queue<String> tab_alias = new LinkedList<String>();
+	Queue<String> whe_table_name = new LinkedList<String>();
+	Queue<String> whe_operator = new LinkedList<String>();
+	Queue<String> whe_column_name = new LinkedList<String>();
+	Queue<String> whe_bool_expr = new LinkedList<String>();
 	
 	TableManager() {
 		TableMap = new HashMap<String, VectorTable>();
@@ -28,8 +32,8 @@ public class TableManager {
 		TableMap.get(tableName).insert(attrs, tup);
 	}
 	
-	public VectorTable getTable(String tableName) {
-		return TableMap.get(tableName);
+	public void showTable(String tableName) {
+		TableMap.get(tableName).show();
 	}
 	
 	public int getTableAttrSize(String tableName) {
@@ -50,10 +54,13 @@ public class TableManager {
 	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
 			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, Queue<String> whe_bool_expr) 
 	{
-		/*while(whe_table_name.size()!=0) {
-			System.out.println(whe_table_name.poll());
-		}
-		System.out.println();
-		*/
+		this.col_table_name = col_table_name;
+		this.col_column_name = col_column_name;
+		this.tab_table_name = tab_table_name;
+		this.tab_alias = tab_alias;
+		this.whe_table_name = whe_table_name;
+		this.whe_operator = whe_operator;
+		this.whe_column_name = whe_column_name;
+		this.whe_bool_expr = whe_bool_expr;
 	}
 }
