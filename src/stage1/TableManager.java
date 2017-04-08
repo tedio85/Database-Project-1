@@ -1,12 +1,14 @@
 package stage1;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 
 public class TableManager {
 	private HashMap<String, VectorTable> TableMap;
+	/*
 	Queue<String> col_table_name = new LinkedList<String>();
 	Queue<String> col_column_name = new LinkedList<String>();
 	Queue<String> tab_table_name = new LinkedList<String>();
@@ -15,6 +17,7 @@ public class TableManager {
 	Queue<String> whe_operator = new LinkedList<String>();
 	Queue<String> whe_column_name = new LinkedList<String>();
 	Queue<String> whe_bool_expr = new LinkedList<String>();
+	*/
 	
 	TableManager() {
 		TableMap = new HashMap<String, VectorTable>();
@@ -54,13 +57,38 @@ public class TableManager {
 	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
 			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, Queue<String> whe_bool_expr) 
 	{
-		this.col_table_name = col_table_name;
-		this.col_column_name = col_column_name;
-		this.tab_table_name = tab_table_name;
-		this.tab_alias = tab_alias;
-		this.whe_table_name = whe_table_name;
-		this.whe_operator = whe_operator;
-		this.whe_column_name = whe_column_name;
-		this.whe_bool_expr = whe_bool_expr;
+		HashSet<String> selectedTable = new HashSet<String>();	// selected table names
+		HashMap<String, String> aliasToName = new HashMap<String, String>();	// map alias to name
+		
+		// build selectedTable and aliasToName
+		while(!tab_table_name.isEmpty()) {
+			String str = tab_table_name.poll();
+			selectedTable.add(str);
+			aliasToName.put(str, str);
+			String al = tab_alias.poll();
+			if(al != null)
+				aliasToName.put(tab_alias.poll(), str);
+		}
+		
+		
+						
+		
 	}
+	
+	private Boolean existAttr(String tableName, String attr) {
+		return TableMap.get(tableName).getAttrs().contains(attr);
+	}
+	
+	private Type checkType(String str) {
+		if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
+			return Type.STR;
+		try {
+			Integer.parseInt(str);
+			return Type.NUM;
+		}
+		catch(NumberFormatException e) {
+			return Type.ATTR_NAME;
+		}
+	}
+	
 }
