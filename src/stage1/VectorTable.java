@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.lang.NumberFormatException;
 
-public class VectorTable implements Table {
+public class VectorTable implements Table, Iterable<Vector<Object>> {
 	protected String name = null;													// name of table
 	protected String primaryKey = null;												// name of primary key
 	protected Vector<Attribute> attrs = new Vector<Attribute>();					// name of attributes
@@ -370,6 +370,16 @@ public class VectorTable implements Table {
 		}
 		System.out.println("+");
 	}
+	
+	// return the index of attribute in record
+	public int getIndexOfAttr(String attrName) {
+		return keyToIdx.get(attrName);
+	}
+	
+	public Class<?> getClassOfAttr(int idxOfAttr) {
+		return attrs.get(idxOfAttr).getClass();
+	}
+	
 	
 	public Iterator<Vector<Object>> iterator() {
 		Iterator<Vector<Object>> it = new Iterator<Vector<Object>>() {

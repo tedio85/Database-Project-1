@@ -235,7 +235,7 @@ public class Main {
     	Queue<String> whe_table_name = new LinkedList<String>();
     	Queue<String> whe_operator = new LinkedList<String>();
     	Queue<String> whe_column_name = new LinkedList<String>();
-    	Queue<String> whe_bool_expr = new LinkedList<String>();
+    	String whe_bool_expr = new String();
     	
         for(int i=0; i<classifyInput.length; i++) {
         	MakeStmt makeStmt = parse(classifyInput[i]);
@@ -435,7 +435,7 @@ class MakeStmt implements SqlListener {
 	Queue<String> whe_table_name = new LinkedList<String>();
 	Queue<String> whe_operator = new LinkedList<String>();
 	Queue<String> whe_column_name = new LinkedList<String>();
-	Queue<String> whe_bool_expr = new LinkedList<String>();
+	String whe_bool_expr = null;
 	
 	boolean result_column_flag = false;
 	boolean table_or_subquery_flag = false;
@@ -468,7 +468,7 @@ class MakeStmt implements SqlListener {
     public Queue<String> getWheOper() {
     	return whe_operator;
     }
-    public Queue<String> getWheBoolExpr() {
+    public String getWheBoolExpr() {
     	return whe_bool_expr;
     }
     
@@ -499,7 +499,7 @@ class MakeStmt implements SqlListener {
     			}
     			else {
     				if(arg0.toString().toUpperCase().equals("AND")||arg0.toString().toUpperCase().equals("OR"))
-    					whe_bool_expr.add(arg0.toString());
+    					whe_bool_expr = arg0.toString();
     				else 
     					whe_operator.add(arg0.toString());
     			}

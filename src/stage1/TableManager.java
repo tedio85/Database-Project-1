@@ -2,6 +2,7 @@ package stage1;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
@@ -55,28 +56,81 @@ public class TableManager {
 	}
 	
 	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
-			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, Queue<String> whe_bool_expr) 
+			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, String whe_bool_expr) 
 	{
-		HashSet<String> selectedTable = new HashSet<String>();	// selected table names
+		HashSet<String> selectedTableName = new HashSet<String>();	// true name of selected tables
 		HashMap<String, String> aliasToName = new HashMap<String, String>();	// map alias to name
 		
 		// build selectedTable and aliasToName
 		while(!tab_table_name.isEmpty()) {
-			String str = tab_table_name.poll();
-			selectedTable.add(str);
+			String str = tab_table_name.poll();	// true name
+			selectedTableName.add(str);
 			aliasToName.put(str, str);
 			String al = tab_alias.poll();
 			if(al != null)
-				aliasToName.put(tab_alias.poll(), str);
+				aliasToName.put(al, str);
 		}
 		
+		// pop out of queue, [0]: lhs, [1[: rhs
+		String[][] wTable = new String[2][2];
+		String[][] wColumn = new String[2][2];
+		String[] op = new String[2];
+		for(int i=0;i<2;i++) {
+			for(int j=0;j<2;j++) {
+				wTable[i][j] = whe_table_name.poll();
+				wColumn[i][j] = whe_column_name.poll();
+			}
+			op[i] = whe_operator.poll();
+		}
 		
+		// check if attribute
+		for(int i=0;i<2;i++) {
+			for(int j=0;j<2;j++) {
+				String foundTableName = findAttrTableName(wColumn[i][j], selectedTableName);
+				if(wTable[i][j] == null) {	// table name not given in WHERE
+					wTable[i][j] = foundTableName;
+				}
+				else {
+					if(!aliasToName.get(wTable[i][j]).equals(foundTableName))	// mismatched table given in WHERE
+						throw new IllegalArgumentException("attribute not in specified table");
+					else	// replace table name alias with true name
+						wTable[i][j] = foundTableName;
+				}
+			}
+		}
+		
+		// distribute to thread
+		if(whe_bool_expr == null) {
+			QThread t0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
+		}
+		else {
+			QThread t0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
+			QThread t1 = new QThread(TableMap, wTable[1], wColumn[1], op[1]);
+		}
 						
-		
 	}
 	
-	private Boolean existAttr(String tableName, String attr) {
-		return TableMap.get(tableName).getAttrs().contains(attr);
+	// return the true name of the table where the attribute falls in 
+	private String findAttrTableName(String attr, HashSet<String> selectedTableName) {
+		Boolean found = false;
+		String ret = null;
+		for(String s: selectedTableName) {
+			for(Attribute a : TableMap.get(s).getAttrs()) {
+				if(a.getName().equals(attr)) {
+					if(found == true) {	//duplicate
+						throw new IllegalArgumentException("ambiguous attribute name");
+					}
+					else {				// found for first time
+						found = true;
+						ret = s;
+					}
+				}
+			}
+		}
+		if(found == false) {
+			throw new IllegalArgumentException("attribute does not belong to any table");
+		}
+		return ret;
 	}
 	
 	private Type checkType(String str) {
