@@ -38,6 +38,9 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 	 * @throws IllegalArgumentException		type error / strLen vector length incorrect
 	 * 
 	 */
+	public VectorTable() {
+		
+	}
 	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
 		this.name = parseString(name);
 		this.primaryKey = parseString(str_pk);
@@ -97,7 +100,7 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		// combine attrs_, attrTypes, strLen to attrs
 		// also check for duplicated attribute name
 		for(int i=0;i<attrs_.size();i++) {
-			Attribute attr = new Attribute(attrs_.get(i), attrTypes_.get(i), strLen_.get(i));
+			Attribute attr = new Attribute(attrs_.get(i), attrTypes_.get(i), strLen_.get(i), this.name);
 			this.attrs.add(attr);
 			if(!keyToIdx.containsKey(attrs_.get(i)))
 				this.keyToIdx.put(attrs_.get(i), i);

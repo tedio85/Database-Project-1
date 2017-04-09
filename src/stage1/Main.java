@@ -514,6 +514,7 @@ class MakeStmt implements SqlListener {
     @Override 
     public void exitSelect_core(Select_coreContext ctx) {
     	while(tab_alias.size()!=tab_table_name.size()) tab_alias.add(null);
+    
     }
     
 	@Override 

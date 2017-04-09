@@ -1,7 +1,6 @@
 package stage1;
 
 import java.util.HashMap;
-import java.util.Queue;
 import java.util.Vector;
 
 public class QThread implements Runnable{
@@ -20,61 +19,48 @@ public class QThread implements Runnable{
 		op = whe_operator;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private VectorTable nestedJoin() {
 		
 		VectorTable lhsTable = TableMap.get(lhs_table_name);
 		VectorTable rhsTable = TableMap.get(rhs_table_name);
 		int lhsIdx = lhsTable.getIndexOfAttr(lhs_column_name);
 		int rhsIdx = rhsTable.getIndexOfAttr(rhs_column_name);
-		Class<?> lhsType = lhsTable.getClassOfAttr(lhsIdx);
-		Class<?> rhsType = rhsTable.getClassOfAttr(rhsIdx);
+		TempTable tempTable = new TempTable(lhsTable.getAttrs(), rhsTable.getAttrs());
 		
 		// attribute type mismatch
-		if(!lhsType.equals(rhsType))
-			throw new IllegalArgumentException("comparing attributes of different types");
-		else if(lhsType == new Integer(0).getClass()) {
-			for(Vector<Object> lrec : lhsTable) {
-				for(Vector<Object> rrec : rhsTable) {
-					Boolean result = null;
+		for(Vector<Object> lrec : lhsTable) {
+			for(Vector<Object> rrec : rhsTable) {
+				Boolean result = null;
+				if(op == null) {
+					result = true;
+				}
+				else {
 					switch(op) {
-					case ">":	result = (Integer)(lrec.get(lhsIdx)) > (Integer)(rrec.get(rhsIdx)); break;
-					case "<":	result = (Integer)(lrec.get(lhsIdx)) < (Integer)(rrec.get(rhsIdx)); break;
-					case "<>":	result = (Integer)(lrec.get(lhsIdx)) != (Integer)(rrec.get(rhsIdx));break;
-					case "=":	result = (Integer)(lrec.get(lhsIdx)) == (Integer)(rrec.get(rhsIdx));break;
-					default: throw new IllegalArgumentException("illegal operator in WHERE");
+						case ">":	result = Comparable.class.cast(lrec.get(lhsIdx)).compareTo(Comparable.class.cast(rrec.get(rhsIdx)))>0; 
+									break;
+						case "<":	result = Comparable.class.cast(lrec.get(lhsIdx)).compareTo(Comparable.class.cast(rrec.get(rhsIdx)))<0; 
+									break;
+						case "<>":	result = Comparable.class.cast(lrec.get(lhsIdx)).compareTo(Comparable.class.cast(rrec.get(rhsIdx)))!=0; 
+									break;
+						case "=":	result = Comparable.class.cast(lrec.get(lhsIdx)).compareTo(Comparable.class.cast(rrec.get(rhsIdx)))==0; 
+									break;
+						default: throw new IllegalArgumentException("illegal operator in WHERE");
 					}
-					
-					if(result == true) 
+				}
+				
+				if(result == true) {
+					tempTable.insert_(lrec, rrec);
 				}
 			}
 		}
-		else {
-			for(Vector<Object> lrec : lhsTable) {
-				for(Vector<Object> rrec : rhsTable) {
-					Boolean result = null;
-					String l = (String) lrec.get(lhsIdx);
-					String r = (String) rrec.get(rhsIdx);
-					switch(op) {
-					case ">":	result = l.compareTo(r)>0; break;
-					case "<":	result = l.compareTo(r)<0; break;
-					case "<>":	result = !l.equals(r);	   break;
-					case "=":	result = l.equals(r);	   break;
-					default: throw new IllegalArgumentException("illegal operator in WHERE");
-					}
-				}
-			}
-		}
-		
-		
-		
+		return tempTable;
 	}
 	
 	@Override
 	public void run() {
-		
 		if(op == null)	return;
-		
-		
+		nestedJoin();
 	}
 	
 }
