@@ -101,17 +101,29 @@ public class TableManager {
 		
 		// distribute to thread
 		if(whe_bool_expr == null) {
-			QThread t0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
+			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
+			Thread t0 = new Thread(q0);
+			t0.start();
+			try {
+				t0.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			q0.getTempTable().show();
 		}
 		else {
-			QThread t0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
-			QThread t1 = new QThread(TableMap, wTable[1], wColumn[1], op[1]);
+			Thread t0 = new Thread( new QThread(TableMap, wTable[0], wColumn[0], op[0]));
+			Thread t1 = new Thread( new QThread(TableMap, wTable[1], wColumn[1], op[1]));
+			t0.start();
+			t1.start();
+			
 		}
 						
 	}
 	
 	// return the true name of the table where the attribute falls in 
 	private String findAttrTableName(String attr, HashSet<String> selectedTableName) {
+		if(checkType(attr)!=Type.ATTR_NAME) return null;
 		Boolean found = false;
 		String ret = null;
 		for(String s: selectedTableName) {

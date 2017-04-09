@@ -1,18 +1,22 @@
 CREATE TABLE Student (
-	studentId int, 
-	name varchar(15),
-	gender varchar(1),
-	age int
+	v int
 );
 
 INSERT Into Student 
-Values (,,,1);
+Values (1);
 
 INSERT Into Student 
-Values (,,'M',);
+Values (2);
 
 INSERT Into Student 
-Values (,'John',,);
+Values (59);
 
 INSERT Into Student 
-Values (103,,,);
+Values (1240);
+
+INSERT Into Student 
+Values (3423);
+
+SELECT v 
+FROM Student
+WHERE v > 1000;
