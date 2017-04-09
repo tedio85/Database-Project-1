@@ -2,8 +2,6 @@ package stage1;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 
@@ -101,7 +99,7 @@ public class TableManager {
 		
 		// distribute to thread
 		if(whe_bool_expr == null) {
-			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0]);
+			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName);
 			Thread t0 = new Thread(q0);
 			t0.start();
 			try {
@@ -112,8 +110,8 @@ public class TableManager {
 			q0.getTempTable().show();
 		}
 		else {
-			Thread t0 = new Thread( new QThread(TableMap, wTable[0], wColumn[0], op[0]));
-			Thread t1 = new Thread( new QThread(TableMap, wTable[1], wColumn[1], op[1]));
+			Thread t0 = new Thread( new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName));
+			Thread t1 = new Thread( new QThread(TableMap, wTable[1], wColumn[1], op[1], selectedTableName));
 			t0.start();
 			t1.start();
 			
@@ -146,7 +144,9 @@ public class TableManager {
 	}
 	
 	private Type checkType(String str) {
-		if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
+		if(str == null)
+			return Type.NULL;
+		else if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
 			return Type.STR;
 		try {
 			Integer.parseInt(str);

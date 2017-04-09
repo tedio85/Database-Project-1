@@ -401,7 +401,7 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
-        	Trees.inspect(tree, parser);
+        	//Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker;

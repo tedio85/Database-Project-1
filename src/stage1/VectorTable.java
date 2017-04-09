@@ -18,7 +18,7 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 	protected HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
 	protected HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
 	protected Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
-	private int[] longestStr = new int[20];
+	protected int[] longestStr = new int[20];
 																
 	/**Usage:
 	 *	Creating a table NAME with attributes:
