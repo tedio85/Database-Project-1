@@ -121,13 +121,13 @@ public class TableManager {
 			t1.start();
 			try {
 				t0.join();
-				q0.getTempTable().show();
+				//q0.getTempTable().show();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			try {
 				t1.join();
-				q1.getTempTable().show();
+				//q1.getTempTable().show();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
