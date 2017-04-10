@@ -1,22 +1,22 @@
 CREATE TABLE Student (
-	v int
+	v int, a varchar(20)
 );
 
 INSERT Into Student 
-Values (1);
+Values (1, 'a');
 
 INSERT Into Student 
-Values (2);
+Values (2, 'c');
 
 INSERT Into Student 
-Values (59);
+Values (59, 'b');
 
 INSERT Into Student 
-Values (1240);
+Values (1240, 'd');
 
 INSERT Into Student 
-Values (3423);
+Values (3423, 'e');
 
 SELECT v 
 FROM Student
-WHERE v > 1000;
+WHERE a = 'a';

@@ -443,6 +443,7 @@ class MakeStmt implements SqlListener {
 	boolean column_name_flag = false;
 	boolean table_alias_flag = false;
 	boolean whe_flag = false;
+	boolean literal_flag = false;
 	
     public Vector<String> getStmt() {
         return cur_stmt;
@@ -492,7 +493,7 @@ class MakeStmt implements SqlListener {
     		}
     		else if(whe_flag) {
     			if(table_name_flag) whe_table_name.add(arg0.toString());
-    			else if(column_name_flag) { 
+    			else if(column_name_flag || literal_flag) { 
     				whe_column_name.add(arg0.toString());
     				if(whe_column_name.size()!=whe_table_name.size()) 
     					whe_table_name.add(null);
@@ -557,6 +558,13 @@ class MakeStmt implements SqlListener {
     public void exitResult_column(Result_columnContext ctx) {
     	result_column_flag = false;
     }
+    @Override 
+    public void enterLiteral_value(Literal_valueContext ctx) {
+    	literal_flag = true;
+    }
+	@Override public void exitLiteral_value(Literal_valueContext ctx) {
+		literal_flag = false;
+	}
     
     // don't need these here, so just make them empty implementations
     @Override public void enterSelect_core(Select_coreContext ctx) {}
@@ -585,8 +593,6 @@ class MakeStmt implements SqlListener {
 	@Override public void exitRaise_function(Raise_functionContext ctx) {}
 	@Override public void enterSigned_number(Signed_numberContext ctx) {}
 	@Override public void exitSigned_number(Signed_numberContext ctx) {}
-	@Override public void enterLiteral_value(Literal_valueContext ctx) {}
-	@Override public void exitLiteral_value(Literal_valueContext ctx) {}
 	@Override public void enterUnary_operator(Unary_operatorContext ctx) {}
 	@Override public void exitUnary_operator(Unary_operatorContext ctx) {}
 	@Override public void enterError_message(Error_messageContext ctx) {}
