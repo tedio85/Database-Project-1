@@ -10,6 +10,7 @@ public class QThread implements Runnable{
 	private String[] wTable;
 	private String op;
 	private volatile TempTable tempTable;
+	private boolean reverse;
 
 	public QThread(HashMap<String, VectorTable> TableMap, String[] wTable, 
 					String[] wColumn, String whe_operator, HashSet<String> selectedTableName) {
@@ -56,7 +57,8 @@ public class QThread implements Runnable{
 			outerTable = TableMap.get(tableNames[0]);
 			innerTable = new VectorTable();
 		}
-		
+		// decide reverse
+		reverse = outerTable.getName().equals(selectedTableName.toArray(new String[0])[0]); 
 		// match innerCol and outerCol
 		outerColName = lhs_column_name;
 		innerColName = rhs_column_name;
@@ -68,7 +70,7 @@ public class QThread implements Runnable{
 		int outerIdx = -1;
 		
 		if(innerTable != null)
-			tempTable = new TempTable(outerTable.getAttrs(), innerTable.getAttrs());
+			tempTable = new TempTable(outerTable.getAttrs(), innerTable.getAttrs(), reverse);
 		else
 			tempTable = new TempTable(outerTable.getAttrs());
 		

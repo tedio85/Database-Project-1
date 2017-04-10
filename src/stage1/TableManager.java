@@ -110,15 +110,68 @@ public class TableManager {
 			q0.getTempTable().show();
 		}
 		else {
-			Thread t0 = new Thread( new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName));
-			Thread t1 = new Thread( new QThread(TableMap, wTable[1], wColumn[1], op[1], selectedTableName));
+			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName);
+			QThread q1 = new QThread(TableMap, wTable[1], wColumn[1], op[1], selectedTableName);
+			Thread t0 = new Thread(q0);
+			Thread t1 = new Thread(q1);
 			t0.start();
 			t1.start();
-			
-		}
-						
+			try {
+				t0.join();
+				//q0.getTempTable().show();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			try {
+				t1.join();
+				//q1.getTempTable().show();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			TempTable tmp;
+			switch(whe_bool_expr.toUpperCase()) {
+			case "AND" :
+				tmp = joinAND(q0.getTempTable(), q1.getTempTable());
+				tmp.show();
+				break;
+			case "OR" :
+				tmp = joinOR(q0.getTempTable(), q1.getTempTable());
+				tmp.show();
+				break;
+			default :
+				throw new IllegalArgumentException("illegal join operator");
+			}
+		}				
 	}
-	
+	private TempTable joinAND(TempTable lt, TempTable rt) {
+		TempTable tmp = new TempTable(lt.getAttrs());
+		HashSet<Vector<Object>> smallerOne = new HashSet<Vector<Object>>();
+		TempTable biggerOne = null;
+		if(lt.getAttrs().size() < rt.getAttrs().size()) {
+			smallerOne.addAll(lt.getTable());
+			biggerOne = rt;
+		}
+		else {
+			smallerOne.addAll(rt.getTable());
+			biggerOne = lt;
+		}
+		for(Vector<Object> tup : biggerOne) {
+			if(smallerOne.contains(tup)) 
+				tmp.insert_(tup);
+		}
+		return tmp;
+	}
+	private TempTable joinOR(TempTable lt, TempTable rt) {
+		TempTable ret = new TempTable(lt.getAttrs());
+		HashSet<Vector<Object>> h = new HashSet<Vector<Object>>();
+
+		h.addAll(lt.getTable());
+		h.addAll(rt.getTable());
+		for(Vector<Object> record : h) {
+			ret.insert_(record);
+		}
+		return ret;
+	} 
 	// return the true name of the table where the attribute falls in 
 	private String findAttrTableName(String attr, HashSet<String> selectedTableName) {
 		if(checkType(attr)!=Type.ATTR_NAME) return null;

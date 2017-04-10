@@ -3,16 +3,23 @@ package stage1;
 import java.util.Vector;
 
 public class TempTable extends VectorTable{	
+	private boolean reverse;
 	
-	public TempTable(Vector<Attribute> la, Vector<Attribute> ra) {
+	public TempTable(Vector<Attribute> la, Vector<Attribute> ra, boolean reverse) {
 		this.name = "tmpTable";
+		this.reverse = reverse;
 		Vector<Attribute> merge = new Vector<Attribute>();
-		merge.addAll(la);
-		merge.addAll(ra);
+		if(reverse) {
+			merge.addAll(ra);
+			merge.addAll(la);
+		} 
+		else {
+			merge.addAll(la);
+			merge.addAll(ra);	
+		}
 		attrs.addAll(merge);
 		for(int i=0;i<20;i++)
 			longestStr[i] = 20;
-		
 	}
 	
 	public TempTable(Vector<Attribute> la) {
@@ -22,11 +29,21 @@ public class TempTable extends VectorTable{
 			longestStr[i] = 20;
 	}
 	
+	public void insert_(Vector<Object> joinedTuple) {
+		table.add(joinedTuple);
+	}
+	
 	public void insert_(Vector<Object> lr, Vector<Object> rr) {
 		Vector<Object> merge = new Vector<Object>();
-		merge.addAll(lr);
-		if(rr != null)
-			merge.addAll(rr);
+		if(reverse) {
+			if(rr != null)
+				merge.addAll(rr);
+			merge.addAll(lr);
+		} else {
+			merge.addAll(lr);
+			if(rr != null)
+				merge.addAll(rr);	
+		}
 		table.add(merge);
 	}
 }
