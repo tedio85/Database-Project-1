@@ -58,7 +58,8 @@ public class QThread implements Runnable{
 			innerTable = new VectorTable();
 		}
 		// decide reverse
-		reverse = outerTable.getName().equals(selectedTableName.toArray(new String[0])[0]); 
+		reverse = outerTable.getName().equals(selectedTableName.toArray(new String[0])[0]);
+		
 		// match innerCol and outerCol
 		outerColName = lhs_column_name;
 		innerColName = rhs_column_name;

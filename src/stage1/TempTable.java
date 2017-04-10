@@ -6,7 +6,7 @@ public class TempTable extends VectorTable{
 	private boolean reverse;
 	
 	public TempTable(Vector<Attribute> la, Vector<Attribute> ra, boolean reverse) {
-		this.name = "tmpTable";
+		this.name = "";
 		this.reverse = reverse;
 		Vector<Attribute> merge = new Vector<Attribute>();
 		if(reverse) {
@@ -23,7 +23,7 @@ public class TempTable extends VectorTable{
 	}
 	
 	public TempTable(Vector<Attribute> la) {
-		this.name = "tmpTable";
+		this.name = "";
 		attrs = la;
 		for(int i=0;i<20;i++)
 			longestStr[i] = 20;

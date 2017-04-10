@@ -1,5 +1,6 @@
 package stage1;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Queue;
@@ -81,7 +82,7 @@ public class TableManager {
 			op[i] = whe_operator.poll();
 		}
 		
-		// check if attribute
+		// find the table that contains the attribute name of WHERE
 		for(int i=0;i<2;i++) {
 			for(int j=0;j<2;j++) {
 				String foundTableName = findAttrTableName(wColumn[i][j], selectedTableName);
@@ -98,6 +99,8 @@ public class TableManager {
 		}
 		
 		// distribute to thread
+		TempTable finalResult = null;
+		
 		if(whe_bool_expr == null) {
 			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName);
 			Thread t0 = new Thread(q0);
@@ -107,7 +110,7 @@ public class TableManager {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			q0.getTempTable().show();
+			finalResult = q0.getTempTable();
 		}
 		else {
 			QThread q0 = new QThread(TableMap, wTable[0], wColumn[0], op[0], selectedTableName);
@@ -118,30 +121,47 @@ public class TableManager {
 			t1.start();
 			try {
 				t0.join();
-				//q0.getTempTable().show();
+				q0.getTempTable().show();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			try {
 				t1.join();
-				//q1.getTempTable().show();
+				q1.getTempTable().show();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			TempTable tmp;
 			switch(whe_bool_expr.toUpperCase()) {
 			case "AND" :
-				tmp = joinAND(q0.getTempTable(), q1.getTempTable());
-				tmp.show();
+				finalResult = joinAND(q0.getTempTable(), q1.getTempTable());
 				break;
 			case "OR" :
-				tmp = joinOR(q0.getTempTable(), q1.getTempTable());
-				tmp.show();
+				finalResult = joinOR(q0.getTempTable(), q1.getTempTable());
 				break;
 			default :
 				throw new IllegalArgumentException("illegal join operator");
 			}
-		}				
+		}
+		
+		// find the table that contains the attribute name of SELECT
+		for(int i=0;i<2;i++) {
+			for(int j=0;j<2;j++) {
+				String foundTableName = findAttrTableName(wColumn[i][j], selectedTableName);
+				if(wTable[i][j] == null) {	// table name not given in WHERE
+					wTable[i][j] = foundTableName;
+				}
+				else {
+					if(!aliasToName.get(wTable[i][j]).equals(foundTableName))	// mismatched table given in WHERE
+						throw new IllegalArgumentException("attribute not in specified table");
+					else	// replace table name alias with true name
+						wTable[i][j] = foundTableName;
+				}
+			}
+		} 
+		
+		// project selected attributes
+		project(finalResult, aliasToName, selectedTableName, col_table_name, col_column_name);
+		
 	}
 	private TempTable joinAND(TempTable lt, TempTable rt) {
 		TempTable tmp = new TempTable(lt.getAttrs());
@@ -161,6 +181,7 @@ public class TableManager {
 		}
 		return tmp;
 	}
+	
 	private TempTable joinOR(TempTable lt, TempTable rt) {
 		TempTable ret = new TempTable(lt.getAttrs());
 		HashSet<Vector<Object>> h = new HashSet<Vector<Object>>();
@@ -171,7 +192,52 @@ public class TableManager {
 			ret.insert_(record);
 		}
 		return ret;
-	} 
+	}
+	
+	private void project(TempTable finalResult, HashMap<String, String> aliasToName, HashSet<String> selectedTableName,
+						Queue<String> selectedTable, Queue<String> selectedAttr) {
+		
+		ArrayList<Integer> attrIdx = new ArrayList<Integer>();
+		Vector<Attribute> newAttrs = new Vector<Attribute>();
+		
+		// get (attrName, tableName) from queue one by one
+		while(!selectedAttr.isEmpty()) {
+			String attrName = selectedAttr.poll();
+			String tableName = null;
+			if (selectedTable.peek().equals("*")) 
+				tableName = "*";
+			else if(selectedTable.peek() != null)
+				tableName = aliasToName.get(selectedTable.poll());
+			else
+				tableName = findAttrTableName(attrName, selectedTableName);
+			
+			int count=0;
+			for(Attribute a : finalResult.getAttrs()) {
+				if(tableName.equals("*")) {
+					attrIdx.add(count);
+					newAttrs.add(a);
+					
+				}
+				else if(a.getTableBelong().equals(tableName) && a.getName().equals(attrName)) {
+					attrIdx.add(count);
+					newAttrs.add(a);
+				}
+				count++;
+			}
+		}
+		
+		// put selected results into new TempTable
+		TempTable t = new TempTable(newAttrs);
+		for(Vector<Object> record : finalResult) {
+			Vector<Object> newRecord = new Vector<Object>();
+			for(Integer idx : attrIdx) {
+				newRecord.add(record.get(idx));
+			}
+			t.insert_(newRecord);
+		}
+		t.show();
+	}
+	
 	// return the true name of the table where the attribute falls in 
 	private String findAttrTableName(String attr, HashSet<String> selectedTableName) {
 		if(checkType(attr)!=Type.ATTR_NAME) return null;

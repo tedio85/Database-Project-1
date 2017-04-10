@@ -483,6 +483,9 @@ class MakeStmt implements SqlListener {
     				if(col_column_name.size()!=col_table_name.size()) 
     					col_table_name.add(null);
     			}
+    			if(arg0.toString().equals("*")) {
+    				col_table_name.add(arg0.toString());
+    			}
     		}
     		else if(table_or_subquery_flag) {
     			if(table_name_flag) tab_table_name.add(arg0.toString());
@@ -515,6 +518,7 @@ class MakeStmt implements SqlListener {
     @Override 
     public void exitSelect_core(Select_coreContext ctx) {
     	while(tab_alias.size()!=tab_table_name.size()) tab_alias.add(null);
+    	while(col_column_name.size()!=col_table_name.size()) col_column_name.add(null);
     
     }
     

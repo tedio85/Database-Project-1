@@ -33,3 +33,7 @@ Values (5, 'b');
 SELECT *
 FROM Student AS s, Label AS l
 WHERE s.a = l.d AND l.d = 'a';
+
+SELECT *
+FROM Student AS s
+WHERE 1;
