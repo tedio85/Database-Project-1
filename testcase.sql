@@ -35,5 +35,4 @@ FROM Student AS s, Label AS l
 WHERE s.a = l.d AND l.d = 'a';
 
 SELECT *
-FROM Label
-WHERE 1;
+FROM Label, Student

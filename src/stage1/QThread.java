@@ -11,6 +11,7 @@ public class QThread implements Runnable{
 	private String op;
 	private volatile TempTable tempTable;
 	private boolean reverse;
+	private boolean noWhere;
 
 	public QThread(HashMap<String, VectorTable> TableMap, String[] wTable, 
 					String[] wColumn, String whe_operator, HashSet<String> selectedTableName) {
@@ -59,6 +60,10 @@ public class QThread implements Runnable{
 		}
 		// decide reverse
 		reverse = outerTable.getName().equals(selectedTableName.toArray(new String[0])[0]);
+		
+		// decide whether there is where
+		if(lhs_column_name == null && rhs_column_name == null && whe_operator == null) noWhere = true;
+		else noWhere = false;
 		
 		// match innerCol and outerCol
 		outerColName = lhs_column_name;
@@ -111,7 +116,7 @@ public class QThread implements Runnable{
 	}
 	
 	private boolean evaluate(Object lval, Object rval) {
-	
+		if(noWhere) return true;
 		String l = ((String) lval.toString()).replaceAll("\'", "").replaceAll("\"","");
 		String r = null;
 		if(rval != null)
