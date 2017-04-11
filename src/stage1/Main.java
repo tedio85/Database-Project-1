@@ -210,6 +210,7 @@ public class Main {
 		try {
 			String content = readFile(fileName, StandardCharsets.UTF_8);
 			// classify input string into multiple sql statements
+			content = content.trim();
 	        String[] classifyInput = content.split(";");
 	        inputParse(classifyInput);
 		} catch (IOException e) {
@@ -267,11 +268,15 @@ public class Main {
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("SELECT")) {
 	        	if(func_name.peek().size()!=col_column_name.peek().size() && func_name.peek().size()!=0) 
 	        		System.err.println("AGGREGATION ERROR");
-	        	else
-	        	tMgr.select(/*func_name.poll(), */col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 
-	        			whe_table_name.poll(), whe_operator.poll(), whe_column_name.poll(), whe_bool_expr.poll());
-	        }
-	        	
+	        	else {
+	        		try {
+	        		tMgr.select(func_name.poll(), col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 
+	        		whe_table_name.poll(), whe_operator.poll(), whe_column_name.poll(), whe_bool_expr.poll());
+	        		} catch(Exception e) {
+	        			e.printStackTrace();
+	        		}
+	        	}
+	        }	
         }
 	}
 	

@@ -210,12 +210,13 @@ public class TableManager {
 			String attrName = selectedAttr.poll();
 			attrNames.add(attrName);
 			String tableName = null;
-			if (selectedTable.peek().equals("*")) 
+			if(selectedTable.peek()==null) {
+				tableName = findAttrTableName(attrName, selectedTableName);
+			}
+			else if (selectedTable.peek().equals("*")) 
 				tableName = selectedTable.poll();
 			else if(selectedTable.peek() != null)
 				tableName = aliasToName.get(selectedTable.poll());
-			else
-				tableName = findAttrTableName(attrName, selectedTableName);
 			
 			if(tableName.equals("*"))
 				aggrAttrIdx.add(-1);

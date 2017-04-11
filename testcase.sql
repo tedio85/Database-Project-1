@@ -30,13 +30,6 @@ Values (3, 'a');
 INSERT Into Label 
 Values (5, 'b');
 
-SELECT *, s.v
-FROM Student AS s, Label AS l
-WHERE s.a = l.d AND l.d = 'a';
-
-SELECT *
-FROM Label, Student;
-
-SELECT COUNT(s.a)
-FROM Student AS s, Label AS l
-WHERE s.a = l.d AND l.d = 'a';
+SELECT a
+FROM Student, Label
+WHERE a = d AND d = 'a';
