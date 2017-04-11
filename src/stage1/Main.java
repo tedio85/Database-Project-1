@@ -488,42 +488,42 @@ class MakeStmt implements SqlListener {
     	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(".")
     	&& !arg0.toString().toUpperCase().equals("AS") && !arg0.toString().equals("<EOF>")) {
     		if(result_column_flag) {
-    			if(function_name_flag) func_name.add(arg0.toString());
-    			if(table_name_flag) col_table_name.add(arg0.toString());
+    			if(function_name_flag) func_name.add(arg0.toString().toUpperCase());
+    			if(table_name_flag) col_table_name.add(arg0.toString().toUpperCase());
     			if(column_name_flag) {
-    				col_column_name.add(arg0.toString());
+    				col_column_name.add(arg0.toString().toUpperCase());
     				if(col_column_name.size()!=col_table_name.size()) 
     					col_table_name.add(null);
     			}
     			if(arg0.toString().equals("*")) {
     				col_table_name.add(arg0.toString());
-    				col_column_name.add(null);
+    				col_column_name.add(arg0.toString());
     			}
     		}
     		else if(table_or_subquery_flag) {
-    			if(table_name_flag) tab_table_name.add(arg0.toString());
+    			if(table_name_flag) tab_table_name.add(arg0.toString().toUpperCase());
     			if(table_alias_flag) {
     				while(tab_alias.size()!=tab_table_name.size()-1) tab_alias.add(null);
-    				tab_alias.add(arg0.toString());
+    				tab_alias.add(arg0.toString().toUpperCase());
     			}
     		}
     		else if(whe_flag) {
-    			if(table_name_flag) whe_table_name.add(arg0.toString());
+    			if(table_name_flag) whe_table_name.add(arg0.toString().toUpperCase());
     			else if(column_name_flag || literal_flag) { 
-    				whe_column_name.add(arg0.toString());
+    				whe_column_name.add(arg0.toString().toUpperCase());
     				if(whe_column_name.size()!=whe_table_name.size()) 
     					whe_table_name.add(null);
     			}
     			else {
     				if(arg0.toString().toUpperCase().equals("AND")||arg0.toString().toUpperCase().equals("OR"))
-    					whe_bool_expr = arg0.toString();
+    					whe_bool_expr = arg0.toString().toUpperCase();
     				else 
-    					whe_operator.add(arg0.toString());
+    					whe_operator.add(arg0.toString().toUpperCase());
     			}
     		}
     		else {
     			if(arg0.toString().toUpperCase().equals("WHERE")) whe_flag=true;
-    			cur_stmt.add(arg0.toString());
+    			cur_stmt.add(arg0.toString().toUpperCase());
     		}
     	}
     }
