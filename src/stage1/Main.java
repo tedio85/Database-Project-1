@@ -266,8 +266,18 @@ public class Main {
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
 	        	processInsert(sql_stmt.get(i));
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("SELECT")) {
-	        	if(func_name.peek().size()!=col_column_name.peek().size() && func_name.peek().size()!=0) 
+	        	if(func_name.peek().size()!=col_column_name.peek().size() && func_name.peek().size()!=0) {
+	        		col_table_name.poll();
+        			col_column_name.poll();
+        			tab_table_name.poll();
+        			tab_alias.poll();
+        			whe_table_name.poll();
+        	    	whe_operator.poll();
+        	    	whe_column_name.poll();
+        	    	whe_bool_expr.poll();
+        	    	func_name.poll();
 	        		System.err.println("AGGREGATION ERROR");
+	        	}
 	        	else {
 	        		try {
 	        		tMgr.select(func_name.poll(), col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 

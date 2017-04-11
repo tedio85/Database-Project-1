@@ -37,7 +37,7 @@ WHERE s.a = l.d AND l.d = 'a';
 SELECT *
 FROM Label, Student;
 
-SELECT COUNT(s.a), SUM(s.v)
+SELECT COUNT(s.a), s.v
 FROM Student AS s, Label AS l
 WHERE s.a = l.d AND l.d = 'a';
 
