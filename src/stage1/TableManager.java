@@ -204,7 +204,8 @@ public class TableManager {
 		ArrayList<Integer> aggrAttrIdx = new ArrayList<Integer>();
 		ArrayList<Integer> attrIdx = new ArrayList<Integer>();
 		Vector<Attribute> newAttrs = new Vector<Attribute>();
-		
+		// 
+		boolean starExist = selectedTable.contains("*") & (aggrFunc.isEmpty() == true);
 		// get (attrName, tableName) from queue one by one
 		while(!selectedAttr.isEmpty()) {
 			String attrName = selectedAttr.poll();
@@ -226,12 +227,13 @@ public class TableManager {
 				if(tableName.equals("*")) {
 					attrIdx.add(count);
 					newAttrs.add(a);
-					
 				}
 				else if(a.getTableBelong().equals(tableName) && a.getName().equals(attrName)) {
 					aggrAttrIdx.add(count);
-					attrIdx.add(count);
-					newAttrs.add(a);
+					if(!starExist) {
+						attrIdx.add(count);
+						newAttrs.add(a);
+					}
 				}
 				count++;
 			}
