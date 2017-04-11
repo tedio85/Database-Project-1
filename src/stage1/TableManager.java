@@ -54,8 +54,11 @@ public class TableManager {
 		return TableMap.containsKey(tableName);
 	}
 	
-	public void select(Queue<String> col_table_name, Queue<String> col_column_name, Queue<String> tab_table_name, Queue<String> tab_alias,
-			Queue<String> whe_table_name, Queue<String> whe_operator ,Queue<String> whe_column_name, String whe_bool_expr) 
+	public void select(ArrayList<String> aggrFunc, 
+					   Queue<String> col_table_name, Queue<String> col_column_name,
+					   Queue<String> tab_table_name, Queue<String> tab_alias,
+					   Queue<String> whe_table_name, Queue<String> whe_operator ,
+					   Queue<String> whe_column_name, String whe_bool_expr) 
 	{
 		HashSet<String> selectedTableName = new HashSet<String>();	// true name of selected tables
 		HashMap<String, String> aliasToName = new HashMap<String, String>();	// map alias to name
@@ -160,7 +163,7 @@ public class TableManager {
 		} 
 		
 		// project selected attributes
-		project(finalResult, aliasToName, selectedTableName, col_table_name, col_column_name);
+		project(finalResult, aliasToName, selectedTableName, col_table_name, col_column_name, aggrFunc);
 		
 	}
 	private TempTable joinAND(TempTable lt, TempTable rt) {
@@ -195,14 +198,17 @@ public class TableManager {
 	}
 	
 	private void project(TempTable finalResult, HashMap<String, String> aliasToName, HashSet<String> selectedTableName,
-						Queue<String> selectedTable, Queue<String> selectedAttr) {
+						Queue<String> selectedTable, Queue<String> selectedAttr, ArrayList<String> aggrFunc) {
 		
+		ArrayList<String>  attrNames = new ArrayList<String>();
+		ArrayList<Integer> aggrAttrIdx = new ArrayList<Integer>();
 		ArrayList<Integer> attrIdx = new ArrayList<Integer>();
 		Vector<Attribute> newAttrs = new Vector<Attribute>();
 		
 		// get (attrName, tableName) from queue one by one
 		while(!selectedAttr.isEmpty()) {
 			String attrName = selectedAttr.poll();
+			attrNames.add(attrName);
 			String tableName = null;
 			if (selectedTable.peek().equals("*")) 
 				tableName = "*";
@@ -210,6 +216,9 @@ public class TableManager {
 				tableName = aliasToName.get(selectedTable.poll());
 			else
 				tableName = findAttrTableName(attrName, selectedTableName);
+			
+			if(tableName.equals("*"))
+				aggrAttrIdx.add(-1);
 			
 			int count=0;
 			for(Attribute a : finalResult.getAttrs()) {
@@ -219,6 +228,7 @@ public class TableManager {
 					
 				}
 				else if(a.getTableBelong().equals(tableName) && a.getName().equals(attrName)) {
+					aggrAttrIdx.add(count);
 					attrIdx.add(count);
 					newAttrs.add(a);
 				}
@@ -226,14 +236,19 @@ public class TableManager {
 			}
 		}
 		
+		if(aggrFunc.isEmpty()) {
 		// put selected results into new TempTable
-		TempTable t = new TempTable(newAttrs);
-		for(Vector<Object> record : finalResult) {
-			Vector<Object> newRecord = new Vector<Object>();
-			for(Integer idx : attrIdx) {
-				newRecord.add(record.get(idx));
+			TempTable t = new TempTable(newAttrs);
+			for(Vector<Object> record : finalResult) {
+				Vector<Object> newRecord = new Vector<Object>();
+				for(Integer idx : attrIdx) {
+					newRecord.add(record.get(idx));
+				}
+				t.insert_(newRecord);
 			}
-			t.insert_(newRecord);
+		}
+		else {
+			Aggregate.
 		}
 		t.show();
 	}
