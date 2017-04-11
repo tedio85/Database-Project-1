@@ -1,6 +1,7 @@
 package stage1;
 
 import java.util.Vector;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
@@ -228,6 +229,7 @@ public class Main {
 	public static void inputParse(String [] classifyInput) {
 		// use LinkedList to linked more than 1 input sql statement
         LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
+        Queue<ArrayList<String>> func_name = new LinkedList<ArrayList<String>>();
         Queue<Queue<String>> col_table_name = new LinkedList<Queue<String>>();
         Queue<Queue<String>> col_column_name = new LinkedList<Queue<String>>();
         Queue<Queue<String>> tab_table_name = new LinkedList<Queue<String>>();
@@ -251,6 +253,7 @@ public class Main {
         	    	whe_operator.add(makeStmt.getWheOper());
         	    	whe_column_name.add(makeStmt.getWheColName());
         	    	whe_bool_expr.add(makeStmt.getWheBoolExpr());
+        	    	func_name.add(makeStmt.getFuncName());
         		}
         	}
         }
@@ -262,7 +265,10 @@ public class Main {
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
 	        	processInsert(sql_stmt.get(i));
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("SELECT")) {
-	        	tMgr.select(col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 
+	        	if(func_name.peek().size()!=col_column_name.peek().size() && func_name.peek().size()!=0) 
+	        		System.err.println("AGGREGATION ERROR");
+	        	else
+	        	tMgr.select(/*func_name.poll(), */col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 
 	        			whe_table_name.poll(), whe_operator.poll(), whe_column_name.poll(), whe_bool_expr.poll());
 	        }
 	        	
@@ -401,7 +407,7 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
-        	//Trees.inspect(tree, parser);
+        	Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker;
@@ -428,6 +434,7 @@ public class Main {
 
 class MakeStmt implements SqlListener {
 	Vector<String> cur_stmt = new Vector<String>();
+	ArrayList<String> func_name = new ArrayList<String>();
 	Queue<String> col_table_name = new LinkedList<String>();
 	Queue<String> col_column_name = new LinkedList<String>();
 	Queue<String> tab_table_name = new LinkedList<String>();
@@ -444,9 +451,13 @@ class MakeStmt implements SqlListener {
 	boolean table_alias_flag = false;
 	boolean whe_flag = false;
 	boolean literal_flag = false;
+	boolean function_name_flag = false;
 	
     public Vector<String> getStmt() {
         return cur_stmt;
+    }
+    public ArrayList<String> getFuncName() {
+    	return func_name;
     }
     public Queue<String> getColTabName() {
     	return col_table_name;
@@ -477,6 +488,7 @@ class MakeStmt implements SqlListener {
     	if(!arg0.toString().equals("(") && !arg0.toString().equals(")") && !arg0.toString().equals(".")
     	&& !arg0.toString().toUpperCase().equals("AS") && !arg0.toString().equals("<EOF>")) {
     		if(result_column_flag) {
+    			if(function_name_flag) func_name.add(arg0.toString());
     			if(table_name_flag) col_table_name.add(arg0.toString());
     			if(column_name_flag) {
     				col_column_name.add(arg0.toString());
@@ -521,6 +533,13 @@ class MakeStmt implements SqlListener {
     	while(col_column_name.size()!=col_table_name.size()) col_column_name.add(null);
     
     }
+    
+	@Override public void enterFunction_name(Function_nameContext ctx) {
+		function_name_flag = true;
+	}
+	@Override public void exitFunction_name(Function_nameContext ctx) {
+		function_name_flag = false;
+	}
     
 	@Override 
 	public void enterTable_alias(Table_aliasContext ctx) {
@@ -605,8 +624,6 @@ class MakeStmt implements SqlListener {
 	@Override public void exitKeyword(KeywordContext ctx) {}
 	@Override public void enterName(NameContext ctx) {}
 	@Override public void exitName(NameContext ctx) {}
-	@Override public void enterFunction_name(Function_nameContext ctx) {}
-	@Override public void exitFunction_name(Function_nameContext ctx) {}
 	@Override public void enterDatabase_name(Database_nameContext ctx) {}
 	@Override public void exitDatabase_name(Database_nameContext ctx) {}
 	@Override public void enterTable_or_index_name(Table_or_index_nameContext ctx) {}

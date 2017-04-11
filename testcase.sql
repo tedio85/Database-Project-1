@@ -35,4 +35,8 @@ FROM Student AS s, Label AS l
 WHERE s.a = l.d AND l.d = 'a';
 
 SELECT *
-FROM Label, Student
+FROM Label, Student;
+
+SELECT COUNT(s.a)
+FROM Student AS s, Label AS l
+WHERE s.a = l.d AND l.d = 'a';
