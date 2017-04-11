@@ -228,14 +228,14 @@ public class Main {
 	public static void inputParse(String [] classifyInput) {
 		// use LinkedList to linked more than 1 input sql statement
         LinkedList<Vector<String>> sql_stmt = new LinkedList<Vector<String>>();
-        Queue<String> col_table_name = new LinkedList<String>();
-    	Queue<String> col_column_name = new LinkedList<String>();
-    	Queue<String> tab_table_name = new LinkedList<String>();
-    	Queue<String> tab_alias = new LinkedList<String>();
-    	Queue<String> whe_table_name = new LinkedList<String>();
-    	Queue<String> whe_operator = new LinkedList<String>();
-    	Queue<String> whe_column_name = new LinkedList<String>();
-    	String whe_bool_expr = new String();
+        Queue<Queue<String>> col_table_name = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> col_column_name = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> tab_table_name = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> tab_alias = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> whe_table_name = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> whe_operator = new LinkedList<Queue<String>>();
+        Queue<Queue<String>> whe_column_name = new LinkedList<Queue<String>>();
+    	Queue<String> whe_bool_expr = new LinkedList<String>();
     	
         for(int i=0; i<classifyInput.length; i++) {
         	MakeStmt makeStmt = parse(classifyInput[i]);
@@ -243,14 +243,14 @@ public class Main {
         	if (parseOutput!=null) {
         		sql_stmt.add(parseOutput);
         		if(parseOutput.get(0).toUpperCase().equals("SELECT")) {
-        			col_table_name = makeStmt.getColTabName();
-        			col_column_name = makeStmt.getColColName();
-        			tab_table_name = makeStmt.getTabTabName();
-        			tab_alias = makeStmt.getTabAlias();
-        			whe_table_name = makeStmt.getWheTabName();
-        	    	whe_operator = makeStmt.getWheOper();
-        	    	whe_column_name = makeStmt.getWheColName();
-        	    	whe_bool_expr = makeStmt.getWheBoolExpr();
+        			col_table_name.add(makeStmt.getColTabName());
+        			col_column_name.add(makeStmt.getColColName());
+        			tab_table_name.add(makeStmt.getTabTabName());
+        			tab_alias.add(makeStmt.getTabAlias());
+        			whe_table_name.add(makeStmt.getWheTabName());
+        	    	whe_operator.add(makeStmt.getWheOper());
+        	    	whe_column_name.add(makeStmt.getWheColName());
+        	    	whe_bool_expr.add(makeStmt.getWheBoolExpr());
         		}
         	}
         }
@@ -262,8 +262,8 @@ public class Main {
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
 	        	processInsert(sql_stmt.get(i));
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("SELECT")) {
-	        	tMgr.select(col_table_name, col_column_name, tab_table_name, tab_alias, 
-	        			whe_table_name, whe_operator, whe_column_name, whe_bool_expr);
+	        	tMgr.select(col_table_name.poll(), col_column_name.poll(), tab_table_name.poll(), tab_alias.poll(), 
+	        			whe_table_name.poll(), whe_operator.poll(), whe_column_name.poll(), whe_bool_expr.poll());
 	        }
 	        	
         }
