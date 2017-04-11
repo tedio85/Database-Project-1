@@ -236,9 +236,10 @@ public class TableManager {
 			}
 		}
 		
+		TempTable t = null;
 		if(aggrFunc.isEmpty()) {
 		// put selected results into new TempTable
-			TempTable t = new TempTable(newAttrs);
+			t = new TempTable(newAttrs);
 			for(Vector<Object> record : finalResult) {
 				Vector<Object> newRecord = new Vector<Object>();
 				for(Integer idx : attrIdx) {
@@ -248,7 +249,7 @@ public class TableManager {
 			}
 		}
 		else {
-			Aggregate.
+			t = Aggregate.aggr(finalResult, aggrFunc, attrNames, aggrAttrIdx);
 		}
 		t.show();
 	}
