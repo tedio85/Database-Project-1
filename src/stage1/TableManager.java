@@ -211,7 +211,7 @@ public class TableManager {
 			attrNames.add(attrName);
 			String tableName = null;
 			if (selectedTable.peek().equals("*")) 
-				tableName = "*";
+				tableName = selectedTable.poll();
 			else if(selectedTable.peek() != null)
 				tableName = aliasToName.get(selectedTable.poll());
 			else

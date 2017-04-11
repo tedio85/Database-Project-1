@@ -30,7 +30,7 @@ Values (3, 'a');
 INSERT Into Label 
 Values (5, 'b');
 
-SELECT *
+SELECT *, s.v
 FROM Student AS s, Label AS l
 WHERE s.a = l.d AND l.d = 'a';
 

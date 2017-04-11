@@ -407,7 +407,7 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
-        	Trees.inspect(tree, parser);
+        	//Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker;
@@ -497,6 +497,7 @@ class MakeStmt implements SqlListener {
     			}
     			if(arg0.toString().equals("*")) {
     				col_table_name.add(arg0.toString());
+    				col_column_name.add(null);
     			}
     		}
     		else if(table_or_subquery_flag) {
@@ -529,9 +530,7 @@ class MakeStmt implements SqlListener {
     
     @Override 
     public void exitSelect_core(Select_coreContext ctx) {
-    	while(tab_alias.size()!=tab_table_name.size()) tab_alias.add(null);
-    	while(col_column_name.size()!=col_table_name.size()) col_column_name.add(null);
-    
+    	while(tab_alias.size()!=tab_table_name.size()) tab_alias.add(null);    
     }
     
 	@Override public void enterFunction_name(Function_nameContext ctx) {
