@@ -148,8 +148,8 @@ public class QThread implements Runnable{
 			switch(op) {
 				case ">":	return l2int > r2int; 
 				case "<":	return l2int < r2int;
-				case "=":	return l == r;
-				case "<>":	return l != r;
+				case "=":	return l2int == r2int;
+				case "<>":	return l2int != r2int;
 				default:	throw new IllegalArgumentException("invalid operator in WHERE");
 			}
 		}
