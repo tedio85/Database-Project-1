@@ -1,5 +1,8 @@
 package stage1;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -88,6 +91,96 @@ import stage1.SqlParser.With_clauseContext;
 
 public class StmtMaker implements SqlListener{
 
+	private Stmt statement = null;
+	
+	
+	public Stmt getStatement() {
+		if(statement == null)
+			throw new NullPointerException("Statement not created yet");
+		return statement;
+	}
+	
+	public void resetStatement() {
+		statement = null;
+	}
+	
+	@Override
+	public void exitCreate_table_stmt(Create_table_stmtContext ctx) {
+		
+		CreateTableStmt newStatement = new CreateTableStmt();
+		
+		// set table_name
+		newStatement.setTable_name(ctx.table_name().getText());
+		
+		// set column_def -> column_name type_name
+		for(Column_defContext context : ctx.column_def()) {
+			
+			List<NameContext> names = context.type_name().name();
+			String type_name = names.get(0).getText();
+			boolean isPrimaryKey = false;
+			
+			if(names.size() == 2) {
+				switch(names.get(1).getText().toLowerCase()) {
+				case "primary_key": isPrimaryKey = true;	break;
+				default: type_name += " " + names.get(1).getText().replaceAll("[()]","");
+				}
+			}
+			else if(names.size() == 3) {
+				type_name += " " + names.get(1).getText().replaceAll("[()]","");
+				isPrimaryKey = true;
+			}
+			
+			Column_def cd = new Column_def(context.column_name().getText(), type_name, isPrimaryKey);
+			newStatement.addColumn_def(cd);
+		}
+		
+		//newStatement.show();
+		statement = newStatement;
+	}
+	
+	@Override
+	public void exitInsert_stmt(Insert_stmtContext ctx) {
+		
+		InsertStmt newStatement = new InsertStmt();
+		
+		
+		// set table name
+		newStatement.setTable_name(ctx.table_name().getText());
+
+		List<Column_nameContext> column_names = ctx.column_name();
+		List<ExprContext> exprs  = ctx.expr();
+		
+		/*
+		 * 	get the column_names
+		 *  	if column_name == null, use default attribute order
+		 *  	if column_name != null, then # of column_name must equal # of expr
+		 */
+		List<String> column_names_extracted= new ArrayList<String>();
+		if(column_names.isEmpty()) {
+			newStatement.setUsingDefaultAttrOrder(true);
+			for(int i=0;i<exprs.size();i++)
+				column_names_extracted.add("YOU SHOULD NOT USE THIS!");
+		}
+		else {
+			newStatement.setUsingDefaultAttrOrder(false);
+			if(column_names.size() != exprs.size())	
+				throw new IllegalArgumentException("# of column_name must equal # of expr");
+			for(Column_nameContext cnc : column_names)
+				column_names_extracted.add(cnc.getText());
+		}
+		
+		for(int i=0;i<exprs.size();i++) {
+			ColNameValuePair cnvp = new ColNameValuePair(column_names_extracted.get(i), 
+														 exprs.get(i).getText());
+			newStatement.addNameValuePair(cnvp);
+		}
+		//newStatement.show();
+		statement = newStatement;
+	}
+	
+	
+	/* ------------------------Unused-------------------- */
+	
 	@Override
 	public void enterEveryRule(ParserRuleContext arg0) {
 		// TODO Auto-generated method stub
@@ -234,15 +327,7 @@ public class StmtMaker implements SqlListener{
 
 	@Override
 	public void enterCreate_table_stmt(Create_table_stmtContext ctx) {
-		System.out.println("entering...");
-		//System.out.println(ctx);
-	}
-
-	@Override
-	public void exitCreate_table_stmt(Create_table_stmtContext ctx) {
-		System.out.println("leaving...");
-		System.out.println(ctx.column_def().get(1).column_name().getText());
-
+		
 	}
 
 	@Override
@@ -379,12 +464,6 @@ public class StmtMaker implements SqlListener{
 
 	@Override
 	public void enterInsert_stmt(Insert_stmtContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void exitInsert_stmt(Insert_stmtContext ctx) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -691,10 +770,7 @@ public class StmtMaker implements SqlListener{
 
 	@Override
 	public void enterResult_column(Result_columnContext ctx) {
-		System.out.println(ctx.getText());
-		String s = ctx.getText();
-		System.out.println("s: "+s);
-		System.out.println(ctx.getText().getClass());
+		
 	}
 
 	@Override

@@ -129,16 +129,24 @@ public class Main {
 	    	
 		    // walk the tree
 	    	ParseTree tree = null;
+	    	StmtMaker stmtMaker = null;
 	    	try {
 	    		tree = parser.parse();
 	    		ParseTreeWalker walker = new ParseTreeWalker();
-				SqlListener stmtMaker = new StmtMaker();
+				stmtMaker = new StmtMaker();
 				walker.walk(stmtMaker, tree);
+				org.antlr.v4.gui.Trees.inspect(tree, parser);
 	    	}
 	    	catch(Exception e) {
 	    		e.printStackTrace();
 	    		continue;
 	    	}
+	    	
+	    	// get the statement
+	    	Stmt statementClass = stmtMaker.getStatement();
+	    	stmtMaker.resetStatement();
+	    	
+	    	((InsertStmt)statementClass).show();
 		}
 		
 		// close BufferedReader
