@@ -178,6 +178,11 @@ public class StmtMaker implements SqlListener{
 		statement = newStatement;
 	}
 	
+	@Override
+	public void exitSelect_core(Select_coreContext ctx) {
+
+		
+	}
 	
 	/* ------------------------Unused-------------------- */
 	
@@ -829,12 +834,6 @@ public class StmtMaker implements SqlListener{
 
 	@Override
 	public void enterSelect_core(Select_coreContext ctx) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void exitSelect_core(Select_coreContext ctx) {
 		// TODO Auto-generated method stub
 		
 	}
