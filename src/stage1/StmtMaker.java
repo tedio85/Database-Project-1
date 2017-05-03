@@ -132,9 +132,18 @@ public class StmtMaker implements SqlListener{
 			else {
 				if(c.expr().function_name() != null)
 					rc.setFunc_name(c.expr().function_name().getText(), true);
-				if(c.expr().table_name() != null)
-					rc.setTable_name(c.expr().table_name().getText(), true);
-				rc.setAttr_name(c.expr().column_name().getText());
+				if(rc.hasFunc_name) {
+					if(c.expr().expr().get(0).table_name() != null)
+						rc.setTable_name(c.expr().expr().get(0).table_name().getText(), true);
+				}
+				else {
+					if(c.expr().table_name() != null)
+						rc.setTable_name(c.expr().table_name().getText(), true);
+				}
+				if(rc.hasFunc_name)
+					rc.setAttr_name(c.expr().expr().get(0).column_name().getText());
+				else
+					rc.setAttr_name(c.expr().getText());
 			}
 		}
 		return rc;
@@ -152,6 +161,24 @@ public class StmtMaker implements SqlListener{
 			table_alias = c.table_alias().getText();
 		}
 		return new Table_or_subquery(hasTable_alias, table_name, table_alias);
+	}
+	
+	private Expr createExpr(ExprContext c) {
+		if(c.getChildCount() == 1) {
+			String op1 = c.getChild(0).getText();
+			Class<?> op1Type = determineType(op1);
+			return new Expr(op1, op1Type);
+		}
+		else {
+		String op1 = c.getChild(0).getText();
+		String op2 = c.getChild(2).getText();
+		Class<?> op1Type = determineType(op1);
+		Class<?> op2Type = determineType(op2);
+		
+		return new Expr(op1.replaceAll("[']", ""), op1Type,
+						op2.replaceAll("[']", ""), op2Type, 
+						c.getChild(1).getText());
+		}
 	}
 	
 	@Override
@@ -267,32 +294,11 @@ public class StmtMaker implements SqlListener{
 		else
 			singleWhereClauses = mainWhereClause.expr();
 		
-		/*
-		if(singleWhereClauses.size() == 1) {
-			if(singleWhereClauses.get(0).literal_value() == null) {
-				Expr e = new Expr(singleWhereClauses.get(0).getText(), Integer.class);
-				newStatement.addExpr(e);
-			}
-			else {
-				Expr e = new Expr(singleWhereClauses.get(0).getText().replaceAll("[']", ""), String.class);
-				newStatement.addExpr(e);
-			}
+		for(ExprContext c : singleWhereClauses) {
+			Expr e = createExpr(c);
+			newStatement.addExpr(e);
 		}
-		else { */
-			for(ExprContext c : singleWhereClauses) {
-				System.out.println(c.getText());
-				String op1 = c.getChild(0).getText();
-				String op2 = c.getChild(2).getText();
-				Class<?> op1Type = determineType(op1);
-				Class<?> op2Type = determineType(op2);
-				
-				Expr e = new Expr(op1.replaceAll("[']", ""), op1Type,
-								  op2.replaceAll("[']", ""), op2Type, 
-								  c.getChild(1).getText());
-				newStatement.addExpr(e);
-			}
-		//}
-		
+
 		newStatement.show();
 		statement = newStatement;
 	}
