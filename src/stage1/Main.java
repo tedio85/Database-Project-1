@@ -146,7 +146,6 @@ public class Main {
 	    	Stmt statementClass = stmtMaker.getStatement();
 	    	stmtMaker.resetStatement();
 	    	
-	    	((InsertStmt)statementClass).show();
 		}
 		
 		// close BufferedReader

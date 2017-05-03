@@ -104,6 +104,56 @@ public class StmtMaker implements SqlListener{
 		statement = null;
 	}
 	
+	private Class<?> determineType(String op) {
+		Class<?> opType = Exception.class;
+		if(op.startsWith("'"))
+			opType = String.class;
+		else if(op.matches("[0-9]+"))
+			opType = Integer.class;
+		else
+			opType = Object.class;
+		return opType;
+	}
+	
+	private Result_column createResult_column(Result_columnContext c) {
+		Result_column rc = new Result_column();
+		if(c.getText().equals("*")) {
+			rc.isSingleStar();
+		}
+		else {
+			if(c.expr() == null) {
+				rc.setFunc_name("No function_name", false);
+				if(c.table_name() != null)
+					rc.setTable_name(c.table_name().getText(), true);
+				else
+					rc.setTable_name("No table_name", false);
+				rc.setAttr_name("*");
+			}
+			else {
+				if(c.expr().function_name() != null)
+					rc.setFunc_name(c.expr().function_name().getText(), true);
+				if(c.expr().table_name() != null)
+					rc.setTable_name(c.expr().table_name().getText(), true);
+				rc.setAttr_name(c.expr().column_name().getText());
+			}
+		}
+		return rc;
+	}
+	
+	private Table_or_subquery createTable_or_subquery(Table_or_subqueryContext c) {
+		String table_name = new String();
+		String table_alias = new String("No table_alias");
+		boolean hasTable_alias = true;
+		table_name = c.table_name().getText();
+		if(c.table_alias() == null)
+			hasTable_alias = false;
+		else {
+			hasTable_alias = true;
+			table_alias = c.table_alias().getText();
+		}
+		return new Table_or_subquery(hasTable_alias, table_name, table_alias);
+	}
+	
 	@Override
 	public void exitCreate_table_stmt(Create_table_stmtContext ctx) {
 		
@@ -181,8 +231,72 @@ public class StmtMaker implements SqlListener{
 	@Override
 	public void exitSelect_core(Select_coreContext ctx) {
 
+		SelectStmt newStatement = new SelectStmt();
 		
+		// set result_column
+		for(Result_columnContext c : ctx.result_column()) {
+			Result_column rc = createResult_column(c);
+			newStatement.addResult_column(rc);
+		}
+		
+		// set table_or_subquery
+		for(Table_or_subqueryContext c : ctx.table_or_subquery()) {
+			Table_or_subquery tos = createTable_or_subquery(c);
+			newStatement.addTable_or_subquery(tos);
+		}
+		
+		// set Expr
+		if(ctx.expr().isEmpty()) {	// no WHERE
+			newStatement.show();
+			statement = newStatement;
+			return;
+		}
+		
+		boolean hasBooleanOperator = true;
+		ExprContext mainWhereClause = ctx.expr().get(0);
+		if(mainWhereClause.K_AND() != null)
+			newStatement.setBooleanOperator(mainWhereClause.K_AND().getText());
+		else if(mainWhereClause.K_OR() != null)
+			newStatement.setBooleanOperator(mainWhereClause.K_OR().getText());
+		else
+			hasBooleanOperator = false;
+		
+		List<ExprContext> singleWhereClauses = new ArrayList<ExprContext>();
+		if(hasBooleanOperator == false) 
+			singleWhereClauses.add(mainWhereClause);
+		else
+			singleWhereClauses = mainWhereClause.expr();
+		
+		/*
+		if(singleWhereClauses.size() == 1) {
+			if(singleWhereClauses.get(0).literal_value() == null) {
+				Expr e = new Expr(singleWhereClauses.get(0).getText(), Integer.class);
+				newStatement.addExpr(e);
+			}
+			else {
+				Expr e = new Expr(singleWhereClauses.get(0).getText().replaceAll("[']", ""), String.class);
+				newStatement.addExpr(e);
+			}
+		}
+		else { */
+			for(ExprContext c : singleWhereClauses) {
+				System.out.println(c.getText());
+				String op1 = c.getChild(0).getText();
+				String op2 = c.getChild(2).getText();
+				Class<?> op1Type = determineType(op1);
+				Class<?> op2Type = determineType(op2);
+				
+				Expr e = new Expr(op1.replaceAll("[']", ""), op1Type,
+								  op2.replaceAll("[']", ""), op2Type, 
+								  c.getChild(1).getText());
+				newStatement.addExpr(e);
+			}
+		//}
+		
+		newStatement.show();
+		statement = newStatement;
 	}
+	
 	
 	/* ------------------------Unused-------------------- */
 	

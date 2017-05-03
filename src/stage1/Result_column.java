@@ -8,6 +8,15 @@ public class Result_column {
 	public String table_name;
 	public String attr_name;
 	
+	public Result_column() {
+		this.isSingleStar = false;
+		this.hasFunc_name = false;
+		this.hasTable_name = false;
+		this.func_name = "No func_name";
+		this.table_name = "No table_name";
+		this.attr_name = "No attr_name";
+	}
+	
 	public void isSingleStar() {
 		this.isSingleStar = true;
 		this.hasFunc_name = false;
