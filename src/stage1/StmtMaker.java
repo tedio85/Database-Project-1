@@ -132,18 +132,36 @@ public class StmtMaker implements SqlListener{
 			else {
 				if(c.expr().function_name() != null)
 					rc.setFunc_name(c.expr().function_name().getText(), true);
-				if(rc.hasFunc_name) {
-					if(c.expr().expr().get(0).table_name() != null)
-						rc.setTable_name(c.expr().expr().get(0).table_name().getText(), true);
+				
+				try {
+					if(rc.hasFunc_name) {
+						if(c.expr().expr().get(0).table_name() != null)
+							rc.setTable_name(c.expr().expr().get(0).table_name().getText(), true);
+					}
+					else {
+						if(c.expr().table_name() != null)
+							rc.setTable_name(c.expr().table_name().getText(), true);
+					}
 				}
-				else {
-					if(c.expr().table_name() != null)
-						rc.setTable_name(c.expr().table_name().getText(), true);
+				catch(NullPointerException e) {
+					rc.setTable_name("No table_name", false);
 				}
-				if(rc.hasFunc_name)
-					rc.setAttr_name(c.expr().expr().get(0).column_name().getText());
-				else
-					rc.setAttr_name(c.expr().getText());
+				catch(IndexOutOfBoundsException e) {
+					rc.setTable_name("No table_name", false);
+				}
+				
+				try {
+					if(rc.hasFunc_name)
+						rc.setAttr_name(c.expr().expr().get(0).column_name().getText());
+					else
+						rc.setAttr_name(c.expr().column_name().getText());
+				}
+				catch(NullPointerException e) {
+					rc.setAttr_name("*");
+				}
+				catch(IndexOutOfBoundsException e) {
+					rc.setAttr_name("*");
+				}
 			}
 		}
 		return rc;

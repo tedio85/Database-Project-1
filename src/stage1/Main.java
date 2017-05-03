@@ -135,7 +135,7 @@ public class Main {
 	    		ParseTreeWalker walker = new ParseTreeWalker();
 				stmtMaker = new StmtMaker();
 				walker.walk(stmtMaker, tree);
-				org.antlr.v4.gui.Trees.inspect(tree, parser);
+				//org.antlr.v4.gui.Trees.inspect(tree, parser);
 	    	}
 	    	catch(Exception e) {
 	    		e.printStackTrace();
