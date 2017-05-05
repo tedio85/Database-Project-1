@@ -9,8 +9,8 @@ public class Expr {
 	public final boolean op2HasTable_name;
 	public final Class<?> op1Type;
 	public final Class<?> op2Type;
-	public final String op1_table_name;
-	public final String op2_table_name;
+	public String op1_table_name;
+	public String op2_table_name;
 	public final String op1_attr_name;
 	public final String op2_attr_name;
 	public final String operator;
@@ -65,6 +65,21 @@ public class Expr {
 		this.operator = operator;
 	}
 
+	public void setOp1_table_name(String table_name) {
+		changeTable_name(table_name, 1);
+	}
+	
+	public void setOp2_table_name(String table_name) {
+		changeTable_name(table_name, 2);
+	}
+	
+	private void changeTable_name(String name, int opNum) {
+		if(opNum == 1)
+			op1_table_name = name;
+		else
+			op2_table_name = name;
+	}
+	
 	public void show() {
 		System.out.println();
 		System.out.println("isUnary: "+isUnary);
