@@ -14,10 +14,12 @@ public class QThread2 implements Runnable{
 	int smallerTableIndex;                  // smaller Table means its name is smaller than the other table
 	int biggerTableIndex;                   // bigger Table means its name is bigger than the other table
 	                                        // ( according to String.compareTo() )
+	int tableListNum;                       // size of tableList
 	
 	public QThread2(Expr expr, ArrayList<VectorTable> tableList) {
 		this.expr = expr;
 		this.tableList = tableList;
+		this.tableListNum = tableList.size();
 		/* deciding the index of table whether there is only 1 talbe. */
 		if(tableList.size() == 1) {
 			smallerTableIndex = 0;
@@ -62,6 +64,32 @@ public class QThread2 implements Runnable{
 			
 	}
 	
+	private ArrayList<CartesianTemp> cartesianProduct(Set<Object> set1, Set<Object> set2){
+		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
+		Object[] s_array = set1.toArray();
+		
+		if(tableListNum == 1) {
+			for(int i = 0; i < s_array.length; i++) {
+				CartesianTemp tmp = new CartesianTemp(s_array[i], -1);
+				result.add(tmp);
+			}
+		} 
+		else if(tableListNum == 2){
+			Object[] b_array = set2.toArray();
+			for(int i = 0; i < s_array.length; i++) {
+				for(int j = 0; j < b_array.length; j++) {
+					CartesianTemp tmp = new CartesianTemp(s_array[i], b_array[j]);
+					result.add(tmp);
+				}
+			}
+		}
+		else {
+			System.err.println("In QThread: tableListNum wrong " + tableListNum);
+		}
+		
+		return result;
+	}
+	
 	private ArrayList<CartesianTemp> exprProcess() {
 		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
 		Set<Object> smallerName = new HashSet<Object>();
@@ -74,14 +102,7 @@ public class QThread2 implements Runnable{
 			if(Integer.class.cast(expr.op1_attr_name) != 0) {
 				smallerName = tableList.get(smallerTableIndex).???;
 				biggerName = tableList.get(biggerTableIndex).???;
-				Object[] s_array = smallerName.toArray();
-				Object[] b_array = biggerName.toArray();
-				for(int i = 0; i < s_array.length; i++) {
-					for(int j = 0; j < b_array.length; j++) {
-						CartesianTemp tmp = new CartesianTemp(s_array[i], b_array[j]);
-						result.add(tmp);
-					}
-				}
+				result = cartesianProduct(smallerName, biggerName);
 			}
 		} 
 		else if(!expr.op1HasTable_name || !expr.op2HasTable_name){
@@ -97,14 +118,7 @@ public class QThread2 implements Runnable{
 			}
 			smallerName = evaluate(tableList.get(smallerTableIndex), expr.operator, compared_attr_name, attr_value);
 			biggerName = tableList.get(biggerTableIndex).???;
-			Object[] s_array = smallerName.toArray();
-			Object[] b_array = biggerName.toArray();
-			for(int i = 0; i < s_array.length; i++) {
-				for(int j = 0; j < b_array.length; j++) {
-					CartesianTemp tmp = new CartesianTemp(s_array[i], b_array[j]);
-					result.add(tmp);
-				}
-			}
+			result = cartesianProduct(smallerName, biggerName);
 		} else {
 			int op1Index, op2Index;
 			boolean op1IsSmaller;
@@ -121,16 +135,16 @@ public class QThread2 implements Runnable{
 			VectorTable op1Table = tableList.get(op1Index);
 			for(Vector<Object> v : op1Table) {
 				Object attr_value = v.get(op1Table.getIndexOfAttr(expr.op1_attr_name));
-				Set<Object> tmp_set = evaluate(tableList.get(op2Index), expr.operator, expr.op2_attr_name, attr_value);
-				Object[] tmp_array = tmp_set.toArray();
-				for(int i=0; i < tmp_array.length; i++) {
+				Set<Object> set1 = evaluate(tableList.get(op2Index), expr.operator, expr.op2_attr_name, attr_value);
+				Object[] set1_array = set1.toArray();
+				for(int i=0; i < set1_array.length; i++) {
+					Set<Object> set2 = new HashSet<Object>();
+					set2.add(set1_array);
 					if(op1IsSmaller) {
-						CartesianTemp tmp = new CartesianTemp(attr_value, tmp_array[i]);
-						result.add(tmp);
+						result.addAll(cartesianProduct(set1, set2));
 					}
 					else {
-						CartesianTemp tmp = new CartesianTemp(tmp_array[i], attr_value);
-						result.add(tmp);
+						result.addAll(cartesianProduct(set2, set1));
 					}
 				}
 			}
