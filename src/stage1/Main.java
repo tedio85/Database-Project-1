@@ -16,6 +16,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 public class Main {
 	
@@ -24,7 +26,13 @@ public class Main {
 	// user input source
 	private static BufferedReader inputBr = new BufferedReader(new InputStreamReader(System.in));
 	private static boolean fileInput = false;
-	private static TableManager tMgr = new TableManager();		// map attribute table name to table
+	private static DB diskDB = DBMaker
+							 	.fileDB("fileDB.db")
+							 	.closeOnJvmShutdown()
+							 	.fileLockDisable()
+							 	.make();
+	
+	private static TableManager tMgr = new TableManager(diskDB);		// map attribute table name to table
 	
 	private static BufferedReader determineInputSrc() throws IOException {
 		
@@ -71,8 +79,16 @@ public class Main {
     	}
     }
 	
-	public static void main(String[] args) throws IOException {
-		
+	public static void main(String[] args) {
+		try {
+			start();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+    }
+	
+	private static void start() throws IOException{
 		// input source, will be connected either file input or user input
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
@@ -85,74 +101,81 @@ public class Main {
 		TokenStream tokens = new CommonTokenStream(lexer);
 		SqlParser parser = new SqlParser(tokens);
 		
-		
-		// keep looping for file inputs or user inputs
-		outerloop:
-		while(!exitProgram) {
+		try {
+			// keep looping for file inputs or user inputs
+			outerloop:
+			while(!exitProgram) {
+				
+				if(inputEnd)
+					br = determineInputSrc();
+				
+				// get the statement ending with ";"
+				String statement = new String();
+		        while(true) {
+		        	
+		        	String thisLine = br.readLine();
+		        	statement += thisLine;
+		        	statement += " ";
+		        	inputEnd = (fileInput && thisLine != null ) ? false : true;
+		        	
+		        	if(thisLine == null) {
+		        		continue outerloop;
+		        	}
+		        	else if(thisLine.trim().endsWith(";")) {
+		        		statement = statement.trim();
+		        		statement = statement.substring(0, statement.length()-1);
+		        		break;
+		        	}
+		        }
+			    System.out.println(statement);
+			    
+			    // detect system command
+			    if(systemCmd(statement))	continue;
+			    
+			    // reset lexer & parser
+			    lexer.reset();
+			    parser.reset();
+			    
+			    // feed in new stream
+		    	stream = new ANTLRInputStream(statement);
+		    	lexer.setInputStream(stream);
+		    	tokens = new CommonTokenStream(lexer);
+		    	parser.setTokenStream(tokens);
+		    	
+			    // walk the tree
+		    	ParseTree tree = null;
+		    	StmtMaker stmtMaker = null;
+		    	try {
+		    		tree = parser.parse();
+		    		ParseTreeWalker walker = new ParseTreeWalker();
+					stmtMaker = new StmtMaker();
+					walker.walk(stmtMaker, tree);
+					//org.antlr.v4.gui.Trees.inspect(tree, parser);
+		    	}
+		    	catch(Exception e) {
+		    		e.printStackTrace();
+		    		continue;
+		    	}
+		    	
+		    	// get the statement
+		    	Stmt statementClass = stmtMaker.getStatement();
+		    	tMgr.executeStatement(statementClass);
+		    	stmtMaker.resetStatement();
+		    	
+			}
 			
-			if(inputEnd)
-				br = determineInputSrc();
+			// close BufferedReader
+			br.close();
 			
-			// get the statement ending with ";"
-			String statement = new String();
-	        while(true) {
-	        	
-	        	String thisLine = br.readLine();
-	        	statement += thisLine;
-	        	statement += " ";
-	        	inputEnd = (fileInput && thisLine != null ) ? false : true;
-	        	
-	        	if(thisLine == null) {
-	        		continue outerloop;
-	        	}
-	        	else if(thisLine.trim().endsWith(";")) {
-	        		statement = statement.trim();
-	        		statement = statement.substring(0, statement.length()-1);
-	        		break;
-	        	}
-	        }
-		    System.out.println(statement);
-		    
-		    // detect system command
-		    if(systemCmd(statement))	continue;
-		    
-		    // reset lexer & parser
-		    lexer.reset();
-		    parser.reset();
-		    
-		    // feed in new stream
-	    	stream = new ANTLRInputStream(statement);
-	    	lexer.setInputStream(stream);
-	    	tokens = new CommonTokenStream(lexer);
-	    	parser.setTokenStream(tokens);
-	    	
-		    // walk the tree
-	    	ParseTree tree = null;
-	    	StmtMaker stmtMaker = null;
-	    	try {
-	    		tree = parser.parse();
-	    		ParseTreeWalker walker = new ParseTreeWalker();
-				stmtMaker = new StmtMaker();
-				walker.walk(stmtMaker, tree);
-				//org.antlr.v4.gui.Trees.inspect(tree, parser);
-	    	}
-	    	catch(Exception e) {
-	    		e.printStackTrace();
-	    		continue;
-	    	}
-	    	
-	    	// get the statement
-	    	Stmt statementClass = stmtMaker.getStatement();
-	    	tMgr.executeStatement(statementClass);
-	    	stmtMaker.resetStatement();
-	    	
+			// dump file to disk & exit program
+			tMgr.dumpCSV();
+			diskDB.commit();
+			diskDB.close();
+			
 		}
-		
-		// close BufferedReader
-		br.close();
-		
-		// dump file to disk & exit program
-		tMgr.dumpCSV();
-    }
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
  
