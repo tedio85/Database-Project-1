@@ -41,6 +41,11 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 	public VectorTable() {
 		
 	}
+	
+	public VectorTable(CreateTableStmt statement) {
+		
+	}
+	
 	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
 		this.name = parseString(name);
 		this.primaryKey = parseString(str_pk);

@@ -63,6 +63,9 @@ public class TableManager {
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
 		processedStatement = matchAllAttrName(processedStatement);
 		processedStatement.show();
+		
+		/*----------------------codes below are untested-------------------*/
+		
 	}
 	
 	
