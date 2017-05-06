@@ -317,7 +317,7 @@ public class StmtMaker implements SqlListener{
 			newStatement.addExpr(e);
 		}
 
-		newStatement.show();
+		//newStatement.show();
 		statement = newStatement;
 	}
 	
