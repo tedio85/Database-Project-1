@@ -1038,6 +1038,6 @@ INSERT INTO user1 VALUES (17602017,'lizzyfizzy','') ;
 INSERT INTO user1 VALUES (17989391,'mcljo','SP ZS') ;
 INSERT INTO user1 VALUES (18359729,'maryydixonn','Georgia') ;
 
-SELECT u.userId, t.tweet
-FROM tweets AS t, user1 AS u
-WHERE t.userId = u.userId AND u.userId > 10000000;
+SELECT *
+FROM tweets
+WHERE userId = 16285429 OR utcDate = 'Dec 27 2008 3:00PM';
