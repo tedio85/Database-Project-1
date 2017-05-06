@@ -6,22 +6,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
+
+import org.mapdb.DB;
 
 public class TableManager {
-	private HashMap<String, VectorTable> tableMap;
-	
+	private TreeMap<String, VectorTable> tableMap;
+	DB db;
 	/*--------------Constructor-------------------------*/
 	
-	TableManager() {
-		tableMap = new HashMap<String, VectorTable>();
+	TableManager(DB db) {
+		tableMap = new TreeMap<String, VectorTable>(String.CASE_INSENSITIVE_ORDER);
+		this.db = db;
 	}
 	
 
 	/*-----------------Table Manager Operations--------------------------*/
 	
 	public void showTable(String tableName) {
-		tableMap.get(tableName).show();
+		try {
+			tableMap.get(tableName).show();
+		}
+		catch(NullPointerException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void dumpCSV() {
@@ -52,11 +59,30 @@ public class TableManager {
 	}
 	
 	private void createTableStmt(CreateTableStmt statement) {
-		
+		if(!isTableExist(statement.getTable_name())) {
+			try {
+				VectorTable v = new VectorTable(db, statement);
+				tableMap.put(v.getName(), v);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		else
+			throw new IllegalArgumentException("table "+statement.getTable_name()+" already exists");
 	}
 	
 	private void insertStmt(InsertStmt statement) {
-		
+		String tableName = statement.getTable_name();
+		VectorTable v = tableMap.get(tableName);
+		if(v == null)
+			throw new NullPointerException("table "+tableName+" does not exist");
+		try {
+			v.insert(statement);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void selectStmt(SelectStmt statement) {
@@ -66,17 +92,6 @@ public class TableManager {
 		
 		/*----------------------codes below are untested-------------------*/
 		
-	}
-	
-	
-	/*--------------------------Table Operations------------------------*/
-	
-	private void insertTup(String tableName, Vector<Object> tup) {
-		//TODO
-	}
-	
-	private void insertTup(String tableName, Vector<String> attrs, Vector<String> tup) {
-		//TODO
 	}
 	
 	
@@ -139,14 +154,18 @@ public class TableManager {
 			if(e.op1HasTable_name)
 				matchHelper_matchAttrTable(e.op1_table_name, e.op1_table_name);				
 			else {
-				String tableName = matchHelper_findAttrTable(e.op1_table_name);
-				e.setOp1_table_name(tableName);
+				if(e.op1Type.equals(Object.class)) {
+					String tableName = matchHelper_findAttrTable(e.op1_table_name);
+					e.setOp1_table_name(tableName);
+				}
 			}
 			if(e.op2HasTable_name)
 				matchHelper_matchAttrTable(e.op2_table_name, e.op2_table_name);
 			else {
-				String tableName = matchHelper_findAttrTable(e.op2_table_name);
-				e.setOp2_table_name(tableName);				
+				if(e.op2Type.equals(Object.class)) {
+					String tableName = matchHelper_findAttrTable(e.op2_table_name);
+					e.setOp2_table_name(tableName);
+				}
 			}
 		}
 		
@@ -173,6 +192,8 @@ public class TableManager {
 		}
 		if(tableSet.size()>1)
 			throw new IllegalArgumentException("ambiguous attribute name");
+		else if(tableSet.size() == 0)
+			throw new IllegalArgumentException("no attribute name: "+attrName);			
 		return tableSet.toArray(new String[10])[0];
 	}
 	

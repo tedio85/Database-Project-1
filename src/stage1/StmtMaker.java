@@ -214,13 +214,15 @@ public class StmtMaker implements SqlListener{
 			String type_name = names.get(0).getText();
 			boolean isPrimaryKey = false;
 			
+			//names.forEach(n -> System.out.println(n.getText()));
+			
 			if(names.size() == 2) {
 				switch(names.get(1).getText().toLowerCase()) {
 				case "primary_key": isPrimaryKey = true;	break;
 				default: type_name += " " + names.get(1).getText().replaceAll("[()]","");
 				}
 			}
-			else if(names.size() == 3) {
+			else if(names.size() >= 3) {
 				type_name += " " + names.get(1).getText().replaceAll("[()]","");
 				isPrimaryKey = true;
 			}
@@ -265,7 +267,14 @@ public class StmtMaker implements SqlListener{
 		}
 		
 		for(int i=0;i<exprs.size();i++) {
-			ColNameValuePair cnvp = new ColNameValuePair(column_names_extracted.get(i), 
+			Class<?> type = null;
+			String value = exprs.get(i).getText();
+			if(value.matches("[0-9]*"))
+				type = Integer.class;
+			else
+				type = String.class;
+			ColNameValuePair cnvp = new ColNameValuePair(type, 
+														 column_names_extracted.get(i), 
 														 exprs.get(i).getText());
 			newStatement.addNameValuePair(cnvp);
 		}
