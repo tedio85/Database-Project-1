@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class SelectStmt extends Stmt{
 	
-	private boolean hasSingleExpr;
+	private int exprCount;
 	private ArrayList<Result_column> result_column = new ArrayList<Result_column>();
 	private ArrayList<Table_or_subquery> table_or_subquery = new ArrayList<Table_or_subquery>();
 	private ArrayList<Expr> expr = new ArrayList<Expr>();
@@ -33,10 +33,7 @@ public class SelectStmt extends Stmt{
 
 	public void addExpr(Expr e) {
 		expr.add(e);
-		if(expr.size() == 1)
-			hasSingleExpr = true;
-		else
-			hasSingleExpr = false;
+		exprCount = expr.size();
 	}
 	
 	public ArrayList<Expr> getExpr() {
@@ -51,13 +48,13 @@ public class SelectStmt extends Stmt{
 		return booleanOperator;
 	}
 	
-	public boolean getHasSingleExpr() {
-		return this.hasSingleExpr;
+	public int getExprCount() {
+		return this.exprCount;
 	}
 	
 	public void show() {
 		System.out.println();
-		System.out.println("hasSingleExpr: "+hasSingleExpr);
+		System.out.println("exprCount: "+exprCount);
 		for(Result_column rc : result_column)
 			rc.show();
 		for(Table_or_subquery tos : table_or_subquery)
