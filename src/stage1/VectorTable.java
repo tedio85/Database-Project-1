@@ -1,23 +1,32 @@
 package stage1;
 
 import java.util.Vector;
+
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.mapdb.serializer.SerializerArray;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.IllegalArgumentException;
-import java.lang.NumberFormatException;
 
-public class VectorTable implements Table, Iterable<Vector<Object>> {
+
+public class VectorTable implements Table {
 	protected String name = null;													// name of table
+	protected int primaryKeyIdx = -1;
 	protected String primaryKey = null;												// name of primary key
+	protected int primaryKeyCount = 0;												// generated primary key for tables with no primary key
 	protected Vector<Attribute> attrs = new Vector<Attribute>();					// name of attributes
 	protected HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
 	protected HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
-	protected Vector<Vector<Object>> table = new Vector<Vector<Object>>();// tuples, where the order of elements is same as attrs
+	protected BTreeMap<Object, Object[]> bTable = null;
+												
 	protected int[] longestStr = new int[20];
 																
 	/**Usage:
@@ -38,22 +47,55 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 	 * @throws IllegalArgumentException		type error / strLen vector length incorrect
 	 * 
 	 */
+	
+	/*-------------------Constructors------------------------*/
+	
 	public VectorTable() {
 		
 	}
-	public VectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
-		this.name = parseString(name);
-		this.primaryKey = parseString(str_pk);
+	
+
+	@SuppressWarnings("unchecked")
+	public VectorTable(DB db, CreateTableStmt statement) throws IllegalArgumentException{
+		
+		bTable =  db.treeMap(statement.getTable_name())
+					.valuesOutsideNodesEnable()
+					.keySerializer(Serializer.ELSA)
+					.valueSerializer(new SerializerArray<Object[]>(Serializer.ELSA))
+					.counterEnable()
+					.createOrOpen();
+													
+		String pk = null;
+		Vector<String> attrs = new Vector<String>();
+		Vector<String> attrTypes = new Vector<String>();
+		Vector<Integer> strLen = new Vector<Integer>();
+		
+		
+		for(Column_def cd : statement.getColumn_defs()) {
+			if(cd.isPrimaryKey) {
+				if(pk == null)
+					pk = cd.column_name;
+				else
+					throw new IllegalArgumentException("cannot have two primary keys");
+			}
+			attrs.add(cd.column_name);
+			String[] type_name = cd.type_name.split(" ");
+			attrTypes.add(type_name[0]);
+			if(type_name[0].equalsIgnoreCase("varchar"))
+				strLen.add(Integer.parseInt(type_name[1]));
+		}
+		vectorTable(statement.getTable_name(), pk, attrs, attrTypes, strLen);
+	}
+	
+	private void vectorTable(String name, String str_pk, Vector<String> attrs,Vector<String> attrTypes, Vector<Integer> strLen) throws IllegalArgumentException{
+		this.name = name;
+		this.primaryKey = str_pk;
 		
 		
 		Vector<String> attrs_ = attrs;								// attribute names
 		Vector<Class<?>> attrTypes_ = new Vector<Class<?>>();		// default attribute types
 		Vector<Integer> strLen_ = new Vector<Integer>();			// max length of each attribute
 		
-		
-		// remove "
-		attrs_.replaceAll(v -> parseString(v));
-		attrTypes.replaceAll(v -> parseString(v));
 		
 		// set longestStr
 		for(int i=0;i<attrs_.size();i++)
@@ -66,10 +108,10 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		for(String str : attrTypes) {
 			switch(str.toLowerCase()) {
 				case "int":
-					attrTypes_.add(new Integer(0).getClass());
+					attrTypes_.add(Integer.class);
 					break;
 				case "varchar":
-					attrTypes_.add(new String().getClass());
+					attrTypes_.add(String.class);
 					varCharCount++;
 					break;
 				default:
@@ -108,6 +150,11 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 				throw new IllegalArgumentException("found duplicated attribute");
 		}
 		
+		
+		// get primary key index
+		if(primaryKey != null)
+			primaryKeyIdx = keyToIdx.get(primaryKey);
+		
 		// create inverse mapping of index to key
 		for(Map.Entry<String, Integer> entry : keyToIdx.entrySet()){
 		    idxToKey.put(entry.getValue(), entry.getKey());
@@ -115,6 +162,8 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		
 	}
 	
+	/*---------------------VectorTable Operations-------------------*/
+
 	// get name of table
 	public String getName() {
 		return this.name;
@@ -138,9 +187,13 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		return v;
 	}
 	
-	// get the entire table
-	public Vector<Vector<Object>> getTable() {
-		return table;
+	// return the index of attribute in record
+	public int getIndexOfAttr(String attrName) {
+		return keyToIdx.get(attrName);
+	}
+	
+	public Class<?> getClassOfAttr(int idxOfAttr) {
+		return attrs.get(idxOfAttr).getClass();
 	}
 	
 	/**
@@ -153,6 +206,11 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 	 * 			string length check
 	 * 			primary key uniqueness check
 	 */
+	
+	
+	/*----------------------Insert---------------------------*/
+	
+	
 	protected void _insert(Vector<Object> tup) throws IllegalArgumentException {
 		Boolean pass = true;
 		
@@ -170,13 +228,16 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 				
 				// parameter type check
 				if(! obj.getClass().equals(attrs.get(i).getClass_())) {
+					System.out.println(obj.toString());
+					System.out.println(obj.getClass());
+					System.out.println(attrs.get(i).getClass_());
 					pass = false;
 					throw new IllegalArgumentException("attribute class unmatch");
 				}
 				
 				//	string length check
-				if(obj.getClass().equals(new String().getClass())) {
-					String str = parseString((String) obj);
+				if(obj.getClass().equals(String.class)) {
+					String str = (String) obj;
 					if(str.length() > attrs.get(i).getMaxLen()) {
 						pass = false;
 						throw new IllegalArgumentException("maximum string length exceeded");
@@ -196,38 +257,23 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		// primary key uniqueness check
 		// check all tuples if primary key does not exist
 		if(primaryKey!=null) {
-			int primaryKeyIdx = Integer.MAX_VALUE;
-			try {
-				primaryKeyIdx = keyToIdx.get(primaryKey);
-			}
-			catch(NullPointerException e) {
-				throw new NullPointerException("primary key is not in attribute list"); 
-			}
-			
-			for(Vector<Object> row : table) {
-				if(tup.get(primaryKeyIdx).getClass().equals(new String().getClass())) {
-					if(row.get(primaryKeyIdx).equals(parseString((String) tup.get(primaryKeyIdx)))) {
-						pass = false;
-						throw new IllegalArgumentException("primary key duplicated");
-					}
-				}
-				else {
-					if(row.get(primaryKeyIdx).equals(tup.get(primaryKeyIdx))) {
-						pass = false;
-						throw new IllegalArgumentException("primary key duplicated");
-					}
-				}
-			}
+			if(bTable.containsKey(tup.get(primaryKeyIdx)))
+				throw new NullPointerException("duplicate primary key");
 		}
 		else {
-			if(table.contains(tup)) {
+			if(containsValue(tup.toArray(new Object[attrs.size()]))) {
 				pass = false;				
 				throw new IllegalArgumentException("cannot insert a duplicated record");
 			}
 		}
 		
 		if(pass) {
-			table.add(tup);
+			if(primaryKey != null)
+				bTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));
+			else {
+				bTable.put(primaryKeyCount, tup.toArray(new Object[attrs.size()]));
+				primaryKeyCount++;
+			}
 			
 			for(int i=0;i<tup.size();i++) {
 				if(tup.get(i) != null)
@@ -241,70 +287,12 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param tup vector of string, where numbers are not yet converted to integers
-	 * 
-	 * Insert a tuple with numbers as strings.
-	 * 
-	 * 		For a string of number:	
-	 * 			tests if the string can be converted to integer 
-	 * 			(integer range check)
-	 * 
-	 * 		For a normal string or null attribute:
-	 * 			copies and inserts directly
-	 */
-	public void insert(Vector<String> tup) {
-	
-		Boolean pass = true;
-		
-		// check number of parameters
-		if(tup.size() != attrs.size()) {
-			pass = false;
-			throw new IllegalArgumentException("tuple size incorrect");
-		}
-		
-		// convert numbers in tuple to string
-		// adds normal strings and null attributes directly
-		Vector<Object> newtup = new Vector<Object>();
-		for(int i=0;i<tup.size();i++) {
-			if(attrs.get(i).getClass_().equals(new Integer(0).getClass())) {	//should be a number or null
-				if(tup.get(i) == null)
-					newtup.add(null);
-				else {
-					try {
-						newtup.add(Integer.parseInt(tup.get(i)));
-					}
-					catch(NumberFormatException e) {
-						System.out.println("number exceeds int range or incorrect type");
-						throw new IllegalArgumentException("number exceeds int range or incorrect type");
-					}
-				}
-			}
-			else {	// should be string or null
-				if(tup.get(i) == null)
-					newtup.add(null);
-				else if(isString(tup.get(i)))
-					newtup.add(parseString(tup.get(i)));
-				else {
-					throw new IllegalArgumentException("type mismatch");
-				}
-			}
-		}
-		
-		if(pass) {
-			_insert(newtup);
-		}
-		else {
-			System.out.println("tuple NOT inserted");
-		}
-	}
 	
 	// insert tuple with specified attributes
 	public void insert(Vector<String> attrNames, Vector<String> tup) throws IllegalArgumentException {
 		Boolean pass = true;
 		
-		Vector<String> newtup = new Vector<String>();
+		Vector<Object> newtup = new Vector<Object>();
 		for(int i=0;i<attrs.size();i++)	newtup.add(null);
 		
 		// check attrNames.length() == tup.length()
@@ -323,7 +311,7 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		// put attributes at corresponding position
 		for(int i=0;i<tup.size();i++) {
 			try {
-				int idx = keyToIdx.get( parseString(attrNames.get(i)) );
+				int idx = keyToIdx.get(attrNames.get(i));
 				newtup.set(idx, tup.get(i));
 			}
 			catch(NullPointerException e) {
@@ -332,13 +320,78 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 			}
 		}
 		
-		if(pass) {
-			insert(newtup);
+		if(pass)
+			_insert(newtup);		
+		else
+			System.out.println("tuple NOT inserted");
+	}
+	
+	public void insert(InsertStmt statement) throws IllegalArgumentException{
+		if(statement.isUsingDefaultAttrOrder()) {
+			Vector<Object> tup = new Vector<Object>();
+			statement.getNameValuePair().forEach(t -> 	{
+															if(t.valueType.equals(Integer.class))
+																tup.add(Integer.parseInt((String)t.value));
+															else
+																tup.add( ((String)t.value).replaceAll("[']", "") );
+														});	
+			_insert(tup);
 		}
 		else {
-			System.out.println("tuple NOT inserted");
+			Vector<String> attrNames = new Vector<String>();
+			Vector<String> tup = new Vector<String>();
+			statement.getNameValuePair().forEach(t -> {
+														attrNames.add(t.colName);
+														tup.add( ((String)t.value).replaceAll("[']", "") );
+													   });
+			insert(attrNames, tup);
 		}
 	}
+	
+	/*---------------------BTreeMap Operations----------------------*/
+	
+	@SuppressWarnings("unchecked")
+	public Set<Object> keySet() {
+		return bTable.keySet();
+	}
+	
+	public Set<Object> subMap(Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive){
+		return bTable.subMap(fromKey, fromInclusive, toKey, toInclusive).keySet();
+	}
+	
+	public Set<Object> headMap(Object toKey) {
+		return bTable.headMap(toKey).keySet();
+	}
+	
+	public Set<Object> tailMap(Object fromKey) {
+		return bTable.tailMap(fromKey).keySet();
+	}
+	
+	public Class<?> getPrimaryKeyType() {
+		int i = keyToIdx.get(primaryKey);
+		return attrs.get(i).getClass_();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private boolean containsValue(Object[] obj) {
+		boolean contain = false;
+		for(Map.Entry<Object, Object[]> e : (Set<Map.Entry<Object, Object[]>>)bTable.entrySet()) {
+			boolean theSame = true;
+			Object[] arr = e.getValue();
+			for(int i=0;i<arr.length;i++) {
+				if(!arr[i].equals(obj[i])) {
+					theSame = false;
+				}
+			}
+			contain = contain | theSame;
+			if(contain == true)
+				break;
+		}
+		return contain;
+	}
+	
+	/*---------------------IO Operations----------------------*/
+
 	
 	// print the table
 	public void show() {
@@ -355,15 +408,17 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		System.out.println("|");
 		
 		// print table content
-		for(Vector<Object> tuple : table) {
+		@SuppressWarnings("unchecked")
+		Set<Map.Entry<Object,Object[]>> s = bTable.entrySet();
+		for(Map.Entry<Object, Object[]> e : s) {
 			printDivider(longestStr);
-			for(int i=0;i<tuple.size();i++) {
-				if(tuple.get(i) == null) {
+			for(int i=0;i<e.getValue().length;i++) {
+				if(e.getValue()[i] == null) {
 					String str = "NULL";
 					System.out.printf("|%"+longestStr[i]+"s",str);
 				}
 				else {
-					String objStr = tuple.get(i).toString();
+					String objStr = e.getValue()[i].toString();
 					System.out.printf("|%"+longestStr[i]+"s",objStr);
 				}
 			}
@@ -382,39 +437,6 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		System.out.println("+");
 	}
 	
-	// return the index of attribute in record
-	public int getIndexOfAttr(String attrName) {
-		return keyToIdx.get(attrName);
-	}
-	
-	public Class<?> getClassOfAttr(int idxOfAttr) {
-		return attrs.get(idxOfAttr).getClass();
-	}
-	
-	
-	public Iterator<Vector<Object>> iterator() {
-		Iterator<Vector<Object>> it = new Iterator<Vector<Object>>() {
-
-            private int currentIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return currentIndex < table.size();
-            }
-
-            @Override
-            public Vector<Object> next() {
-                return table.get(currentIndex++);
-            }
-            
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
-        };
-        return it;
-    }
 	
 	public void exportToCSV() {
 		
@@ -440,10 +462,12 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		}
         
         // write table content to file
-		for(Vector<Object> tup : table) {
+        @SuppressWarnings("unchecked")
+		Set<Map.Entry<Object,Object[]>> s = bTable.entrySet();
+		for(Map.Entry<Object, Object[]> tup : s) {
 			try {
-				String s = tup.toString();
-				CSVUtils.writeLine(writer, Arrays.asList(s.substring(1,s.length()-1)));
+				String str = tup.toString();
+				CSVUtils.writeLine(writer, Arrays.asList(str.substring(1,str.length()-1)));
 			} catch (IOException e) {
 				System.out.println("table content writeLine failed");
 				e.printStackTrace();
@@ -457,20 +481,6 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 			System.out.println("failed to close writer");
 			e.printStackTrace();
 		}
-	}
-	
-	protected Boolean isString(String str) {
-		if((str.startsWith("\'") || str.startsWith("\"")) && (str.endsWith("\'") || str.endsWith("\"")))
-			return true;
-		else
-			return false;
-	}
-		
-	protected String parseString(String str) {
-		if(str == null)
-			return null;
-		else
-			return str.replaceAll("\'", "").replaceAll("\"","");
 	}
 	
 }
