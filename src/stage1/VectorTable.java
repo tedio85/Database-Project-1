@@ -220,6 +220,7 @@ public class VectorTable implements Table {
 			throw new IllegalArgumentException("tuple size incorrect");
 		}
 		
+		
 		for(int i=0;i<tup.size();i++) {
 			Object obj = tup.get(i);
 			
@@ -228,9 +229,6 @@ public class VectorTable implements Table {
 				
 				// parameter type check
 				if(! obj.getClass().equals(attrs.get(i).getClass_())) {
-					System.out.println(obj.toString());
-					System.out.println(obj.getClass());
-					System.out.println(attrs.get(i).getClass_());
 					pass = false;
 					throw new IllegalArgumentException("attribute class unmatch");
 				}
@@ -289,7 +287,7 @@ public class VectorTable implements Table {
 	
 	
 	// insert tuple with specified attributes
-	public void insert(Vector<String> attrNames, Vector<String> tup) throws IllegalArgumentException {
+	public void insert(Vector<String> attrNames, Vector<Object> tup) throws IllegalArgumentException {
 		Boolean pass = true;
 		
 		Vector<Object> newtup = new Vector<Object>();
@@ -327,25 +325,20 @@ public class VectorTable implements Table {
 	}
 	
 	public void insert(InsertStmt statement) throws IllegalArgumentException{
-		if(statement.isUsingDefaultAttrOrder()) {
-			Vector<Object> tup = new Vector<Object>();
-			statement.getNameValuePair().forEach(t -> 	{
-															if(t.valueType.equals(Integer.class))
-																tup.add(Integer.parseInt((String)t.value));
-															else
-																tup.add( ((String)t.value).replaceAll("[']", "") );
-														});	
-			_insert(tup);
-		}
-		else {
-			Vector<String> attrNames = new Vector<String>();
-			Vector<String> tup = new Vector<String>();
-			statement.getNameValuePair().forEach(t -> {
+		
+		Vector<String> attrNames = new Vector<String>();
+		Vector<Object> tup = new Vector<Object>();
+		statement.getNameValuePair().forEach(t -> 	{
 														attrNames.add(t.colName);
-														tup.add( ((String)t.value).replaceAll("[']", "") );
-													   });
+														if(t.valueType.equals(Integer.class))
+															tup.add(Integer.parseInt((String)t.value));
+														else
+															tup.add( ((String)t.value).replaceAll("[']", "") );
+													});	
+		if(statement.isUsingDefaultAttrOrder())
+			_insert(tup);
+		else
 			insert(attrNames, tup);
-		}
 	}
 	
 	/*---------------------BTreeMap Operations----------------------*/

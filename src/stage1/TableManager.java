@@ -144,8 +144,15 @@ public class TableManager {
 			if(rc.hasTable_name)
 				matchHelper_matchAttrTable(rc.attr_name, rc.table_name);
 			else {
-				String tableName = matchHelper_findAttrTable(rc.attr_name);
-				rc.setTable_name(tableName, true);
+				if(!rc.isSingleStar) {
+					try {
+						String tableName = matchHelper_findAttrTable(rc.attr_name);
+						rc.setTable_name(tableName, true);
+					}
+					catch(IllegalArgumentException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 		
@@ -155,16 +162,26 @@ public class TableManager {
 				matchHelper_matchAttrTable(e.op1_table_name, e.op1_table_name);				
 			else {
 				if(e.op1Type.equals(Object.class)) {
-					String tableName = matchHelper_findAttrTable(e.op1_table_name);
-					e.setOp1_table_name(tableName);
+					try {
+						String tableName = matchHelper_findAttrTable(e.op1_table_name);
+						e.setOp1_table_name(tableName);
+					}
+					catch(IllegalArgumentException ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 			if(e.op2HasTable_name)
 				matchHelper_matchAttrTable(e.op2_table_name, e.op2_table_name);
 			else {
 				if(e.op2Type.equals(Object.class)) {
-					String tableName = matchHelper_findAttrTable(e.op2_table_name);
-					e.setOp2_table_name(tableName);
+					try {
+						String tableName = matchHelper_findAttrTable(e.op2_table_name);
+						e.setOp2_table_name(tableName);
+					}
+					catch(IllegalArgumentException ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		}

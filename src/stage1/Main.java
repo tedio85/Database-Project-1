@@ -168,9 +168,10 @@ public class Main {
 			br.close();
 			
 			// dump file to disk & exit program
+			tMgr.dumpCSV();
 			diskDB.commit();
 			diskDB.close();
-			tMgr.dumpCSV();
+			
 		}
 		catch(Exception e) {
 			e.printStackTrace();
