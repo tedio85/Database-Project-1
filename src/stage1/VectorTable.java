@@ -54,8 +54,6 @@ public class VectorTable implements Table {
 		
 	}
 	
-<<<<<<< HEAD
-
 	@SuppressWarnings("unchecked")
 	public VectorTable(DB db, CreateTableStmt statement) throws IllegalArgumentException{
 		
