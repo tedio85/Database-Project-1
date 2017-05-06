@@ -139,6 +139,10 @@ public class TableManager {
 	
 	private SelectStmt matchAllAttrName(SelectStmt statement) {
 		
+		// selected tables
+		Set<String> selectedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		statement.getTable_or_subquery().forEach(t -> selectedTables.add(t.table_name));
+		
 		// process result column
 		for(Result_column rc : statement.getResult_column()) {
 			if(rc.hasTable_name)
@@ -146,7 +150,7 @@ public class TableManager {
 			else {
 				if(!rc.isSingleStar) {
 					try {
-						String tableName = matchHelper_findAttrTable(rc.attr_name);
+						String tableName = matchHelper_findAttrTable(rc.attr_name, selectedTables);
 						rc.setTable_name(tableName, true);
 					}
 					catch(IllegalArgumentException e) {
@@ -155,7 +159,7 @@ public class TableManager {
 				}
 			}
 		}
-		
+
 		// process expression
 		for(Expr e : statement.getExpr()) {
 			if(e.op1HasTable_name)
@@ -163,7 +167,7 @@ public class TableManager {
 			else {
 				if(e.op1Type.equals(Object.class)) {
 					try {
-						String tableName = matchHelper_findAttrTable(e.op1_table_name);
+						String tableName = matchHelper_findAttrTable(e.op1_attr_name, selectedTables);
 						e.setOp1_table_name(tableName);
 					}
 					catch(IllegalArgumentException ex) {
@@ -176,7 +180,7 @@ public class TableManager {
 			else {
 				if(e.op2Type.equals(Object.class)) {
 					try {
-						String tableName = matchHelper_findAttrTable(e.op2_table_name);
+						String tableName = matchHelper_findAttrTable(e.op2_attr_name, selectedTables);
 						e.setOp2_table_name(tableName);
 					}
 					catch(IllegalArgumentException ex) {
@@ -199,13 +203,14 @@ public class TableManager {
 			throw new IllegalArgumentException("Table "+tableName+" does not contain attribute "+attrName);			
 	}
 	
-	private String matchHelper_findAttrTable(String attrName) {
+	private String matchHelper_findAttrTable(String attrName, Set<String> selectedTables) {
 		Set<String> tableSet = new TreeSet<String>();
-		for(Map.Entry<String, VectorTable> e : tableMap.entrySet()) {
+		for(String s : selectedTables) {
+			VectorTable t = tableMap.get(s);
 			Set<String> attrSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-			e.getValue().getAttrs().forEach(attr -> attrSet.add(attr.getName()));
+			t.getAttrs().forEach(attr -> attrSet.add(attr.getName()));
 			if(attrSet.contains(attrName))
-				tableSet.add(e.getKey());
+				tableSet.add(s);
 		}
 		if(tableSet.size()>1)
 			throw new IllegalArgumentException("ambiguous attribute name");

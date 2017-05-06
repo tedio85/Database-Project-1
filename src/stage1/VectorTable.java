@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -346,6 +347,11 @@ public class VectorTable implements Table {
 	@SuppressWarnings("unchecked")
 	public Set<Object> keySet() {
 		return bTable.keySet();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Set<Map.Entry<Object, Object[]>> entrySet() {
+		return bTable.entrySet();
 	}
 	
 	public Set<Object> subMap(Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive){
