@@ -260,7 +260,7 @@ public class Main {
         }
         // process Create or Insert according to the 1st word of sql_stmt
         if(sql_stmt.isEmpty()) System.out.println("parse output is empty");
-        for(int i=0; i<sql_stmt.size(); i++) {
+        /*for(int i=0; i<sql_stmt.size(); i++) {
         	if(sql_stmt.get(i).get(0).toUpperCase().equals("CREATE")) 
         		processCreate(sql_stmt.get(i));
 	        else if(sql_stmt.get(i).get(0).toUpperCase().equals("INSERT")) 
@@ -287,7 +287,7 @@ public class Main {
 	        		}
 	        	}
 	        }	
-        }
+        }*/
 	}
 	
 	// process Create statements -> new a table to store it
@@ -422,7 +422,7 @@ public class Main {
         ParseTree tree;
         try {
         	tree = parser.parse();
-        	//Trees.inspect(tree, parser);
+        	Trees.inspect(tree, parser);
            	MakeStmt stmtMaker = new MakeStmt();
             new ParseTreeWalker().walk(stmtMaker, tree);
             return stmtMaker;
