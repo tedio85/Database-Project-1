@@ -88,15 +88,14 @@ public class TableManager {
 		// find the table that contains the attribute name of WHERE
 		for(int i=0;i<2;i++) {
 			for(int j=0;j<2;j++) {
-				String foundTableName = findAttrTableName(wColumn[i][j], selectedTableName);
 				if(wTable[i][j] == null) {	// table name not given in WHERE
-					wTable[i][j] = foundTableName;
+					wTable[i][j] = findAttrTableName(wColumn[i][j], selectedTableName);
 				}
 				else {
-					if(!aliasToName.get(wTable[i][j]).equals(foundTableName))	// mismatched table given in WHERE
+					if(!TableMap.get(aliasToName.get(wTable[i][j])).getAttrsAsString().contains(wColumn[i][j]))	// mismatched table given in WHERE
 						throw new IllegalArgumentException("attribute not in specified table");
 					else	// replace table name alias with true name
-						wTable[i][j] = foundTableName;
+						wTable[i][j] = aliasToName.get(wTable[i][j]);
 				}
 			}
 		}
@@ -146,21 +145,6 @@ public class TableManager {
 			}
 		}
 		
-		// find the table that contains the attribute name of SELECT
-		for(int i=0;i<2;i++) {
-			for(int j=0;j<2;j++) {
-				String foundTableName = findAttrTableName(wColumn[i][j], selectedTableName);
-				if(wTable[i][j] == null) {	// table name not given in WHERE
-					wTable[i][j] = foundTableName;
-				}
-				else {
-					if(!aliasToName.get(wTable[i][j]).equals(foundTableName))	// mismatched table given in WHERE
-						throw new IllegalArgumentException("attribute not in specified table");
-					else	// replace table name alias with true name
-						wTable[i][j] = foundTableName;
-				}
-			}
-		} 
 		
 		// project selected attributes
 		project(finalResult, aliasToName, selectedTableName, col_table_name, col_column_name, aggrFunc);
@@ -216,8 +200,13 @@ public class TableManager {
 			}
 			else if (selectedTable.peek().equals("*")) 
 				tableName = selectedTable.poll();
-			else if(selectedTable.peek() != null)
-				tableName = aliasToName.get(selectedTable.poll());
+			else if(selectedTable.peek() != null) {
+				String tmp = aliasToName.get(selectedTable.poll());
+				if(tmp == null)
+					throw new IllegalArgumentException("table name does not exist");
+				else
+					tableName = tmp;
+			}
 			
 			if(tableName.equals("*"))
 				aggrAttrIdx.add(-1);

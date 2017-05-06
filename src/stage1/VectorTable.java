@@ -130,6 +130,14 @@ public class VectorTable implements Table, Iterable<Vector<Object>> {
 		return this.attrs;
 	}
 	
+	public Vector<String> getAttrsAsString() {
+		Vector<String> v = new Vector<String>();
+		for(Attribute a : attrs) {
+			v.add(a.getName());
+		}
+		return v;
+	}
+	
 	// get the entire table
 	public Vector<Vector<Object>> getTable() {
 		return table;
