@@ -144,6 +144,7 @@ public class Main {
 	    	
 	    	// get the statement
 	    	Stmt statementClass = stmtMaker.getStatement();
+	    	tMgr.executeStatement(statementClass);
 	    	stmtMaker.resetStatement();
 	    	
 		}
