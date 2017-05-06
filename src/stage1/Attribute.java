@@ -28,4 +28,13 @@ public class Attribute {
 	public String getTableBelong() {
 		return tableBelong;
 	}
+	
+	public void show() {
+		System.out.println();		
+		System.out.println("name: "+name);
+		System.out.println("class "+class_);
+		System.out.println("maxLen: "+maxLen);
+		System.out.println("tableBelong: "+tableBelong);
+		System.out.println();
+	}
 }
