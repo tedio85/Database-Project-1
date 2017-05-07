@@ -215,6 +215,7 @@ public class QThread2 implements Runnable{
 		} 
 		else {
 			int op1Index = -1, op2Index = -1;
+			int theOtherIndex = -1;
 			boolean op1IsSmaller;
 			if(expr.op1_table_name != expr.op2_table_name) {
 				if( expr.op1_table_name.equals( tableList.get(smallerTableIndex) ) ) {
@@ -232,11 +233,13 @@ public class QThread2 implements Runnable{
 				if(expr.op1_table_name.equals( tableList.get(smallerTableIndex) )) {
 					op1Index = smallerTableIndex;
 					op2Index = smallerTableIndex;
+					theOtherIndex = biggerTableIndex;
 					op1IsSmaller = true;
 				}
 				else {
 					op1Index = biggerTableIndex;
 					op2Index = biggerTableIndex;
+					theOtherIndex = smallerTableIndex;
 					op1IsSmaller = false;
 				}
 			}
@@ -267,7 +270,30 @@ public class QThread2 implements Runnable{
 					}
 				}
 				else { // expr1 table name = expr2 table name 
-					
+					for(Map.Entry<Object, Object[]> entry : op1Table.entrySet()) {
+						Object[] v = entry.getValue();
+						Object op1value = v[op1Table.getIndexOfAttr(expr.op1_attr_name)];
+						Object op2value = v[op1Table.getIndexOfAttr(expr.op2_attr_name)];
+						if(expr.operator.equals(">")) {
+							if(op1value.toString().compareTo(op2value.toString()) > 0) {
+								set1.add( v[op1Table.getIndexOfAttr(op1Table.getPrimaryKey())] );
+							}
+						} 
+						else if(expr.operator.equals("<")) {
+							if(op1value.toString().compareTo(op2value.toString()) < 0) {
+								set1.add( v[op1Table.getIndexOfAttr(op1Table.getPrimaryKey())] );
+							}	
+						}
+					}
+					set2 = tableList.get(theOtherIndex).keySet();
+					if(op1IsSmaller) {
+						result.addAll(cartesianProduct(set1, set2));
+						ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
+					}
+					else {
+						result.addAll(cartesianProduct(set2, set1));
+						ctc = new CartesianTempCollection(result, tableListNum == 1, op2Table.getName(), op1Table.getName());
+					}
 				}
 			}
 			
