@@ -17,7 +17,7 @@ public class QThread2 implements Runnable{
 	                                        // ( according to String.compareTo() )
 	int tableListNum;                       // size of tableList
 	CartesianTempCollection ctc;
-	boolean isWhere;                        // whethere there is where clause
+	boolean isWhere;                        // whether there is where clause
 	
 	public QThread2(Expr expr, ArrayList<VectorTable> tableList, boolean isWhere) {
 		this.expr = expr;
@@ -218,7 +218,7 @@ public class QThread2 implements Runnable{
 			int theOtherIndex = -1;
 			boolean op1IsSmaller;
 			if(expr.op1_table_name != expr.op2_table_name) {
-				if( expr.op1_table_name.equals( tableList.get(smallerTableIndex) ) ) {
+				if( expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() ) ) {
 					op1Index = smallerTableIndex;
 					op2Index = biggerTableIndex;
 					op1IsSmaller = true;
@@ -230,7 +230,7 @@ public class QThread2 implements Runnable{
 				}
 			}
 			else { // expr1 table name = expr2 table name 
-				if(expr.op1_table_name.equals( tableList.get(smallerTableIndex) )) {
+				if(expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() )) {
 					op1Index = smallerTableIndex;
 					op2Index = smallerTableIndex;
 					theOtherIndex = biggerTableIndex;
