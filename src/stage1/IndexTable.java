@@ -21,7 +21,7 @@ public class IndexTable extends VectorTable{
 		ArrayList<ColNameValuePair> colNameValuePair = statement.getNameValuePair();
 		if(statement.isUsingDefaultAttrOrder()) {
 			for(int i=0; i<attrs.size(); i++) {
-
+				
 			}
 		} 
 		else {
