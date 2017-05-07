@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.mapdb.DB;
 
@@ -40,23 +41,35 @@ public class IndexTable extends VectorTable{
 	public void createTreeIndex(String attrName) {
 		if(getClassOfAttr(attrName).equals(Integer.class)) {
 			TreeMultimap<Integer, String> t = TreeMultimap.create();
-			treemapInt.put(attrName, t);
 			int i = getIndexOfAttr(attrName);
 			treeIndexType[i] = 1;
+			
+			for(Map.Entry<Object, Object[]> e : this.entrySet()) {
+				t.put(Integer.parseInt(e.getValue()[i].toString()), e.getKey().toString());
+			}
+			treemapInt.put(attrName, t);
 		}
 		else {
 			TreeMultimap<String, String> t = TreeMultimap.create();
-			treemapStr.put(attrName, t);
 			int i = getIndexOfAttr(attrName);
 			treeIndexType[i] = 2;
+			
+			for(Map.Entry<Object, Object[]> e : this.entrySet()) {
+				t.put(e.getValue()[i].toString(), e.getKey().toString());
+			}
+			treemapStr.put(attrName, t);
 		}
 	}
 	
 	public void createHashIndex(String attrName) {
 		ArrayListMultimap<Object, Object> a = ArrayListMultimap.create();
-		listmap.put(attrName, a);
 		int i = getIndexOfAttr(attrName);
 		listIndexType[i] = true;
+		
+		for(Map.Entry<Object, Object[]> e : this.entrySet()) {
+			a.put(e.getValue()[i], e.getKey());
+		}
+		listmap.put(attrName, a);
 	}
 	
 	public void createIndexAll() {
@@ -71,15 +84,20 @@ public class IndexTable extends VectorTable{
 	// e.g. get all primary keys where "attribute = operand"
 	// precedence: primary key -> hash index -> tree map -> no index
 	public Set<Object> getAttrEquals(String attrName, Object operand) {
-		Set<Object> ret = new HashSet<Object>();
 		int i = getIndexOfAttr(attrName);
 		
-		if(attrName.equalsIgnoreCase(primaryKey))
+		if(attrName.equalsIgnoreCase(primaryKey)){
+			Set<Object> ret = new HashSet<Object>();
 			ret.add(operand);
+			return ret;
+		}
 		else if(listIndexType[i]) {
+			Set<Object> ret = new HashSet<Object>();
 			ret.add(listmap.get(operand));
+			return ret;
 		}
 		else if(treeIndexType[i] != 0) {
+			Set<Object> ret = new HashSet<Object>();
 			switch(treeIndexType[i]) {
 				case 1:
 					int operandInt = Integer.parseInt((String)operand);
@@ -90,8 +108,11 @@ public class IndexTable extends VectorTable{
 					break;
 				default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
+			ret = this.castToOriginalType(ret);
+			return ret;
 		}
 		else {
+			Set<Object> ret = new HashSet<Object>();
 			Consumer<Map.Entry<Object, Object[]>> addMatched = 
 				e -> {
 					if(ObjCompare.compare(operand, e.getValue()[i]) == 0)
@@ -106,8 +127,8 @@ public class IndexTable extends VectorTable{
 				this.entrySet().stream()
 				   			   .forEach(e -> addMatched.accept(e));
 			}
+			return ret;
 		}
-		return ret;
 	}
 	
 	// use Set(all primary key) - getAttrEquals
@@ -123,12 +144,12 @@ public class IndexTable extends VectorTable{
 	// would be faster if key sorted
 	// precedence: primary key -> tree map -> no index (Don't use hash map)
 	public Set<Object> subMap(String attrName, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive){
-		Set<Object> ret = new HashSet<Object>();
 		int i = getIndexOfAttr(attrName);
 		
 		if(attrName.equalsIgnoreCase(primaryKey))
 			return this.subMap(fromKey, fromInclusive, toKey, toInclusive);
 		else if(treeIndexType[i] != 0) {
+			Set<Object> ret = new HashSet<Object>();
 			switch(treeIndexType[i]) {
 			case 1:
 				int fromInt = Integer.parseInt((String)fromKey);
@@ -152,8 +173,11 @@ public class IndexTable extends VectorTable{
 				break;
 			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
+			ret = this.castToOriginalType(ret);
+			return ret;
 		}
 		else {
+			Set<Object> ret = new HashSet<Object>();
 			Consumer<Map.Entry<Object, Object[]>> addMatched =
 				e -> {
 					Object data = e.getValue()[i];
@@ -174,17 +198,17 @@ public class IndexTable extends VectorTable{
 				this.entrySet().stream()
 							   .forEach(e -> addMatched.accept(e));
 			}
+			return ret;
 		}
-		return ret;
 	}
 	
 	public Set<Object> headMap(String attrName, Object toKey) {
 		int i = getIndexOfAttr(attrName);
-		Set<Object> ret = new HashSet<Object>();
 		
 		if(attrName.equalsIgnoreCase(primaryKey))
 			return this.headMap(toKey);
 		else if(treeIndexType[i] != 0){
+			Set<Object> ret = new HashSet<Object>();
 			switch(treeIndexType[i]) {
 			case 1:
 				int toInt = Integer.parseInt(toKey.toString());
@@ -201,8 +225,11 @@ public class IndexTable extends VectorTable{
 				break;
 			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
+			ret = this.castToOriginalType(ret);
+			return ret;
 		}
 		else {
+			Set<Object> ret = new HashSet<Object>();
 			Consumer<Map.Entry<Object, Object[]>> addMatched = 
 				e -> {
 					if(ObjCompare.compare(e.getValue()[i], toKey) < 0)
@@ -217,8 +244,8 @@ public class IndexTable extends VectorTable{
 					this.entrySet().stream()
 					   .forEach(e -> addMatched.accept(e));
 				}
+			return ret;
 		}
-		return ret;
 	}
 
 	public Set<Object> tailMap(String attrName, Object fromKey) {
@@ -227,4 +254,21 @@ public class IndexTable extends VectorTable{
 		s.removeAll(headMap(attrName, fromKey));
 		return s;
 	}
+	
+	private Set<Object> castToOriginalType(Set<Object> s) {
+		if(getClassOfAttr(primaryKeyIdx).equals(Integer.class)) {
+			if(s.size() > PARALLEL_THRESHOLD) {
+				s = s.parallelStream()
+					 .map(t -> Integer.parseInt(t.toString()))
+				     .collect(Collectors.toSet());
+			}
+			else {
+				s = s.stream()
+				     .map(t -> Integer.parseInt(t.toString()))
+				     .collect(Collectors.toSet());
+			}
+		}
+		return s;
+	}
+	
 }
