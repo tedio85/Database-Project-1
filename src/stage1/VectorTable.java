@@ -8,7 +8,6 @@ import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArray;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -195,6 +194,14 @@ public class VectorTable implements Table {
 	
 	public Class<?> getClassOfAttr(int idxOfAttr) {
 		return attrs.get(idxOfAttr).getClass();
+	}
+	
+	public Class<?> getClassOfAttr(String attrName) {
+		int i = keyToIdx.getOrDefault(attrName, -1);
+		if(i == -1)
+			throw new IllegalArgumentException("attribute "+attrName+" does not exist");
+		else
+			return getClassOfAttr(i);
 	}
 	
 	/**

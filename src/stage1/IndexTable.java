@@ -1,10 +1,9 @@
 package stage1;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import org.mapdb.DB;
 
@@ -12,166 +11,220 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.TreeMultimap;
 
 public class IndexTable extends VectorTable{
-	private Map<String, TreeMultimap<Object, Object>> treemapIndex 
-			= new TreeMap<String, TreeMultimap<Object, Object>>(String.CASE_INSENSITIVE_ORDER);
-	private Map<String, ArrayListMultimap<Object, Object>> listmapIndex
+	private int[] treeIndexType = new int[20];
+	private boolean[] listIndexType = new boolean[20];
+	private final int PARALLEL_THRESHOLD = 1000;
+	
+	private Map<String, TreeMultimap<Integer, String>> treemapInt 
+			= new TreeMap<String, TreeMultimap<Integer, String>>(String.CASE_INSENSITIVE_ORDER);
+	
+	private Map<String, TreeMultimap<String, String>> treemapStr 
+	= new TreeMap<String, TreeMultimap<String, String>>(String.CASE_INSENSITIVE_ORDER);
+	
+	private Map<String, ArrayListMultimap<Object, Object>> listmap
 			= new TreeMap<String, ArrayListMultimap<Object, Object>>(String.CASE_INSENSITIVE_ORDER);
 	
 	
 	IndexTable(DB db, CreateTableStmt statement){
 		super(db, statement);
+		for(int i=0;i<20;i++) {
+			treeIndexType[i] = 0;
+			listIndexType[i] = false;
+		}
 	}
 	
 	/*--------------------------Indexing--------------------------------*/
-	
+	// 0: no indexing
+	// 1: tree integer -> string
+	// 2: tree string -> string
 	public void createTreeIndex(String attrName) {
-		if(getIndexOfAttr(attrName) != -1) {
-			
+		if(getClassOfAttr(attrName).equals(Integer.class)) {
+			TreeMultimap<Integer, String> t = TreeMultimap.create();
+			treemapInt.put(attrName, t);
+			int i = getIndexOfAttr(attrName);
+			treeIndexType[i] = 1;
 		}
-		else
-			System.out.println("attribute "+attrName+" does not exist");
+		else {
+			TreeMultimap<String, String> t = TreeMultimap.create();
+			treemapStr.put(attrName, t);
+			int i = getIndexOfAttr(attrName);
+			treeIndexType[i] = 2;
+		}
 	}
 	
 	public void createHashIndex(String attrName) {
-		
+		ArrayListMultimap<Object, Object> a = ArrayListMultimap.create();
+		listmap.put(attrName, a);
+		int i = getIndexOfAttr(attrName);
+		listIndexType[i] = true;
 	}
 	
 	public void createIndexAll() {
-		
+		for(Attribute a : attrs) {
+			createTreeIndex(a.getName());
+			createHashIndex(a.getName());
+		}
 	}
 	
+	/*-------------------------Index Operations-------------------------*/
+	
 	// e.g. get all primary keys where "attribute = operand"
+	// precedence: primary key -> hash index -> tree map -> no index
 	public Set<Object> getAttrEquals(String attrName, Object operand) {
 		Set<Object> ret = new HashSet<Object>();
+		int i = getIndexOfAttr(attrName);
+		
 		if(attrName.equalsIgnoreCase(primaryKey))
 			ret.add(operand);
-		else if(mapIndex.containsKey(attrName)) {
-			ret.addAll(mapIndex.get(attrName).get(operand));
+		else if(listIndexType[i]) {
+			ret.add(listmap.get(operand));
+		}
+		else if(treeIndexType[i] != 0) {
+			switch(treeIndexType[i]) {
+				case 1:
+					int operandInt = Integer.parseInt((String)operand);
+					ret.addAll(treemapInt.get(attrName).get(operandInt));
+					break;
+				case 2:
+					ret.addAll(treemapStr.get(attrName).get(operand.toString()));
+					break;
+				default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
+			}
 		}
 		else {
-			int attrIdx = getIndexOfAttr(attrName);
-			Class<?> type = getClassOfAttr(attrIdx);
-			for(Map.Entry<Object, Object[]> e : entrySet()) {
-				if(compareObjectEqual(operand, e.getValue()[attrIdx], type))
-					ret.add(e.getKey());
+			Consumer<Map.Entry<Object, Object[]>> addMatched = 
+				e -> {
+					if(ObjCompare.compare(operand, e.getValue()[i]) == 0)
+						ret.add(e.getKey());
+				};  
+			
+			if(bTable.size() > PARALLEL_THRESHOLD) {
+				this.entrySet().parallelStream()
+							   .forEach(e -> addMatched.accept(e));
+			}
+			else {
+				this.entrySet().stream()
+				   			   .forEach(e -> addMatched.accept(e));
 			}
 		}
 		return ret;
 	}
 	
-	/*-------------------------BTree Operations-------------------------*/
+	// use Set(all primary key) - getAttrEquals
+	public Set<Object> getAttrNeq(String attrName, Object operand) {
+		Set<Object> s = this.keySet();
+		if(attrName.equalsIgnoreCase(primaryKey))
+			s.remove(operand);
+		else 
+			s.removeAll(getAttrEquals(attrName, operand));
+		return s;
+	}
+	
+	// would be faster if key sorted
+	// precedence: primary key -> tree map -> no index (Don't use hash map)
+	public Set<Object> subMap(String attrName, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive){
+		Set<Object> ret = new HashSet<Object>();
+		int i = getIndexOfAttr(attrName);
+		
+		if(attrName.equalsIgnoreCase(primaryKey))
+			return this.subMap(fromKey, fromInclusive, toKey, toInclusive);
+		else if(treeIndexType[i] != 0) {
+			switch(treeIndexType[i]) {
+			case 1:
+				int fromInt = Integer.parseInt((String)fromKey);
+				int toInt = Integer.parseInt((String) toKey);
+				ret.addAll(
+						 treemapInt
+						.get(attrName)
+						.asMap()
+						.subMap(fromInt, fromInclusive, toInt, toInclusive)
+						.values()
+						);
+				break;
+			case 2:
+				ret.addAll(
+						 treemapStr
+						.get(attrName)
+						.asMap()
+						.subMap(fromKey.toString(), fromInclusive, toKey.toString(), toInclusive)
+						.values()
+						);
+				break;
+			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
+			}
+		}
+		else {
+			Consumer<Map.Entry<Object, Object[]>> addMatched =
+				e -> {
+					Object data = e.getValue()[i];
+					if(ObjCompare.compare(fromKey, data) > 0 &&
+					   ObjCompare.compare(toKey, data) < 0)
+						ret.add(e.getKey());
+					else if(fromInclusive && ObjCompare.compare(fromKey, data) == 0)
+						ret.add(e.getKey());
+					else if(toInclusive && ObjCompare.compare(fromKey, data) == 0)
+						ret.add(e.getKey());
+				};
+			
+			if(bTable.size() > PARALLEL_THRESHOLD) {
+				this.entrySet().parallelStream()
+						       .forEach(e -> addMatched.accept(e));
+			}
+			else {
+				this.entrySet().stream()
+							   .forEach(e -> addMatched.accept(e));
+			}
+		}
+		return ret;
+	}
 	
 	public Set<Object> headMap(String attrName, Object toKey) {
+		int i = getIndexOfAttr(attrName);
 		Set<Object> ret = new HashSet<Object>();
+		
 		if(attrName.equalsIgnoreCase(primaryKey))
-			return headMap(toKey);
-		else if(mapIndex.containsKey(attrName))
-			ret.addAll(mapIndex.get(attrName).asMap().headMap(toKey).values());
-		else {
-			int attrIdx = getIndexOfAttr(attrName);
-			Class<?> type = getClassOfAttr(attrIdx);	
-			for(Map.Entry<Object, Object[]> e : entrySet()) {
-				if(compareObjectSmaller(toKey, e.getValue()[attrIdx], type))
-					ret.add(e.getKey());
+			return this.headMap(toKey);
+		else if(treeIndexType[i] != 0){
+			switch(treeIndexType[i]) {
+			case 1:
+				int toInt = Integer.parseInt(toKey.toString());
+				ret.addAll(treemapInt.get(attrName)
+									 .asMap()
+									 .headMap(toInt)
+									 .values());
+				break;
+			case 2:
+				ret.addAll(treemapStr.get(attrName)
+									 .asMap()
+									 .headMap(toKey.toString())
+									 .values());
+				break;
+			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
+		}
+		else {
+			Consumer<Map.Entry<Object, Object[]>> addMatched = 
+				e -> {
+					if(ObjCompare.compare(e.getValue()[i], toKey) < 0)
+						ret.add(e.getKey());
+				};
+				
+				if(bTable.size() > PARALLEL_THRESHOLD) {
+					this.entrySet().parallelStream()
+				       .forEach(e -> addMatched.accept(e));
+				}
+				else {
+					this.entrySet().stream()
+					   .forEach(e -> addMatched.accept(e));
+				}
 		}
 		return ret;
 	}
 
 	public Set<Object> tailMap(String attrName, Object fromKey) {
-		Set<Object> ret = new HashSet<Object>();
-		if(attrName.equalsIgnoreCase(primaryKey))
-			return tailMap(fromKey);
-		else if(mapIndex.containsKey(attrName))
-			ret.addAll(mapIndex.get(attrName).asMap().tailMap(fromKey).values());
-		else {
-			int attrIdx = getIndexOfAttr(attrName);
-			Class<?> type = getClassOfAttr(attrIdx);	
-			for(Map.Entry<Object, Object[]> e : entrySet()) {
-				if(compareObjectLarger(fromKey, e.getValue()[attrIdx], type))
-					ret.add(e.getKey());
-			}
-		}
-		return ret;	
-	}
-	
-	public Set<Object> subMap(String attrName, Object fromKey, boolean fromInclusive, Object toKey, boolean toInclusive){
-		Set<Object> ret = new HashSet<Object>();
-		if(attrName.equalsIgnoreCase(primaryKey))
-			return subMap(fromKey, fromInclusive, toKey, toInclusive);
-		else if(mapIndex.containsKey(attrName))
-			ret.addAll(mapIndex.get(attrName).asMap()
-						.subMap(fromKey, fromInclusive, toKey, toInclusive).values());
-		else {
-			int attrIdx = getIndexOfAttr(attrName);
-			Class<?> type = getClassOfAttr(attrIdx);	
-			for(Map.Entry<Object, Object[]> e : entrySet()) {
-				if(compareObjectLarger(fromKey, e.getValue()[attrIdx], type) &&
-				   compareObjectSmaller(toKey, e.getValue()[attrIdx], type))
-					ret.add(e.getKey());
-			}
-		}
-		return ret;
-	}
-	
-	
-	/*-------------------------Compare Objects-----------------------*/
-	
-	private boolean compareObjectEqual(Object key, Object data, Class<?> type) {
-		Integer opInt = Integer.MIN_VALUE;
-		String opString = new String();
-		if(type.equals(Integer.class))
-			opInt = Integer.parseInt((String) key);
-		else
-			opString = (String) key;
-		
-		
-		Integer eInt = Integer.MIN_VALUE;
-		String eString = new String();
-		if(type.equals(Integer.class)) {
-			eInt = Integer.parseInt((String) data);
-			if(opInt == eInt)
-				return true;
-			else
-				return false;
-		}
-		else {
-			eString = (String) data;
-			if(opString.equals(eString))
-				return true;
-			else
-				return false;
-		}
-	}
-	
-	private boolean compareObjectLarger(Object key, Object data, Class<?> type) {
-		Integer opInt = Integer.MIN_VALUE;
-		String opString = new String();
-		if(type.equals(Integer.class))
-			opInt = Integer.parseInt((String) key);
-		else
-			opString = (String) key;
-		
-		
-		Integer eInt = Integer.MIN_VALUE;
-		String eString = new String();
-		if(type.equals(Integer.class)) {
-			eInt = Integer.parseInt((String) data);
-			if(opInt > eInt)
-				return true;
-			else
-				return false;
-		}
-		else {
-			eString = (String) data;
-			if(opString.compareTo(eString) < 0)
-				return true;
-			else
-				return false;
-		}
-	}
-	
-	private boolean compareObjectSmaller(Object key, Object data, Class<?> type) {
-		return !compareObjectLarger(key, data ,type) & !compareObjectEqual(key, data, type);
+		Set<Object> s = this.keySet();
+		s.removeAll(getAttrEquals(attrName, fromKey));
+		s.removeAll(headMap(attrName, fromKey));
+		return s;
 	}
 }
