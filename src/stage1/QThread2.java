@@ -21,7 +21,7 @@ public class QThread2 implements Runnable{
 		this.expr = expr;
 		this.tableList = tableList;
 		this.tableListNum = tableList.size();
-		/* deciding the index of table whether there is only 1 talbe. */
+		/* deciding the index of table whether there is only 1 table. */
 		if(tableList.size() == 1) {
 			smallerTableIndex = 0;
 			biggerTableIndex = 1;
@@ -55,31 +55,25 @@ public class QThread2 implements Runnable{
 		case "<":
 			return table.???();
 			break;
-		case "=":
-			return table.???();
-			break;
 		default:
 			System.out.println("QThread2 operator wrong!");
 			break;
 		}
-			
 	}
 	
 	private ArrayList<CartesianTemp> cartesianProduct(Set<Object> set1, Set<Object> set2){
 		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
-		Object[] s_array = set1.toArray();
 		
 		if(tableListNum == 1) {
-			for(int i = 0; i < s_array.length; i++) {
-				CartesianTemp tmp = new CartesianTemp(s_array[i], -1);
+			for(Object s_object : set1) {
+				CartesianTemp tmp = new CartesianTemp(s_object, -1);
 				result.add(tmp);
 			}
 		} 
 		else if(tableListNum == 2){
-			Object[] b_array = set2.toArray();
-			for(int i = 0; i < s_array.length; i++) {
-				for(int j = 0; j < b_array.length; j++) {
-					CartesianTemp tmp = new CartesianTemp(s_array[i], b_array[j]);
+			for(Object s_object : set1) {
+				for(Object b_object : set2) {
+					CartesianTemp tmp = new CartesianTemp(s_object, b_object);
 					result.add(tmp);
 				}
 			}
