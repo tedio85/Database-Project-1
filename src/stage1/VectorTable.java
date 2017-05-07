@@ -8,10 +8,10 @@ import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArray;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -190,7 +190,7 @@ public class VectorTable implements Table {
 	
 	// return the index of attribute in record
 	public int getIndexOfAttr(String attrName) {
-		return keyToIdx.get(attrName);
+		return keyToIdx.getOrDefault(attrName, -1);
 	}
 	
 	public Class<?> getClassOfAttr(int idxOfAttr) {
@@ -365,6 +365,7 @@ public class VectorTable implements Table {
 	public Set<Object> tailMap(Object fromKey) {
 		return bTable.tailMap(fromKey).keySet();
 	}
+	
 	
 	public Class<?> getPrimaryKeyType() {
 		int i = keyToIdx.get(primaryKey);
