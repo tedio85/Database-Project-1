@@ -11,8 +11,8 @@ public class CartesianTempCollection {
 	CartesianTempCollection() {
 		this.CartesianTempList = null;
 		this.isSingleTable = false;
-		this.lTName = null;
-		this.rTName = null;
+		this.lTName = "";
+		this.rTName = "";
 	}
 	
 	CartesianTempCollection(ArrayList<CartesianTemp> CartesianTempList, boolean isSingleTable, String lTName, String rTName){

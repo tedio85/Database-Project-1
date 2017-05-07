@@ -1,5 +1,6 @@
 package stage1;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,48 @@ public class TableManager {
 		processedStatement.show();
 		
 		/*----------------------codes below are untested-------------------*/
-		
+		ArrayList<VectorTable> tableList = new ArrayList<VectorTable>();
+		processedStatement.getTable_or_subquery().forEach( (temp) -> {
+			tableList.add( tableMap.get(temp.table_name) );
+		});
+		if(processedStatement.getExprCount() == 1) {
+			QThread2 q = new QThread2(processedStatement.getExpr().get(0), tableList, true);
+			Thread t = new Thread(q);
+			t.start();
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			CartesianTempCollection ctc = q.getCartesianTempCollection();
+		}
+		else if(processedStatement.getExprCount() == 2) {
+			QThread2 q0 = new QThread2(processedStatement.getExpr().get(0), tableList, true);
+			QThread2 q1 = new QThread2(processedStatement.getExpr().get(1), tableList, true);
+			Thread t0 = new Thread(q0);
+			Thread t1 = new Thread(q1);
+			t0.start();
+			t1.start();
+			try {
+				t0.join();
+				t1.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			CartesianTempCollection ctc0 = q0.getCartesianTempCollection();
+			CartesianTempCollection ctc1 = q1.getCartesianTempCollection();
+		}
+		else if(processedStatement.getExprCount() == 0) {
+			QThread2 q = new QThread2(processedStatement.getExpr().get(0), tableList, false);
+			Thread t = new Thread(q);
+			t.start();
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			CartesianTempCollection ctc = q.getCartesianTempCollection();
+		}
 	}
 	
 	
