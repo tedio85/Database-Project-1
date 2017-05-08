@@ -37,4 +37,13 @@ public class CartesianTempCollection {
 	public String getleftTableName() {
 		return lTName;
 	}
+	
+	public void show() {
+		String count = "------";
+		CartesianTempList.forEach(temp -> 
+		{
+			System.out.println(count);
+			temp.show();
+		});
+	}
 }
