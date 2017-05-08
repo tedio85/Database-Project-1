@@ -335,7 +335,7 @@ public class VectorTable implements Table {
 	}
 	
 	public void insert(InsertStmt statement) throws IllegalArgumentException{
-		
+
 		Vector<String> attrNames = new Vector<String>();
 		Vector<Object> tup = new Vector<Object>();
 		statement.getNameValuePair().forEach(t -> 	{

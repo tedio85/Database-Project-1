@@ -270,5 +270,5 @@ public class IndexTable extends VectorTable{
 		}
 		return s;
 	}
-	
 }
+	

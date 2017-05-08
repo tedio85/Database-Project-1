@@ -3,6 +3,7 @@ package stage1;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -15,19 +16,23 @@ public class QThread2 implements Runnable{
 	int biggerTableIndex;                   // bigger Table means its name is bigger than the other table
 	                                        // ( according to String.compareTo() )
 	int tableListNum;                       // size of tableList
+	CartesianTempCollection ctc;
+	boolean isWhere;                        // whether there is where clause
 	
-	public QThread2(Expr expr, ArrayList<VectorTable> tableList) {
+	public QThread2(Expr expr, ArrayList<VectorTable> tableList, boolean isWhere) {
 		this.expr = expr;
 		this.tableList = tableList;
 		this.tableListNum = tableList.size();
-		/* deciding the index of table whether there is only 1 talbe. */
-		if(tableList.size() == 1) {
+		this.isWhere = isWhere;
+		this.ctc = new CartesianTempCollection();
+		/* deciding the index of table whether there is only 1 table. */
+		if(tableListNum == 1) {
 			smallerTableIndex = 0;
 			biggerTableIndex = 1;
 		}
 		/* deciding the index of table according to their name. */
 		else {
-			if( tableList.get(0).getName().compareTo(tableList.get(1).getName()) > 0 ) {
+			if( tableList.get(0).getName().compareTo(tableList.get(1).getName()) < 0 ) {
 				smallerTableIndex = 0;
 				biggerTableIndex = 1;
 			}
@@ -37,6 +42,7 @@ public class QThread2 implements Runnable{
 			}
 		}
 	}
+	
 	/**
 	 * 
 	 * @param table           the table we want to do sub-map.
@@ -49,36 +55,32 @@ public class QThread2 implements Runnable{
 		/* using expr.attr */
 		switch(operator) {
 		case ">":
+			// TODO
 			return table.???();
 			break;
 		case "<":
-			return table.???();
-			break;
-		case "=":
+			// TODO
 			return table.???();
 			break;
 		default:
 			System.out.println("QThread2 operator wrong!");
 			break;
 		}
-			
 	}
 	
-	private ArrayList<CartesianTemp> cartesianProduct(Set<Object> set1, Set<Object> set2){
+	private ArrayList<CartesianTemp> cartesianProduct(Set<Object> set1, Set<Object> set2) {
 		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
-		Object[] s_array = set1.toArray();
 		
 		if(tableListNum == 1) {
-			for(int i = 0; i < s_array.length; i++) {
-				CartesianTemp tmp = new CartesianTemp(s_array[i], -1);
+			for(Object s_object : set1) {
+				CartesianTemp tmp = new CartesianTemp(s_object, -1);
 				result.add(tmp);
 			}
 		} 
-		else if(tableListNum == 2){
-			Object[] b_array = set2.toArray();
-			for(int i = 0; i < s_array.length; i++) {
-				for(int j = 0; j < b_array.length; j++) {
-					CartesianTemp tmp = new CartesianTemp(s_array[i], b_array[j]);
+		else if(tableListNum == 2) {
+			for(Object s_object : set1) {
+				for(Object b_object : set2) {
+					CartesianTemp tmp = new CartesianTemp(s_object, b_object);
 					result.add(tmp);
 				}
 			}
@@ -90,24 +92,97 @@ public class QThread2 implements Runnable{
 		return result;
 	}
 	
-	private ArrayList<CartesianTemp> exprProcess() {
+	private ArrayList<CartesianTemp> hashSpeedUp(String op1_attr, String op2_attr 
+												 ,VectorTable op1Table, VectorTable op2Table, boolean isOp1Smaller){
+		// smaller Table on left, bigger on right
 		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
-		Set<Object> smallerName = new HashSet<Object>();
-		Set<Object> biggerName = new HashSet<Object>();
+		Set<Object> Set1 = new HashSet<Object>();
+		Set<Object> Set2 = new HashSet<Object>();
+		Set<Object> smallerSet = new HashSet<Object>();
+		Set<Object> biggerSet = new HashSet<Object>();
 		
+		// loop through 2 tables and put attribute value into 2 set
+		for(Map.Entry<Object, Object[]> entry : op1Table.entrySet()) {
+			Object[] v = entry.getValue();
+			Object attr_value = v[op1Table.getIndexOfAttr(op1_attr)];
+			Set1.add(attr_value);
+		}
+		for(Map.Entry<Object, Object[]> entry : op2Table.entrySet()) {
+			Object[] v = entry.getValue();
+			Object attr_value = v[op2Table.getIndexOfAttr(op2_attr)];
+			Set2.add(attr_value);
+		}
+		
+		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
+		intersection.retainAll(Set2);
+		
+		if( op1Table.getName().equals( op2Table.getName() ) ) {
+			if(isOp1Smaller) 
+				biggerSet = tableList.get(biggerTableIndex).keySet();
+			else 
+				smallerSet = tableList.get(smallerTableIndex).keySet();
+			//TODO get the other Set according to //intersection\\
+		} 
+		else {
+			for(Object intersect : intersection) {
+				// TODO get smaller set and bigger set according to  //intersection\\
+				if(isOp1Smaller){
+					
+				} 
+				else {
+					
+				}
+			}
+		}
+		
+		result = cartesianProduct(smallerSet, biggerSet);
+		
+		return result;
+	}
+	
+	private CartesianTempCollection exprProcess() {
+		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
+		Set<Object> set1 = new HashSet<Object>();
+		Set<Object> set2 = new HashSet<Object>();
+		String lname = tableList.get(smallerTableIndex).getName();
+		String rname = "";
+		
+		/* The table we select from may be 1 or 2, which depends on \\tableListNum// */
+		
+		//  000. whether there is where clause in select statement      Ex:
 		//  1st. whether expression is unary.                           Ex: where 1.
 		//  2nd. whether there is only one side of op with table name.  Ex: where s.t > 1
 		//  3rd. two side of op with table name.                        Ex: where s.t = a.i
-		if(expr.isUnary) {
-			if(Integer.class.cast(expr.op1_attr_name) != 0) {
-				smallerName = tableList.get(smallerTableIndex).???;
-				biggerName = tableList.get(biggerTableIndex).???;
-				result = cartesianProduct(smallerName, biggerName);
+		
+		if(isWhere == false) {
+			set1 = tableList.get(smallerTableIndex).keySet();
+			if(tableListNum == 2) {
+				set2 = tableList.get(biggerTableIndex).keySet();
+				rname = tableList.get(biggerTableIndex).getName();
 			}
+			result = cartesianProduct(set1, set2);
+			
+			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
+		}
+		else if(expr.isUnary) {
+			if(Integer.class.cast(expr.op1_attr_name) != 0) {
+				set1 = tableList.get(smallerTableIndex).keySet();
+				if(tableListNum == 2) {
+					set2 = tableList.get(biggerTableIndex).keySet();
+					rname = tableList.get(biggerTableIndex).getName();
+				}
+				result = cartesianProduct(set1, set2);
+			}
+			else 
+				lname = "";
+			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 		} 
-		else if(!expr.op1HasTable_name || !expr.op2HasTable_name){
-			String compared_attr_name;
-			String attr_value;
+		else if(!expr.op1HasTable_name || !expr.op2HasTable_name) {
+			String compared_attr_name = "";
+			String attr_value = "";
+			int comparingTableIndex, theOtherOne;
+			boolean isCpringSmal;
+			// deciding which side of expression is constant
 			if(expr.op1HasTable_name) {
 				compared_attr_name = expr.op1_attr_name;
 				attr_value = expr.op2_attr_name;
@@ -116,41 +191,119 @@ public class QThread2 implements Runnable{
 				compared_attr_name = expr.op2_attr_name;
 				attr_value = expr.op1_attr_name;
 			}
-			smallerName = evaluate(tableList.get(smallerTableIndex), expr.operator, compared_attr_name, attr_value);
-			biggerName = tableList.get(biggerTableIndex).???;
-			result = cartesianProduct(smallerName, biggerName);
-		} else {
-			int op1Index, op2Index;
-			boolean op1IsSmaller;
-			if( expr.op1_table_name.equals( tableList.get(smallerTableIndex) ) ) {
-				op1Index = biggerTableIndex;
-				op2Index = smallerTableIndex;
-				op1IsSmaller = true;
+			
+			// deciding which table we are comparing now.
+			if(tableList.get(smallerTableIndex).equals(compared_attr_name)) {
+				comparingTableIndex = smallerTableIndex;
+				theOtherOne = biggerTableIndex;
+				isCpringSmal = true;
 			}
 			else {
-				op1Index = smallerTableIndex;
-				op2Index = biggerTableIndex;
-				op1IsSmaller = false;
+				comparingTableIndex = biggerTableIndex;
+				theOtherOne = smallerTableIndex;
+				isCpringSmal = false;
 			}
+			
+			set1 = evaluate(tableList.get(comparingTableIndex), expr.operator, compared_attr_name, attr_value);
+			if(tableListNum == 2) set2 = tableList.get(theOtherOne).keySet();
+			if(isCpringSmal)
+				result = cartesianProduct(set1, set2);
+			else 
+				result = cartesianProduct(set2, set1);
+			
+			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, "");
+		} 
+		else {
+			int op1Index = -1, op2Index = -1;
+			int theOtherIndex = -1;
+			boolean op1IsSmaller;
+			if(expr.op1_table_name != expr.op2_table_name) {
+				if( expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() ) ) {
+					op1Index = smallerTableIndex;
+					op2Index = biggerTableIndex;
+					op1IsSmaller = true;
+				}
+				else {
+					op1Index = biggerTableIndex;
+					op2Index = smallerTableIndex;
+					op1IsSmaller = false;
+				}
+			}
+			else { // expr1 table name = expr2 table name 
+				if(expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() )) {
+					op1Index = smallerTableIndex;
+					op2Index = smallerTableIndex;
+					theOtherIndex = biggerTableIndex;
+					op1IsSmaller = true;
+				}
+				else {
+					op1Index = biggerTableIndex;
+					op2Index = biggerTableIndex;
+					theOtherIndex = smallerTableIndex;
+					op1IsSmaller = false;
+				}
+			}
+			
 			VectorTable op1Table = tableList.get(op1Index);
-			for(Vector<Object> v : op1Table) {
-				Object attr_value = v.get(op1Table.getIndexOfAttr(expr.op1_attr_name));
-				Set<Object> set1 = evaluate(tableList.get(op2Index), expr.operator, expr.op2_attr_name, attr_value);
-				Object[] set1_array = set1.toArray();
-				for(int i=0; i < set1_array.length; i++) {
-					Set<Object> set2 = new HashSet<Object>();
-					set2.add(set1_array);
+			VectorTable op2Table = tableList.get(op2Index);
+			// if operator is "=", use hash to speed up
+			if(expr.operator.equals("=")) {
+				result = hashSpeedUp(expr.op1_attr_name, expr.op2_attr_name, op1Table, op2Table, op1IsSmaller);
+				ctc = new CartesianTempCollection(result, tableListNum == 1, tableList.get(smallerTableIndex).getName(), "");
+			} 
+			else {
+				if(expr.op1_table_name != expr.op2_table_name) {
+					for(Map.Entry<Object, Object[]> entry : op2Table.entrySet()) {
+						Object[] v = entry.getValue();
+						Object attr_value = v[op2Table.getIndexOfAttr(expr.op2_attr_name)];
+						set1 = evaluate(op1Table, expr.operator, expr.op1_attr_name, attr_value);
+						set2 = new HashSet<Object>();
+						set2.add(attr_value);
+						if(op1IsSmaller) {
+							result.addAll(cartesianProduct(set1, set2));
+							ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
+						}
+						else {
+							result.addAll(cartesianProduct(set2, set1));
+							ctc = new CartesianTempCollection(result, tableListNum == 1, op2Table.getName(), op1Table.getName());
+						}
+					}
+				}
+				else { // expr1 table name = expr2 table name 
+					for(Map.Entry<Object, Object[]> entry : op1Table.entrySet()) {
+						Object[] v = entry.getValue();
+						Object op1value = v[op1Table.getIndexOfAttr(expr.op1_attr_name)];
+						Object op2value = v[op1Table.getIndexOfAttr(expr.op2_attr_name)];
+						if(expr.operator.equals(">")) {
+							if(op1value.toString().compareTo(op2value.toString()) > 0) {
+								set1.add( v[op1Table.getIndexOfAttr(op1Table.getPrimaryKey())] );
+							}
+						} 
+						else if(expr.operator.equals("<")) {
+							if(op1value.toString().compareTo(op2value.toString()) < 0) {
+								set1.add( v[op1Table.getIndexOfAttr(op1Table.getPrimaryKey())] );
+							}	
+						}
+					}
+					set2 = tableList.get(theOtherIndex).keySet();
 					if(op1IsSmaller) {
 						result.addAll(cartesianProduct(set1, set2));
+						ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
 					}
 					else {
 						result.addAll(cartesianProduct(set2, set1));
+						ctc = new CartesianTempCollection(result, tableListNum == 1, op2Table.getName(), op1Table.getName());
 					}
 				}
 			}
+			
 		}
 		
-		return result;
+		return ctc;
+	}
+	
+	public CartesianTempCollection getCartesianTempCollection(){
+		return ctc;
 	}
 	
 	@Override
