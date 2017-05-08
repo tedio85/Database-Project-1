@@ -9,12 +9,12 @@ import java.util.Set;
 
 public class QThread2 implements Runnable{
 	Expr expr;                              // the expression processing
-	ArrayList<IndexTable> tableList;       // table(s) which we select from
+	ArrayList<IndexTable> tableList;        // table(s) which we select from
 	int smallerTableIndex;                  // smaller Table means its name is smaller than the other table
 	int biggerTableIndex;                   // bigger Table means its name is bigger than the other table
 	                                        // ( according to String.compareTo() )
 	int tableListNum;                       // size of tableList
-	CartesianTempCollection ctc;
+	CartesianTempCollection ctc;			// the collection of CartesianTemp
 	boolean isWhere;                        // whether there is where clause
 	
 	public QThread2(Expr expr, ArrayList<IndexTable> tableList, boolean isWhere) {
@@ -29,7 +29,7 @@ public class QThread2 implements Runnable{
 			biggerTableIndex = 1;
 		}
 		/* deciding the index of table according to their name. */
-		else {
+		else { // tableListNum = 2
 			if( tableList.get(0).getName().compareTo(tableList.get(1).getName()) < 0 ) {
 				smallerTableIndex = 0;
 				biggerTableIndex = 1;
@@ -58,6 +58,8 @@ public class QThread2 implements Runnable{
 			return table.headMap(attr, value);
 		case "<>":
 			return table.getAttrNeq(attr, value);
+		case "=":
+			return table.getAttrEquals(attr, value);
 		default:
 			throw new IllegalArgumentException("Your operator is wrong");
 		}
@@ -292,7 +294,7 @@ public class QThread2 implements Runnable{
 							}	
 						}
 					}
-					set2 = tableList.get(theOtherIndex).keySet();
+					if(tableListNum == 2) set2 = tableList.get(theOtherIndex).keySet();
 					if(op1IsSmaller) {
 						result.addAll(cartesianProduct(set1, set2));
 						ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
