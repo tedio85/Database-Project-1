@@ -13,12 +13,12 @@ import org.mapdb.DB;
 
 public class TableManager {
 	private int PARALLEL_THRESHOLD = 1000;
-	private TreeMap<String, VectorTable> tableMap;
+	private TreeMap<String, IndexTable> tableMap;
 	DB db;
 	/*--------------Constructor-------------------------*/
 	
 	TableManager(DB db) {
-		tableMap = new TreeMap<String, VectorTable>(String.CASE_INSENSITIVE_ORDER);
+		tableMap = new TreeMap<String, IndexTable>(String.CASE_INSENSITIVE_ORDER);
 		this.db = db;
 	}
 	
@@ -35,7 +35,7 @@ public class TableManager {
 	}
 	
 	public void dumpCSV() {
-		for (HashMap.Entry<String, VectorTable> entry : tableMap.entrySet()) {
+		for (HashMap.Entry<String, IndexTable> entry : tableMap.entrySet()) {
     	    tableMap.get(entry.getKey()).exportToCSV();
     	}
 	}
@@ -59,7 +59,7 @@ public class TableManager {
 	private void createTableStmt(CreateTableStmt statement) {
 		if(!isTableExist(statement.getTable_name())) {
 			try {
-				VectorTable v = new VectorTable(db, statement);
+				IndexTable v = new IndexTable(db, statement);
 				tableMap.put(v.getName(), v);
 			}
 			catch(Exception e) {
@@ -72,7 +72,7 @@ public class TableManager {
 	
 	private void insertStmt(InsertStmt statement) {
 		String tableName = statement.getTable_name();
-		VectorTable v = tableMap.get(tableName);
+		IndexTable v = tableMap.get(tableName);
 		if(v == null)
 			throw new NullPointerException("table "+tableName+" does not exist");
 		try {
@@ -90,7 +90,7 @@ public class TableManager {
 		
 		/*----------------------codes below are untested-------------------*/
 
-		ArrayList<VectorTable> tableList = new ArrayList<VectorTable>();
+		ArrayList<IndexTable> tableList = new ArrayList<IndexTable>();
 		processedStatement.getTable_or_subquery().forEach( (temp) -> {
 			tableList.add( tableMap.get(temp.table_name) );
 		});
@@ -238,7 +238,7 @@ public class TableManager {
 			return;
 		if(!tableMap.containsKey(tableName))
 			throw new IllegalArgumentException("Table "+tableName+" does not exist");
-		VectorTable t = tableMap.get(tableName);
+		IndexTable t = tableMap.get(tableName);
 		Set<String> attrSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		t.getAttrs().forEach(attr -> attrSet.add(attr.getName()));
 		if(!attrSet.contains(attrName))
@@ -250,7 +250,7 @@ public class TableManager {
 			return "No Table_name";
 		Set<String> tableSet = new TreeSet<String>();
 		for(String s : selectedTables) {
-			VectorTable t = tableMap.get(s);
+			IndexTable t = tableMap.get(s);
 			Set<String> attrSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 			t.getAttrs().forEach(attr -> attrSet.add(attr.getName()));
 			if(attrSet.contains(attrName))
@@ -328,7 +328,7 @@ public class TableManager {
 		
 		
 		if(cart.isSingleTable()) {
-			VectorTable t = tableMap.get(cart.getleftTableName());
+			IndexTable t = tableMap.get(cart.getleftTableName());
 			ArrayList<Integer> attrIdx = new ArrayList<Integer>();
 			
 			// set work table attribute & get attrIdx
@@ -355,8 +355,8 @@ public class TableManager {
 			}
 		}
 		else {
-			VectorTable lt = tableMap.get(cart.getleftTableName());
-			VectorTable rt = tableMap.get(cart.getleftTableName());
+			IndexTable lt = tableMap.get(cart.getleftTableName());
+			IndexTable rt = tableMap.get(cart.getleftTableName());
 			ArrayList<Integer> lattrIdx = new ArrayList<Integer>();
 			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
 			
