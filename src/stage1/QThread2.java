@@ -113,7 +113,7 @@ public class QThread2 implements Runnable{
 		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
 		intersection.retainAll(Set2);
 		
-		if( op1Table.getName().equals( op2Table.getName() ) ) {
+		if( op1Table.getName().equalsIgnoreCase( op2Table.getName() ) ) {
 				//TODO get the other Set according to //intersection\\
 			Set<Object> tmp = new HashSet<Object>();
 			intersection.forEach( temp -> tmp.addAll(op1Table.getAttrEquals(op1_attr, temp)) );
@@ -187,22 +187,25 @@ public class QThread2 implements Runnable{
 			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 		} 
 		else if(!expr.op1HasTable_name || !expr.op2HasTable_name) {
+			String compared_table_name = "";
 			String compared_attr_name = "";
 			String attr_value = "";
 			int comparingTableIndex, theOtherOne;
 			boolean isCpringSmal;
 			// deciding which side of expression is constant
 			if(expr.op1HasTable_name) {
+				compared_table_name = expr.op1_table_name;
 				compared_attr_name = expr.op1_attr_name;
 				attr_value = expr.op2_attr_name;
 			}
 			else if(expr.op2HasTable_name) {
+				compared_table_name = expr.op2_table_name;
 				compared_attr_name = expr.op2_attr_name;
 				attr_value = expr.op1_attr_name;
 			}
-			
+
 			// deciding which table we are comparing now.
-			if(tableList.get(smallerTableIndex).getName().equals(compared_attr_name)) {
+			if(tableList.get(smallerTableIndex).getName().equalsIgnoreCase(compared_table_name)) {
 				comparingTableIndex = smallerTableIndex;
 				theOtherOne = biggerTableIndex;
 				isCpringSmal = true;
@@ -212,7 +215,7 @@ public class QThread2 implements Runnable{
 				theOtherOne = smallerTableIndex;
 				isCpringSmal = false;
 			}
-
+			
 			set1 = evaluate(tableList.get(comparingTableIndex), expr.operator, compared_attr_name, attr_value);
 			if(tableListNum == 2) set2 = tableList.get(theOtherOne).keySet();
 			if(isCpringSmal)
@@ -227,7 +230,7 @@ public class QThread2 implements Runnable{
 			int theOtherIndex = -1;
 			boolean op1IsSmaller;
 			if(expr.op1_table_name != expr.op2_table_name) {
-				if( expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() ) ) {
+				if( expr.op1_table_name.equalsIgnoreCase( tableList.get(smallerTableIndex).getName() ) ) {
 					op1Index = smallerTableIndex;
 					op2Index = biggerTableIndex;
 					op1IsSmaller = true;
@@ -239,7 +242,7 @@ public class QThread2 implements Runnable{
 				}
 			}
 			else { // expr1 table name = expr2 table name 
-				if(expr.op1_table_name.equals( tableList.get(smallerTableIndex).getName() )) {
+				if(expr.op1_table_name.equalsIgnoreCase( tableList.get(smallerTableIndex).getName() )) {
 					op1Index = smallerTableIndex;
 					op2Index = smallerTableIndex;
 					theOtherIndex = biggerTableIndex;
