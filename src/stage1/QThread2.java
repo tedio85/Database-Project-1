@@ -62,6 +62,9 @@ public class QThread2 implements Runnable{
 			// TODO
 			return table.???();
 			break;
+		case "<>":
+			return table.???();
+			break;
 		default:
 			System.out.println("QThread2 operator wrong!");
 			break;

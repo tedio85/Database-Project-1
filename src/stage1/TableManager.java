@@ -266,38 +266,8 @@ public class TableManager {
 		return tableSet.toArray(new String[10])[0];
 	}
 	
-	private void project(SelectStmt statement, ArrayList<CartesianTemp> cart) {
+	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
-		if(statement.getTable_or_subquery().size() == 1) {
-			String t1Name = statement.getTable_or_subquery().get(0).table_name;
-			ArrayList<Integer> t1AttrIdx = new ArrayList<Integer>();
-			
-			// set required result attributes
-			statement.getResult_column().forEach(rc -> {
-				int i = tableMap.get(t1Name).getIndexOfAttr(rc.attr_name);
-				t1AttrIdx.add(i);
-			});			
-		}
-		else {
-			String t1Name = statement.getTable_or_subquery().get(0).table_name;
-			String t2Name = statement.getTable_or_subquery().get(1).table_name;
-			ArrayList<Integer> t1AttrIdx = new ArrayList<Integer>();
-			ArrayList<Integer> t2AttrIdx = new ArrayList<Integer>();
-			
-			// set required result attributes
-			statement.getResult_column().forEach(rc -> {
-				if(rc.table_name.equals(t1Name)) {
-					int i = tableMap.get(t1Name).getIndexOfAttr(rc.attr_name);
-					t1AttrIdx.add(i);
-				}
-				else {
-					int i = tableMap.get(t2Name).getIndexOfAttr(rc.attr_name);
-					t2AttrIdx.add(i);
-				}
-			});
-			
-			if()
-		}
 	}
 	
 }
