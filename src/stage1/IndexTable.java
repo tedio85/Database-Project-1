@@ -78,6 +78,7 @@ public class IndexTable extends VectorTable{
 			createHashIndex(a.getName());
 		}
 	}
+
 	
 	/*-------------------------Index Operations-------------------------*/
 	

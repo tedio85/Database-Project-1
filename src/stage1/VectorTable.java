@@ -173,6 +173,17 @@ public class VectorTable implements Table {
 		return this.primaryKey;
 	}
 	
+	// get attribute by name
+	public Attribute getAttr(String attrName) {
+		Attribute ret = new Attribute();
+		for(Attribute a : attrs) {
+			if(a.getName().equals(attrName)) {
+				ret = a;
+			}
+		}
+		return ret;
+	}
+	
 	// get names of attributes
 	public Vector<Attribute> getAttrs() {
 		return this.attrs;
@@ -352,6 +363,10 @@ public class VectorTable implements Table {
 	}
 	
 	/*---------------------BTreeMap Operations----------------------*/
+	
+	public Object[] get(Object pk) {
+		return bTable.get(pk);
+	}
 	
 	@SuppressWarnings("unchecked")
 	public Set<Object> keySet() {
