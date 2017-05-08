@@ -2,6 +2,7 @@ package stage1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.TreeSet;
 import org.mapdb.DB;
 
 public class TableManager {
+	private int PARALLEL_THRESHOLD = 1000;
 	private TreeMap<String, VectorTable> tableMap;
 	DB db;
 	/*--------------Constructor-------------------------*/
@@ -36,11 +38,6 @@ public class TableManager {
 		for (HashMap.Entry<String, VectorTable> entry : tableMap.entrySet()) {
     	    tableMap.get(entry.getKey()).exportToCSV();
     	}
-	}
-	
-	private int getTableAttrSize(String tableName) {
-		//TODO
-		return tableMap.get(tableName).getAttrs().size();
 	}
 	
 	private boolean isTableExist(String tableName) {
@@ -97,8 +94,14 @@ public class TableManager {
 		processedStatement.getTable_or_subquery().forEach( (temp) -> {
 			tableList.add( tableMap.get(temp.table_name) );
 		});
-		if(processedStatement.getExprCount() == 1) {
-			QThread2 q = new QThread2(processedStatement.getExpr().get(0), tableList, true);
+		
+		if(processedStatement.getExprCount() < 2) {
+			QThread2 q = null;
+			if(processedStatement.getExprCount() == 1)
+				q = new QThread2(processedStatement.getExpr().get(0), tableList, true);
+			else
+				q = new QThread2(processedStatement.getExpr().get(0), tableList, false);
+			
 			Thread t = new Thread(q);
 			t.start();
 			try {
@@ -107,6 +110,7 @@ public class TableManager {
 				e.printStackTrace();
 			}
 			CartesianTempCollection ctc = q.getCartesianTempCollection();
+			project(processedStatement, ctc);
 		}
 		else if(processedStatement.getExprCount() == 2) {
 			QThread2 q0 = new QThread2(processedStatement.getExpr().get(0), tableList, true);
@@ -123,18 +127,11 @@ public class TableManager {
 			}
 			CartesianTempCollection ctc0 = q0.getCartesianTempCollection();
 			CartesianTempCollection ctc1 = q1.getCartesianTempCollection();
-		}
-		else if(processedStatement.getExprCount() == 0) {
-			QThread2 q = new QThread2(processedStatement.getExpr().get(0), tableList, false);
-			Thread t = new Thread(q);
-			t.start();
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			CartesianTempCollection ctc = q.getCartesianTempCollection();
-		}
+			if(statement.getBooleanOperator().equalsIgnoreCase("AND"))
+				project(processedStatement, operationAND(ctc0, ctc1));
+			else
+				project(processedStatement, operationOR(ctc0, ctc1));
+		}	
 	}
 	
 	
@@ -266,8 +263,140 @@ public class TableManager {
 		return tableSet.toArray(new String[10])[0];
 	}
 	
+	private CartesianTempCollection operationOR(CartesianTempCollection cart1, CartesianTempCollection cart2) {
+		
+		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
+		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
+		s = operationHelper(s, cart1);
+		s = operationHelper(s, cart2);
+		CartesianTemp[] o = s.toArray(new CartesianTemp[s.size()]);
+		for(CartesianTemp c : o) {
+			list.add(c);
+		}
+		
+		return new CartesianTempCollection(list, false, cart1.getleftTableName(), cart1.getRightTableName());
+	} 
+	
+	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
+		
+		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
+		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
+		boolean usesCart1 = true;
+		
+		if(cart1.getCartesianTempList().size() > cart2.getCartesianTempList().size()) {
+			s = operationHelper(s, cart2);
+			usesCart1 = false;
+		}
+		else {
+			operationHelper(s, cart1);
+			usesCart1 = true;
+		}
+		
+		if(usesCart1) {
+			for(CartesianTemp c : cart2.getCartesianTempList()) {
+				if(s.contains(c))
+					list.add(c);
+			}
+		}
+		else {
+			for(CartesianTemp c : cart1.getCartesianTempList()) {
+				if(s.contains(c))
+					list.add(c);
+			}
+		}
+		return new CartesianTempCollection(list, false, cart1.getleftTableName(), cart1.getRightTableName());
+	}
+	
+	private HashSet<CartesianTemp> operationHelper(HashSet<CartesianTemp> s, CartesianTempCollection cart) {
+		if(cart.getCartesianTempList().size() > PARALLEL_THRESHOLD) {
+			cart.getCartesianTempList().parallelStream()
+									   .forEach(t -> s.add(t));
+		}
+		else {
+			cart.getCartesianTempList().stream()
+									   .forEach(t -> s.add(t));
+		}
+		
+		return s;
+	}
+	
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
+		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
+		ArrayList<Object> entry = new ArrayList<Object>();
+		
+		
+		
+		if(cart.isSingleTable()) {
+			VectorTable t = tableMap.get(cart.getleftTableName());
+			ArrayList<Integer> attrIdx = new ArrayList<Integer>();
+			
+			// set work table attribute & get attrIdx
+			for(Result_column rc : statement.getResult_column()) {
+				if(rc.isSingleStar) {
+					wt.addAllAttrs(t.getAttrs());
+					for(int i=0;i<t.getAttrs().size();i++)
+						attrIdx.add(i);
+					break;
+				}
+				else {
+					wt.addAttr(t.getAttr(rc.attr_name));
+					attrIdx.add(t.getIndexOfAttr(rc.attr_name));
+				}
+			}
+			
+			for(CartesianTemp ct : cart.getCartesianTempList()) {
+				entry.clear();
+				for(Integer i : attrIdx) {
+					Object obj = t.get(ct.p_key1)[i];
+					entry.add(obj);
+				}
+				wt.addTuple(entry);
+			}
+		}
+		else {
+			VectorTable lt = tableMap.get(cart.getleftTableName());
+			VectorTable rt = tableMap.get(cart.getleftTableName());
+			ArrayList<Integer> lattrIdx = new ArrayList<Integer>();
+			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
+			
+			for(Result_column rc : statement.getResult_column()) {
+				if(rc.isSingleStar) {
+					wt.addAllAttrs(lt.getAttrs());
+					wt.addAllAttrs(rt.getAttrs());
+					for(int i=0;i<lt.getAttrs().size();i++)
+						lattrIdx.add(i);
+					for(int i=0;i<rt.getAttrs().size();i++)
+						rattrIdx.add(i);
+					break;
+				}
+				else {
+					if(rc.table_name.equals(lt)) {
+						wt.addAttr(lt.getAttr(rc.attr_name));
+						lattrIdx.add(lt.getIndexOfAttr(rc.attr_name));
+					}
+					else {
+						wt.addAttr(rt.getAttr(rc.attr_name));
+						lattrIdx.add(rt.getIndexOfAttr(rc.attr_name));
+					}
+				}
+			}
+			
+			for(CartesianTemp ct : cart.getCartesianTempList()) {
+				entry.clear();
+				for(Integer i : lattrIdx) {
+					Object obj = lt.get(ct.p_key1)[i];
+					entry.add(obj);
+				}
+				for(Integer i : rattrIdx) {
+					Object obj = rt.get(ct.p_key2)[i];
+					entry.add(obj);
+				}
+				wt.addTuple(entry);
+			}
+		}
+		wt.aggregate(statement.getResult_column());
+		wt.show();
 	}
 	
 }

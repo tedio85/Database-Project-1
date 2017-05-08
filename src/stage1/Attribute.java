@@ -6,6 +6,13 @@ public class Attribute {
 	private Integer maxLen=0;
 	private String tableBelong;
 	
+	Attribute() {
+		this.name = "no name";
+		this.class_ = Exception.class;
+		this.maxLen = 0 ;
+		this.tableBelong = "no table";
+	}
+	
 	Attribute(String name, Class<?> class_, Integer maxLen, String tableBelong) {
 		this.name = name;
 		this.class_ = class_;
