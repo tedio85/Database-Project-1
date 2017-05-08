@@ -202,7 +202,7 @@ public class QThread2 implements Runnable{
 			}
 			
 			// deciding which table we are comparing now.
-			if(tableList.get(smallerTableIndex).equals(compared_attr_name)) {
+			if(tableList.get(smallerTableIndex).getName().equals(compared_attr_name)) {
 				comparingTableIndex = smallerTableIndex;
 				theOtherOne = biggerTableIndex;
 				isCpringSmal = true;
@@ -212,7 +212,7 @@ public class QThread2 implements Runnable{
 				theOtherOne = smallerTableIndex;
 				isCpringSmal = false;
 			}
-			
+
 			set1 = evaluate(tableList.get(comparingTableIndex), expr.operator, compared_attr_name, attr_value);
 			if(tableListNum == 2) set2 = tableList.get(theOtherOne).keySet();
 			if(isCpringSmal)
