@@ -134,7 +134,8 @@ public class IndexTable extends VectorTable{
 	
 	// use Set(all primary key) - getAttrEquals
 	public Set<Object> getAttrNeq(String attrName, Object operand) {
-		Set<Object> s = this.keySet();
+		Set<Object> s = new HashSet<Object>(); 
+		s.addAll(this.keySet());
 		if(attrName.equalsIgnoreCase(primaryKey))
 			s.remove(operand);
 		else 

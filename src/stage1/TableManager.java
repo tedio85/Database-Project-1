@@ -323,6 +323,7 @@ public class TableManager {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
 		
+		cart.show();
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getleftTableName());
