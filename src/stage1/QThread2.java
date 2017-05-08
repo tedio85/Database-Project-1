@@ -114,7 +114,6 @@ public class QThread2 implements Runnable{
 		intersection.retainAll(Set2);
 		
 		if( op1Table.getName().equals( op2Table.getName() ) ) {
-				//TODO get the other Set according to //intersection\\
 			Set<Object> tmp = new HashSet<Object>();
 			intersection.forEach( temp -> tmp.addAll(op1Table.getAttrEquals(op1_attr, temp)) );
 			
