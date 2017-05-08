@@ -2,12 +2,13 @@ package stage1;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 public class WorkingTable {
 
 	List<Attribute> selectedAttrs;
-	List<ArrayList<Object>> table;
+	ArrayList<ArrayList<Object>> table;
 	private int PARALLEL_THRESHOLD;
 	
 	WorkingTable(int PARALLEL_THRESHOLD) {
@@ -95,6 +96,7 @@ public class WorkingTable {
 	}
 	
 	public void show() {
+		
 		int[] longestStr = new int[20];
 		for(int i=0;i<selectedAttrs.size();i++)	longestStr[i] = 20;
 		

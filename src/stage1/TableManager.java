@@ -55,7 +55,7 @@ public class TableManager {
 		}
 	}
 	
-	private void createTableStmt(CreateTableStmt statement) {
+	private void createTableStmt(CreateTableStmt statement) throws IllegalArgumentException{
 		if(!isTableExist(statement.getTable_name())) {
 			try {
 				IndexTable v = new IndexTable(db, statement);
@@ -99,7 +99,7 @@ public class TableManager {
 			if(processedStatement.getExprCount() == 1)
 				q = new QThread2(processedStatement.getExpr().get(0), tableList, true);
 			else
-				q = new QThread2(processedStatement.getExpr().get(0), tableList, false);
+				q = new QThread2(null , tableList, false);
 			
 			Thread t = new Thread(q);
 			t.start();
@@ -322,8 +322,6 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		ArrayList<Object> entry = new ArrayList<Object>();
-		
 		
 		
 		if(cart.isSingleTable()) {
@@ -345,7 +343,7 @@ public class TableManager {
 			}
 			
 			for(CartesianTemp ct : cart.getCartesianTempList()) {
-				entry.clear();
+				ArrayList<Object> entry = new ArrayList<Object>();
 				for(Integer i : attrIdx) {
 					Object obj = t.get(ct.p_key1)[i];
 					entry.add(obj);
@@ -382,7 +380,7 @@ public class TableManager {
 			}
 			
 			for(CartesianTemp ct : cart.getCartesianTempList()) {
-				entry.clear();
+				ArrayList<Object> entry = new ArrayList<Object>();
 				for(Integer i : lattrIdx) {
 					Object obj = lt.get(ct.p_key1)[i];
 					entry.add(obj);

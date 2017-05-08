@@ -301,7 +301,6 @@ public class StmtMaker implements SqlListener{
 		
 		// set Expr
 		if(ctx.expr().isEmpty()) {	// no WHERE
-			newStatement.show();
 			statement = newStatement;
 			return;
 		}

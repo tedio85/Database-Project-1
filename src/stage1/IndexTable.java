@@ -250,7 +250,8 @@ public class IndexTable extends VectorTable{
 	}
 
 	public Set<Object> tailMap(String attrName, Object fromKey) {
-		Set<Object> s = this.keySet();
+		Set<Object> s = new HashSet<Object>();
+		s.addAll(this.keySet());
 		s.removeAll(getAttrEquals(attrName, fromKey));
 		s.removeAll(headMap(attrName, fromKey));
 		return s;
