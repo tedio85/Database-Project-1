@@ -2,24 +2,22 @@ package stage1;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 /* process 1 expression in where clause */
 
 public class QThread2 implements Runnable{
 	Expr expr;                              // the expression processing
-	ArrayList<VectorTable> tableList;       // table(s) which we select from
+	ArrayList<IndexTable> tableList;        // table(s) which we select from
 	int smallerTableIndex;                  // smaller Table means its name is smaller than the other table
 	int biggerTableIndex;                   // bigger Table means its name is bigger than the other table
 	                                        // ( according to String.compareTo() )
 	int tableListNum;                       // size of tableList
-	CartesianTempCollection ctc;
+	CartesianTempCollection ctc;			// the collection of CartesianTemp
 	boolean isWhere;                        // whether there is where clause
 	
-	public QThread2(Expr expr, ArrayList<VectorTable> tableList, boolean isWhere) {
+	public QThread2(Expr expr, ArrayList<IndexTable> tableList, boolean isWhere) {
 		this.expr = expr;
 		this.tableList = tableList;
 		this.tableListNum = tableList.size();
@@ -31,7 +29,7 @@ public class QThread2 implements Runnable{
 			biggerTableIndex = 1;
 		}
 		/* deciding the index of table according to their name. */
-		else {
+		else { // tableListNum = 2
 			if( tableList.get(0).getName().compareTo(tableList.get(1).getName()) < 0 ) {
 				smallerTableIndex = 0;
 				biggerTableIndex = 1;
@@ -51,23 +49,19 @@ public class QThread2 implements Runnable{
 	 * @param value           the value we used to compare with attr.
 	 * @return
 	 */
-	private Set<Object> evaluate(VectorTable table, String operator, String attr, Object value) {
+	private Set<Object> evaluate(IndexTable table, String operator, String attr, Object value) {
 		/* using expr.attr */
 		switch(operator) {
 		case ">":
-			// TODO
-			return table.???();
-			break;
+			return table.tailMap(attr, value);
 		case "<":
-			// TODO
-			return table.???();
-			break;
+			return table.headMap(attr, value);
 		case "<>":
-			return table.???();
-			break;
+			return table.getAttrNeq(attr, value);
+		case "=":
+			return table.getAttrEquals(attr, value);
 		default:
-			System.out.println("QThread2 operator wrong!");
-			break;
+			throw new IllegalArgumentException("Your operator is wrong");
 		}
 	}
 	
@@ -96,7 +90,7 @@ public class QThread2 implements Runnable{
 	}
 	
 	private ArrayList<CartesianTemp> hashSpeedUp(String op1_attr, String op2_attr 
-												 ,VectorTable op1Table, VectorTable op2Table, boolean isOp1Smaller){
+												 ,IndexTable op1Table, IndexTable op2Table, boolean isOp1Smaller){
 		// smaller Table on left, bigger on right
 		ArrayList<CartesianTemp> result = new ArrayList<CartesianTemp>();
 		Set<Object> Set1 = new HashSet<Object>();
@@ -120,21 +114,33 @@ public class QThread2 implements Runnable{
 		intersection.retainAll(Set2);
 		
 		if( op1Table.getName().equals( op2Table.getName() ) ) {
-			if(isOp1Smaller) 
+				//TODO get the other Set according to //intersection\\
+			Set<Object> tmp = new HashSet<Object>();
+			intersection.forEach( temp -> tmp.addAll(op1Table.getAttrEquals(op1_attr, temp)) );
+			
+			if(isOp1Smaller){
 				biggerSet = tableList.get(biggerTableIndex).keySet();
-			else 
+				smallerSet = tmp;
+			}
+			else{ 
 				smallerSet = tableList.get(smallerTableIndex).keySet();
-			//TODO get the other Set according to //intersection\\
+				biggerSet = tmp;
+			}
 		} 
 		else {
-			for(Object intersect : intersection) {
-				// TODO get smaller set and bigger set according to  //intersection\\
-				if(isOp1Smaller){
-					
-				} 
-				else {
-					
-				}
+			Set<Object> op1tmp = new HashSet<Object>();
+			Set<Object> op2tmp = new HashSet<Object>();
+			intersection.forEach( temp -> {
+				op1tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
+				op2tmp.addAll(op1Table.getAttrEquals(op2_attr, temp));
+				} );
+			if(isOp1Smaller){
+				smallerSet = op1tmp;
+				biggerSet = op2tmp;
+			} 
+			else {
+				smallerSet = op2tmp;
+				biggerSet = op1tmp;
 			}
 		}
 		
@@ -247,8 +253,8 @@ public class QThread2 implements Runnable{
 				}
 			}
 			
-			VectorTable op1Table = tableList.get(op1Index);
-			VectorTable op2Table = tableList.get(op2Index);
+			IndexTable op1Table = tableList.get(op1Index);
+			IndexTable op2Table = tableList.get(op2Index);
 			// if operator is "=", use hash to speed up
 			if(expr.operator.equals("=")) {
 				result = hashSpeedUp(expr.op1_attr_name, expr.op2_attr_name, op1Table, op2Table, op1IsSmaller);
@@ -288,7 +294,7 @@ public class QThread2 implements Runnable{
 							}	
 						}
 					}
-					set2 = tableList.get(theOtherIndex).keySet();
+					if(tableListNum == 2) set2 = tableList.get(theOtherIndex).keySet();
 					if(op1IsSmaller) {
 						result.addAll(cartesianProduct(set1, set2));
 						ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
