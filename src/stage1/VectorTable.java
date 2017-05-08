@@ -53,7 +53,6 @@ public class VectorTable implements Table {
 	public VectorTable() {
 		
 	}
-	
 
 	@SuppressWarnings("unchecked")
 	public VectorTable(DB db, CreateTableStmt statement) throws IllegalArgumentException{
@@ -237,6 +236,9 @@ public class VectorTable implements Table {
 				
 				// parameter type check
 				if(! obj.getClass().equals(attrs.get(i).getClass_())) {
+					System.out.println(obj.toString());
+					System.out.println(obj.getClass());
+					System.out.println(attrs.get(i).getClass_());
 					pass = false;
 					throw new IllegalArgumentException("attribute class unmatch");
 				}
@@ -372,7 +374,6 @@ public class VectorTable implements Table {
 	public Set<Object> tailMap(Object fromKey) {
 		return bTable.tailMap(fromKey).keySet();
 	}
-	
 	
 	public Class<?> getPrimaryKeyType() {
 		int i = keyToIdx.get(primaryKey);
