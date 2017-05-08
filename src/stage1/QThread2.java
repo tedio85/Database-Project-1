@@ -315,6 +315,7 @@ public class QThread2 implements Runnable{
 	}
 	
 	public CartesianTempCollection getCartesianTempCollection(){
+		ctc.show();
 		return ctc;
 	}
 	
