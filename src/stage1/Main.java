@@ -30,6 +30,7 @@ public class Main {
 							 	.fileDB("fileDB.db")
 							 	.closeOnJvmShutdown()
 							 	.fileLockDisable()
+							 	.deleteFilesAfterClose()
 							 	.make();
 	
 	private static TableManager tMgr = new TableManager(diskDB);		// map attribute table name to table

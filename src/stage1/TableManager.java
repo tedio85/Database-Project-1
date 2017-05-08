@@ -3,7 +3,6 @@ package stage1;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -86,7 +85,7 @@ public class TableManager {
 	private void selectStmt(SelectStmt statement) {
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
 		processedStatement = matchAllAttrName(processedStatement);
-		processedStatement.show();
+		//processedStatement.show();
 		
 		/*----------------------codes below are untested-------------------*/
 

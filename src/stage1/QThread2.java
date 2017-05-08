@@ -211,7 +211,7 @@ public class QThread2 implements Runnable{
 				theOtherOne = smallerTableIndex;
 				isCpringSmal = false;
 			}
-			
+
 			set1 = evaluate(tableList.get(comparingTableIndex), expr.operator, compared_attr_name, attr_value);
 			if(tableListNum == 2) set2 = tableList.get(theOtherOne).keySet();
 			if(isCpringSmal)
