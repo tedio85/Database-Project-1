@@ -5,8 +5,8 @@ import java.util.List;
 
 public class Expr {
 	public final boolean isUnary;
-	public final boolean op1HasTable_name;
-	public final boolean op2HasTable_name;
+	public boolean op1HasTable_name;
+	public boolean op2HasTable_name;
 	public final Class<?> op1Type;
 	public final Class<?> op2Type;
 	public String op1_table_name;
@@ -67,10 +67,12 @@ public class Expr {
 
 	public void setOp1_table_name(String table_name) {
 		changeTable_name(table_name, 1);
+		op1HasTable_name = true;
 	}
 	
 	public void setOp2_table_name(String table_name) {
 		changeTable_name(table_name, 2);
+		op2HasTable_name = true;
 	}
 	
 	private void changeTable_name(String name, int opNum) {
