@@ -1,5 +1,6 @@
 package stage1;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,12 @@ public class TableManager {
 		
 		/*----------------------codes below are untested-------------------*/
 		
+		if(statement.getExprCount() == 2) {
+			
+		}
+		else {
+			
+		}
 	}
 	
 	
@@ -194,6 +201,8 @@ public class TableManager {
 	}
 	
 	private void matchHelper_matchAttrTable(String attrName, String tableName) {
+		if(attrName.equals("*"))
+			return;
 		if(!tableMap.containsKey(tableName))
 			throw new IllegalArgumentException("Table "+tableName+" does not exist");
 		VectorTable t = tableMap.get(tableName);
@@ -204,6 +213,8 @@ public class TableManager {
 	}
 	
 	private String matchHelper_findAttrTable(String attrName, Set<String> selectedTables) {
+		if(attrName.equals("*"))
+			return "No Table_name";
 		Set<String> tableSet = new TreeSet<String>();
 		for(String s : selectedTables) {
 			VectorTable t = tableMap.get(s);
@@ -219,7 +230,38 @@ public class TableManager {
 		return tableSet.toArray(new String[10])[0];
 	}
 	
-	private void project(List<Result_column> result_column, TempTable tmpTable) {
+	private void project(SelectStmt statement, ArrayList<CartesianTemp> cart) {
 		
+		if(statement.getTable_or_subquery().size() == 1) {
+			String t1Name = statement.getTable_or_subquery().get(0).table_name;
+			ArrayList<Integer> t1AttrIdx = new ArrayList<Integer>();
+			
+			// set required result attributes
+			statement.getResult_column().forEach(rc -> {
+				int i = tableMap.get(t1Name).getIndexOfAttr(rc.attr_name);
+				t1AttrIdx.add(i);
+			});			
+		}
+		else {
+			String t1Name = statement.getTable_or_subquery().get(0).table_name;
+			String t2Name = statement.getTable_or_subquery().get(1).table_name;
+			ArrayList<Integer> t1AttrIdx = new ArrayList<Integer>();
+			ArrayList<Integer> t2AttrIdx = new ArrayList<Integer>();
+			
+			// set required result attributes
+			statement.getResult_column().forEach(rc -> {
+				if(rc.table_name.equals(t1Name)) {
+					int i = tableMap.get(t1Name).getIndexOfAttr(rc.attr_name);
+					t1AttrIdx.add(i);
+				}
+				else {
+					int i = tableMap.get(t2Name).getIndexOfAttr(rc.attr_name);
+					t2AttrIdx.add(i);
+				}
+			});
+			
+			if()
+		}
 	}
+	
 }
