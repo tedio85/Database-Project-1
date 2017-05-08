@@ -126,6 +126,7 @@ public class TableManager {
 			}
 			CartesianTempCollection ctc0 = q0.getCartesianTempCollection();
 			CartesianTempCollection ctc1 = q1.getCartesianTempCollection();
+			
 			if(statement.getBooleanOperator().equalsIgnoreCase("AND"))
 				project(processedStatement, operationAND(ctc0, ctc1));
 			else
@@ -287,14 +288,15 @@ public class TableManager {
 			usesCart1 = false;
 		}
 		else {
-			operationHelper(s, cart1);
+			s = operationHelper(s, cart1);
 			usesCart1 = true;
 		}
-		
+				
 		if(usesCart1) {
 			for(CartesianTemp c : cart2.getCartesianTempList()) {
-				if(s.contains(c))
+				if(s.contains(c)) {
 					list.add(c);
+				}
 			}
 		}
 		else {
@@ -303,6 +305,7 @@ public class TableManager {
 					list.add(c);
 			}
 		}
+		
 		return new CartesianTempCollection(list, false, cart1.getleftTableName(), cart1.getRightTableName());
 	}
 	
@@ -322,9 +325,7 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		
-		cart.show();
-		
+			
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getleftTableName());
 			ArrayList<Integer> attrIdx = new ArrayList<Integer>();
