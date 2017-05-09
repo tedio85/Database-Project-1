@@ -357,6 +357,7 @@ public class TableManager {
 				}
 			}
 			
+			// get attribute from object[]
 			for(CartesianTemp ct : cart.getCartesianTempList()) {
 				ArrayList<Object> entry = new ArrayList<Object>();
 				for(Integer i : attrIdx) {
@@ -373,14 +374,16 @@ public class TableManager {
 			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
 			
 			/*--------------------------------------------*/
+			/*
 			System.out.println("----project----");
 			System.out.println(cart.getRightTableName());
 			System.out.println(cart.getLeftTableName());
 			System.out.println(rt.getName());
 			System.out.println(lt.getName());
+			*/
 			/*--------------------------------------------*/
 			
-			
+			// add Attribute class into work table & get index of selected attributes
 			for(Result_column rc : statement.getResult_column()) {
 				if(rc.isSingleStar) {
 					wt.addAllAttrs(lt.getAttrs());
@@ -403,6 +406,7 @@ public class TableManager {
 				}
 			}
 			
+			// get attribute from object[]
 			for(CartesianTemp ct : cart.getCartesianTempList()) {
 				ArrayList<Object> entry = new ArrayList<Object>();
 				for(Integer i : lattrIdx) {

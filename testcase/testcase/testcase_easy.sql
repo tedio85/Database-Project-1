@@ -46,6 +46,12 @@ select *
 from Student as s, DEPT as d
 where  s.dept = d.name;
 
+select *
+from Student as s, DEPT as d
+where  s.dept = d.name AND d.location = 'downhill';
 
+select COUNT(*)
+from Student as s, DEPT as d
+where  s.dept = d.name AND d.location = 'downhill';
 
 
