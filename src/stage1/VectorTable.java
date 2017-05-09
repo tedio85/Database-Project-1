@@ -55,15 +55,24 @@ public class VectorTable implements Table {
 	}
 
 	@SuppressWarnings("unchecked")
-	public VectorTable(DB db, CreateTableStmt statement) throws IllegalArgumentException{
+	public VectorTable(DB db, DB diskDB, CreateTableStmt statement) throws IllegalArgumentException{
+		BTreeMap<Object, Object[]> bDiskTable =  
+			  diskDB.treeMap(statement.getTable_name())
+					.valuesOutsideNodesEnable()
+					.keySerializer(Serializer.ELSA)
+					.valueSerializer(new SerializerArray<Object[]>(Serializer.ELSA))
+					.counterEnable()
+					.createOrOpen();
 		
 		bTable =  db.treeMap(statement.getTable_name())
 					.valuesOutsideNodesEnable()
 					.keySerializer(Serializer.ELSA)
 					.valueSerializer(new SerializerArray<Object[]>(Serializer.ELSA))
 					.counterEnable()
-					.createOrOpen();
-													
+					.create();
+		
+		bTable.putAll(bDiskTable);
+		
 		String pk = null;
 		Vector<String> attrs = new Vector<String>();
 		Vector<String> attrTypes = new Vector<String>();

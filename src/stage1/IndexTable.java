@@ -26,8 +26,8 @@ public class IndexTable extends VectorTable{
 			= new TreeMap<String, ArrayListMultimap<Object, Object>>(String.CASE_INSENSITIVE_ORDER);
 	
 	
-	IndexTable(DB db, CreateTableStmt statement){
-		super(db, statement);
+	IndexTable(DB db, DB diskDB, CreateTableStmt statement){
+		super(db, diskDB, statement);
 		for(int i=0;i<20;i++) {
 			treeIndexType[i] = 0;
 			listIndexType[i] = false;
