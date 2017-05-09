@@ -1,25 +1,23 @@
 package stage1;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
+import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
-public class TableManager implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2898872740830999L;
+public class TableManager {
 	
 	private int PARALLEL_THRESHOLD = 1000;
+	private NavigableSet<CreateTableStmt> createdTables;
 	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
 	DB db;
@@ -27,17 +25,17 @@ public class TableManager implements Serializable{
 	/*--------------Constructor-------------------------*/
 	
 	TableManager(DB db) {
+		this.db = db;
 		diskTableMap = db.treeMap("tableMap")
 					 .keySerializer(Serializer.STRING)
 					 .valueSerializer(Serializer.ELSA)
 					 .counterEnable()
 					 .createOrOpen();
-		
-		System.out.println(diskTableMap.size());
+	
 		tableMap = new TreeMap<String, IndexTable>(String.CASE_INSENSITIVE_ORDER);
 		tableMap.putAll(diskTableMap);
 		
-		this.db = db;
+		loadSavedCreateTableStmt();
 	}
 	
 
@@ -62,6 +60,17 @@ public class TableManager implements Serializable{
 		return tableMap.containsKey(tableName);
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void loadSavedCreateTableStmt() {
+		createdTables =   (NavigableSet<CreateTableStmt>) db.treeSet("createdTables")
+						  .serializer(Serializer.JAVA)
+						  .counterEnable()
+						  .createOrOpen();
+
+		for(CreateTableStmt cts : createdTables) {
+			createTableStmt(cts);
+		}
+	}
 	
 	/*---------------------Statement Execution-----------------------*/
 	
@@ -84,6 +93,7 @@ public class TableManager implements Serializable{
 			try {
 				IndexTable v = new IndexTable(db, statement);
 				tableMap.put(v.getName(), v);
+				createdTables.add(statement);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
