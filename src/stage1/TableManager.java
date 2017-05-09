@@ -90,6 +90,7 @@ public class TableManager {
 	private void selectStmt(SelectStmt statement) throws Exception{
 		//statement.show();
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
+		processedStatement.show();
 		processedStatement = matchAllAttrName(processedStatement);
 		//processedStatement.show();
 		
@@ -166,7 +167,7 @@ public class TableManager {
 				e.setOp1_table_name(real);
 			}
 			if(e.op2HasTable_name) {
-				String real = substituteHelper(aliasToReal, e.op1_table_name);
+				String real = substituteHelper(aliasToReal, e.op2_table_name);
 				e.setOp2_table_name(real);
 			}
 		}
