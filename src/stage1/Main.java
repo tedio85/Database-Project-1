@@ -30,7 +30,7 @@ public class Main {
 	private static boolean fileInput = false;
 	
 	private static DB db = DBMaker
-							.heapDB()
+							.memoryDB()
 							.closeOnJvmShutdown()
 							.make();
 	
