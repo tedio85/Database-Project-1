@@ -54,4 +54,7 @@ select COUNT(*)
 from Student as s, DEPT as d
 where  s.dept = d.name AND d.location = 'downhill';
 
+select COUNT(s.name)
+from Student as s, DEPT as d
+where  s.dept = d.name AND d.location = 'downhill';
 

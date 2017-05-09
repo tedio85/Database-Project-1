@@ -99,6 +99,9 @@ public class WorkingTable {
 			int count = 0;
 			int i = getIndexOfAttr(rc.table_name, rc.attr_name);
 			
+			System.out.println("t: "+rc.table_name);
+			System.out.println("a: "+rc.attr_name);
+			
 			if(table.size() >  PARALLEL_THRESHOLD) {
 				count = (int) table.parallelStream()
 							 .filter(t -> t.get(i) == null)
