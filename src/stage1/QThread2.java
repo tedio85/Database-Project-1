@@ -136,25 +136,26 @@ public class QThread2 implements Runnable{
 				smallerSet = tableList.get(smallerTableIndex).keySet();
 				biggerSet = tmp;
 			}
+			
+			result = cartesianProduct(smallerSet, biggerSet);
 		} 
 		else {
 			Set<Object> op1tmp = new HashSet<Object>();
 			Set<Object> op2tmp = new HashSet<Object>();
 			intersection.forEach( temp -> {
 				op1tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
-				op2tmp.addAll(op1Table.getAttrEquals(op2_attr, temp));
-				} );
-			if(isOp1Smaller){
-				smallerSet = op1tmp;
-				biggerSet = op2tmp;
-			} 
-			else {
-				smallerSet = op2tmp;
-				biggerSet = op1tmp;
-			}
+				op2tmp.addAll(op2Table.getAttrEquals(op2_attr, temp));
+				if(isOp1Smaller){
+					result.addAll(cartesianProduct(op1tmp, op2tmp));
+				} 
+				else {
+					result.addAll(cartesianProduct(op2tmp, op1tmp));
+				}
+			} );
 		}
 		
-		result = cartesianProduct(smallerSet, biggerSet);
+		System.out.println(smallerSet.toString());
+		System.out.println(biggerSet.toString());
 		
 		return result;
 	}
