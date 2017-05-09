@@ -39,10 +39,9 @@ public class CartesianTempCollection {
 	}
 	
 	public void show() {
-		String count = "------";
+		System.out.println("(p_key1, p_key2)");
 		CartesianTempList.forEach(temp -> 
 		{
-			System.out.println(count);
 			temp.show();
 		});
 	}

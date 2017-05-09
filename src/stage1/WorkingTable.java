@@ -2,7 +2,6 @@ package stage1;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 public class WorkingTable {
@@ -19,7 +18,13 @@ public class WorkingTable {
 	
 	public void aggregate(ArrayList<Result_column> ar) {
 		
+		boolean b = needAggregate(ar);
+		if(b == false)
+			return;
+		
 		ArrayList<Object> aggrResult = new ArrayList<Object>();
+		selectedAttrs.clear();
+		
 		
 		for(Result_column r : ar) {
 			if(r.hasFunc_name) {
@@ -30,11 +35,36 @@ public class WorkingTable {
 					aggrResult.add(count(r));
 				}
 			}
+			
+			if(!r.attr_name.equals("*"))
+				selectedAttrs.add(new Attribute(r.func_name+"("+r.table_name+"."+r.attr_name+")",
+												Exception.class,
+												0,
+												"No table"));
+			else
+				selectedAttrs.add(new Attribute(r.func_name+"("+r.attr_name+")",
+						Exception.class,
+						0,
+						"No table"));
 		}
 		
 		if(aggrResult.size() < selectedAttrs.size()) {
 			aggrResult.add(null);
 		}
+		
+		table.clear();
+		table.add(aggrResult);
+	}
+	
+	private boolean needAggregate(ArrayList<Result_column> ar) {
+		boolean found = false;
+		for(Result_column r : ar) {
+			if(r.hasFunc_name) {
+				found = true;
+				break;
+			}
+		}
+		return found;
 	}
 	
 	public int sum(Result_column rc) {
@@ -60,14 +90,14 @@ public class WorkingTable {
 	}
 	
 	public int count(Result_column rc) {
+		
 		if(rc.isSingleStar)
+			return table.size();
+		else if(rc.attr_name.equals("*"))
 			return table.size();
 		else {
 			int count = 0;
 			int i = getIndexOfAttr(rc.table_name, rc.attr_name);
-			
-			if(!getClassOfAttr(rc.table_name,rc.attr_name).equals(Integer.class))
-				throw new IllegalArgumentException("Can't sum non-integer attribute");
 			
 			if(table.size() >  PARALLEL_THRESHOLD) {
 				count = (int) table.parallelStream()

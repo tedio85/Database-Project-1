@@ -47,11 +47,16 @@ public class TableManager {
 	/*---------------------Statement Execution-----------------------*/
 	
 	public void executeStatement(Stmt statement) {
-		switch(statement.stmtType) {
-		case CREATE_TABLE:  createTableStmt((CreateTableStmt) statement);	break;
-		case INSERT:		insertStmt((InsertStmt) statement);		break;
-		case SELECT:		selectStmt((SelectStmt) statement);		break;
-		default: throw new IllegalArgumentException("No such statement type: "+statement.stmtType);
+		try {
+			switch(statement.stmtType) {
+			case CREATE_TABLE:  createTableStmt((CreateTableStmt) statement);	break;
+			case INSERT:		insertStmt((InsertStmt) statement);		break;
+			case SELECT:		selectStmt((SelectStmt) statement);		break;
+			default: throw new IllegalArgumentException("No such statement type: "+statement.stmtType); 
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -82,7 +87,8 @@ public class TableManager {
 		}
 	}
 	
-	private void selectStmt(SelectStmt statement) {
+	private void selectStmt(SelectStmt statement) throws Exception{
+		//statement.show();
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
 		processedStatement = matchAllAttrName(processedStatement);
 		//processedStatement.show();
@@ -203,7 +209,7 @@ public class TableManager {
 		// process expression
 		for(Expr e : statement.getExpr()) {
 			if(e.op1HasTable_name)
-				matchHelper_matchAttrTable(e.op1_table_name, e.op1_table_name);				
+				matchHelper_matchAttrTable(e.op1_attr_name, e.op1_table_name);				
 			else {
 				if(e.op1Type.equals(Object.class)) {
 					try {
@@ -216,7 +222,7 @@ public class TableManager {
 				}
 			}
 			if(e.op2HasTable_name)
-				matchHelper_matchAttrTable(e.op2_table_name, e.op2_table_name);
+				matchHelper_matchAttrTable(e.op2_attr_name, e.op2_table_name);
 			else {
 				if(e.op2Type.equals(Object.class)) {
 					try {
@@ -278,6 +284,8 @@ public class TableManager {
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
+		cart1.show();
+		cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
@@ -325,7 +333,8 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-			
+		//cart.show();	
+		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getleftTableName());
 			ArrayList<Integer> attrIdx = new ArrayList<Integer>();

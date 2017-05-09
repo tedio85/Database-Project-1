@@ -10,8 +10,7 @@ public class CartesianTemp {
 	}
 	
 	public void show(){
-		System.out.println("p_key1: "+p_key1);
-		System.out.println("p_key2: "+p_key2);
+		System.out.println("("+p_key1+", "+p_key2+")");
 	}
 	
 	@Override
