@@ -22,6 +22,7 @@ INSERT INTO STUDENT VALUES (9, 'G', 'FL', 87);
 INSERT INTO STUDENT VALUES (10, 'H', 'CS', 95);
 INSERT INTO STUDENT VALUES (11, 'I', 'LS', 83);
 INSERT INTO STUDENT VALUES (12, 'J', 'MATH', 96);
+INSERT INTO STUDENT VALUES (96, 'J', 'MATH', 96);
 
 
 INSERT INTO DEPT VALUES (1, 'CS', 'downhill');
@@ -65,4 +66,8 @@ where  s.dept = d.name AND d.location = 'downhill';
 select SUM(s.id)
 from Student as s, DEPT as d
 where  s.dept = d.name AND d.location = 'downhill';
+
+select *
+from Student as s, DEPT
+where  s.id = s.score;
 

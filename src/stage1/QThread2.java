@@ -130,11 +130,11 @@ public class QThread2 implements Runnable{
 			Set<Object> tmp = new HashSet<Object>();
 			intersection.forEach( temp -> {
 				tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
-				tmp.addAll(op1Table.getAttrEquals(op2_attr, temp));
+				tmp.retainAll(op1Table.getAttrEquals(op2_attr, temp));
 			});
 			
 			if(isOp1Smaller){
-				biggerSet = tableList.get(biggerTableIndex).keySet();
+				if(tableListNum == 2) biggerSet = tableList.get(biggerTableIndex).keySet();
 				smallerSet = tmp;
 			}
 			else{ 
