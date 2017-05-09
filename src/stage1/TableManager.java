@@ -285,8 +285,6 @@ public class TableManager {
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
-		//cart1.show();
-		//cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
@@ -334,7 +332,7 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		cart.show();	
+		//cart.show();	
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getLeftTableName());
