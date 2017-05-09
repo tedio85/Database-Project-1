@@ -67,6 +67,10 @@ public class WorkingTable {
 	
 	public int sum(Result_column rc) {
 		
+		//System.out.println(rc.table_name);
+		//System.out.println(rc.attr_name);
+		//System.out.println(getClassOfAttr(rc.table_name,rc.attr_name));
+		
 		if(!getClassOfAttr(rc.table_name,rc.attr_name).equals(Integer.class))
 			throw new IllegalArgumentException("Can't sum non-integer attribute");
 		

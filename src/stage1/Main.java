@@ -82,6 +82,9 @@ public class Main {
     	List<String> words = Arrays.asList(line.split(" "));
     	words = words.stream().map(v -> v.trim().toLowerCase()).collect(Collectors.toList());
     	switch(words.get(0)) {
+    	case "index":
+    		processIndexCmd(words);
+    		return true;
     	case "show": 
     		tMgr.showTable(words.get(1));
     		timer.stop();
@@ -100,6 +103,15 @@ public class Main {
     		default: return false;	// not a system command
     	}
     }
+	
+	private static void processIndexCmd(List<String> words) {
+		if(words.get(1).equals("all")) {
+			tMgr.createIndexAll();
+		}
+		else {
+			tMgr.creatIndex(words.get(1), words.get(2), words.get(3));
+		}
+	}
 	
 	public static void main(String[] args) {
 		try {
@@ -150,7 +162,7 @@ public class Main {
 	        		break;
 	        	}
 	        }
-		    //System.out.println(statement);
+		    System.out.println(statement);
 		    
 		    // detect system command
 		    if(systemCmd(statement))	continue;

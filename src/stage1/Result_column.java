@@ -44,7 +44,7 @@ public class Result_column {
 	
 	public void setAttr_name(String attr_name) {
 		this.attr_name = attr_name;
-		if(this.hasFunc_name && !this.hasTable_name)
+		if(this.hasFunc_name && !this.hasTable_name && this.attr_name.equals("*"))
 			this.isSingleStar = true;
 	}
 	

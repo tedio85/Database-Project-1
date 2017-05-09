@@ -1,4 +1,5 @@
 package stage1;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +15,7 @@ import com.google.common.collect.TreeMultimap;
 public class IndexTable extends VectorTable{
 	private int[] treeIndexType = new int[20];
 	private boolean[] listIndexType = new boolean[20];
-	private final int PARALLEL_THRESHOLD = 1000;
+	private final int PARALLEL_THRESHOLD = 100000;
 	
 	private Map<String, TreeMultimap<Integer, String>> treemapInt 
 			= new TreeMap<String, TreeMultimap<Integer, String>>(String.CASE_INSENSITIVE_ORDER);
@@ -94,7 +95,7 @@ public class IndexTable extends VectorTable{
 		}
 		else if(listIndexType[i]) {
 			Set<Object> ret = new HashSet<Object>();
-			ret.add(listmap.get(operand));
+			ret.add(listmap.get(operand.toString()));
 			return ret;
 		}
 		else if(treeIndexType[i] != 0) {
@@ -156,22 +157,26 @@ public class IndexTable extends VectorTable{
 			case 1:
 				int fromInt = Integer.parseInt((String)fromKey);
 				int toInt = Integer.parseInt((String) toKey);
-				ret.addAll(
-						 treemapInt
-						.get(attrName)
-						.asMap()
-						.subMap(fromInt, fromInclusive, toInt, toInclusive)
-						.values()
-						);
+				Collection<Collection<String>> c = 
+						treemapInt.get(attrName)
+									.asMap()
+									.subMap(fromInt, fromInclusive, toInt, toInclusive)
+									.values();
+				
+				for(Collection<String> cs : c)
+					ret.addAll(cs);
+							
 				break;
 			case 2:
-				ret.addAll(
-						 treemapStr
-						.get(attrName)
-						.asMap()
-						.subMap(fromKey.toString(), fromInclusive, toKey.toString(), toInclusive)
-						.values()
-						);
+				
+				Collection<Collection<String>> d = 
+					treemapStr.get(attrName)
+								.asMap()
+								.subMap(fromKey.toString(), fromInclusive, toKey.toString(), toInclusive)
+								.values();
+				for(Collection<String> cs : d)
+					ret.addAll(cs);
+				
 				break;
 			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
@@ -214,16 +219,24 @@ public class IndexTable extends VectorTable{
 			switch(treeIndexType[i]) {
 			case 1:
 				int toInt = Integer.parseInt(toKey.toString());
-				ret.addAll(treemapInt.get(attrName)
+				Collection<Collection<String>> c =
+						treemapInt.get(attrName)
 									 .asMap()
 									 .headMap(toInt)
-									 .values());
+									 .values();
+				for(Collection<String> cs : c)
+					ret.addAll(cs);
+				
 				break;
 			case 2:
-				ret.addAll(treemapStr.get(attrName)
+				Collection<Collection<String>> d =
+						treemapStr.get(attrName)
 									 .asMap()
 									 .headMap(toKey.toString())
-									 .values());
+									 .values();
+				for(Collection<String> cs : d)
+					ret.addAll(cs);
+			
 				break;
 			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
@@ -255,11 +268,13 @@ public class IndexTable extends VectorTable{
 		s.addAll(this.keySet());
 		s.removeAll(getAttrEquals(attrName, fromKey));
 		s.removeAll(headMap(attrName, fromKey));
+		//System.out.println(s.toString());
 		return s;
 	}
 	
 	private Set<Object> castToOriginalType(Set<Object> s) {
-		if(getClassOfAttr(primaryKeyIdx).equals(Integer.class)) {
+		
+		if(primaryKeyIdx == -1 || getClassOfAttr(primaryKeyIdx).equals(Integer.class)) {
 			if(s.size() > PARALLEL_THRESHOLD) {
 				s = s.parallelStream()
 					 .map(t -> Integer.parseInt(t.toString()))

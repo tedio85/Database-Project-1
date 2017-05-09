@@ -31,17 +31,22 @@ public class CartesianTemp {
 		if (getClass() != obj.getClass())
 			return false;
 		CartesianTemp other = (CartesianTemp) obj;
-		if (p_key1 == null) {
-			if (other.p_key1 != null)
-				return false;
-		} else if (!p_key1.equals(other.p_key1))
+		if(this.p_key1 == null && other.p_key1 != null)
 			return false;
-		if (p_key2 == null) {
-			if (other.p_key2 != null)
-				return false;
-		} else if (!p_key2.equals(other.p_key2))
+		else if(this.p_key1 != null && other.p_key1 == null)
 			return false;
-		return true;
+		else if(this.p_key1 == null && other.p_key1 == null)
+			return false;
+		else if(this.p_key2 == null && other.p_key2 != null)
+			return false;
+		else if(this.p_key2 != null && other.p_key2 == null)
+			return false;
+		else if(this.p_key2 == null && other.p_key2 == null)
+			return false;
+		else {
+			return this.p_key1.toString().equals(other.p_key1.toString()) &&
+				   this.p_key2.toString().equals(other.p_key2.toString());
+		}
 	}
 	
 	

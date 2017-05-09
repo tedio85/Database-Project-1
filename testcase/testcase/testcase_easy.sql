@@ -70,4 +70,3 @@ where  s.dept = d.name AND d.location = 'downhill';
 select *
 from Student as s, DEPT
 where  s.id = s.score;
-

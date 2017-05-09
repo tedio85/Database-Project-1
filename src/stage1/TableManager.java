@@ -15,7 +15,7 @@ import org.mapdb.Serializer;
 
 public class TableManager {
 	
-	private int PARALLEL_THRESHOLD = 1000;
+	private int PARALLEL_THRESHOLD = 100000;
 	private NavigableSet<CreateTableStmt> createdTables;
 	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
@@ -41,6 +41,26 @@ public class TableManager {
 	
 
 	/*-----------------Table Manager Operations--------------------------*/
+	
+	public void createIndexAll() {
+		for(IndexTable i : tableMap.values()) {
+			i.createIndexAll();
+		}
+	}
+	
+	public void creatIndex(String tableName, String attrName ,String indexMethod) {
+		IndexTable it = tableMap.get(tableName);
+		if(it == null)
+			System.out.println("Table name "+tableName+" does not exist");
+		else {
+			if(indexMethod.startsWith("b"))
+				it.createTreeIndex(attrName);
+			else if(indexMethod.startsWith("h"))
+				it.createHashIndex(attrName);
+			else
+				System.out.println("no such index method");
+		}
+	}
 	
 	public void showTable(String tableName) {
 		try {
@@ -316,9 +336,9 @@ public class TableManager {
 		}
 		
 		if(cart1.isSingleTable() && cart2.isSingleTable())
-			return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
-		else
 			return new CartesianTempCollection(list, true, cart1.getLeftTableName(), cart1.getRightTableName());
+		else
+			return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
@@ -335,7 +355,13 @@ public class TableManager {
 			s = operationHelper(s, cart1);
 			usesCart1 = true;
 		}
-				
+		
+		/*
+		for(CartesianTemp c : s) {
+			c.show();
+		}
+		*/
+		
 		if(usesCart1) {
 			for(CartesianTemp c : cart2.getCartesianTempList()) {
 				if(s.contains(c)) {
@@ -371,7 +397,6 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		//cart.show();	
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getLeftTableName());

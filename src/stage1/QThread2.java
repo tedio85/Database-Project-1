@@ -70,15 +70,13 @@ public class QThread2 implements Runnable{
 		
 		if(tableListNum == 1) {
 			for(Object s_object : set1) {
-				CartesianTemp tmp = new CartesianTemp(s_object, -1);
-				result.add(tmp);
+				result.add(new CartesianTemp(s_object, -1));
 			}
 		} 
 		else if(tableListNum == 2) {
 			for(Object s_object : set1) {
 				for(Object b_object : set2) {
-					CartesianTemp tmp = new CartesianTemp(s_object, b_object);
-					result.add(tmp);
+					result.add(new CartesianTemp(s_object, b_object));
 				}
 			}
 		}
@@ -119,10 +117,10 @@ public class QThread2 implements Runnable{
 		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
 		intersection.retainAll(Set2);
 		
-		/*
+		
 		System.out.println("intersection size: "+intersection.size());
-		System.out.println(intersection.toString());
-		*/
+		//System.out.println(intersection.toString());
+		
 		/*--------------------------------------------------*/
 		
 		// op1 Table = op2 Table
@@ -239,6 +237,10 @@ public class QThread2 implements Runnable{
 				set2 = tableList.get(theOtherOne).keySet();
 				rname = tableList.get(biggerTableIndex).getName();
 			}
+			
+			System.out.println("set1.size()= "+ set1.size());
+			System.out.println("set2.size()= "+ set2.size());
+			
 			if(isCpringSmal)
 				result = cartesianProduct(set1, set2);
 			else 
