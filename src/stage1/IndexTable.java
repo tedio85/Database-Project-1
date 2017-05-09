@@ -218,7 +218,6 @@ public class IndexTable extends VectorTable{
 	public Set<Object> headMap(String attrName, Object toKey) {
 		int i = getIndexOfAttr(attrName);
 		
-		System.out.println("attrName: "+attrName+" "+toKey.toString());
 		
 		if(attrName.equalsIgnoreCase(primaryKey)) {
 			Set<Object> s = new HashSet<Object>();

@@ -325,14 +325,14 @@ public class TableManager {
 	}
 	
 	private CartesianTempCollection operationOR(CartesianTempCollection cart1, CartesianTempCollection cart2) {
-		cart1.show();
-		cart2.show();
+		//cart1.show();
+		//cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
 		s = operationHelper(s, cart1);
 		s = operationHelper(s, cart2);
-		
+		list.addAll(s);
 
 		if(cart1.isSingleTable() && cart2.isSingleTable())
 			return new CartesianTempCollection(list, true, cart1.getLeftTableName(), cart1.getRightTableName());

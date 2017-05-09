@@ -238,8 +238,8 @@ public class QThread2 implements Runnable{
 				rname = tableList.get(biggerTableIndex).getName();
 			}
 			
-			System.out.println("set1.size()= "+ set1.size());
-			System.out.println("set2.size()= "+ set2.size());
+			//System.out.println("set1.size()= "+ set1.size());
+			//System.out.println("set2.size()= "+ set2.size());
 			
 			if(isCpringSmal)
 				result = cartesianProduct(set1, set2);
