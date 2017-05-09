@@ -19,6 +19,8 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
+import com.google.common.base.Stopwatch;
+
 public class Main {
 	
 	private static boolean exitProgram = false;				// exit loop and terminate program
@@ -111,6 +113,7 @@ public class Main {
 				br = determineInputSrc();
 			
 			// get the statement ending with ";"
+			Stopwatch timer = Stopwatch.createStarted();
 			String statement = new String();
 	        while(true) {
 	        	
@@ -162,7 +165,8 @@ public class Main {
 	    	Stmt statementClass = stmtMaker.getStatement();
 	    	tMgr.executeStatement(statementClass);
 	    	stmtMaker.resetStatement();
-	    	
+	    	timer.stop();
+	    	System.out.println("Execution time: " + timer);
 		}
 		
 		// close BufferedReader

@@ -334,7 +334,7 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		cart.show();	
+		//cart.show();	
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getleftTableName());
