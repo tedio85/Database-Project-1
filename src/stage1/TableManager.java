@@ -285,8 +285,6 @@ public class TableManager {
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
-		cart1.show();
-		cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
