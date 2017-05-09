@@ -281,7 +281,10 @@ public class TableManager {
 			list.add(c);
 		}
 		
-		return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
+		if(cart1.isSingleTable() && cart2.isSingleTable())
+			return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
+		else
+			return new CartesianTempCollection(list, true, cart1.getLeftTableName(), cart1.getRightTableName());
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
@@ -312,8 +315,10 @@ public class TableManager {
 					list.add(c);
 			}
 		}
-		
-		return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
+		if(cart1.isSingleTable() && cart2.isSingleTable())
+			return new CartesianTempCollection(list, true, cart1.getLeftTableName(), cart1.getRightTableName());
+		else
+			return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
 	}
 	
 	private HashSet<CartesianTemp> operationHelper(HashSet<CartesianTemp> s, CartesianTempCollection cart) {

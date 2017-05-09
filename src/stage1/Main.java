@@ -28,6 +28,7 @@ public class Main {
 	// user input source
 	private static BufferedReader inputBr = new BufferedReader(new InputStreamReader(System.in));
 	private static boolean fileInput = false;
+	
 	private static DB diskDB = DBMaker
 							 	.fileDB("fileDB.db")
 							 	.closeOnJvmShutdown()
@@ -72,12 +73,25 @@ public class Main {
 	 *	if not, return false;
 	 */
 	private static boolean systemCmd(String line) {
+		Stopwatch timer = Stopwatch.createStarted();
     	List<String> words = Arrays.asList(line.split(" "));
     	words = words.stream().map(v -> v.trim().toLowerCase()).collect(Collectors.toList());
     	switch(words.get(0)) {
-    	case "show": tMgr.showTable(words.get(1));	return true;
-    	case "dump": tMgr.dumpCSV(); 	 			return true;
-    	case "exit": exitProgram = true; 			return true;
+    	case "show": 
+    		tMgr.showTable(words.get(1));
+    		timer.stop();
+    		System.out.println("Execution time: "+timer);
+    		return true;
+    	case "dump": 
+    		tMgr.dumpCSV();
+    		timer.stop();
+    		System.out.println("Execution time: "+timer);
+    		return true;
+    	case "exit": 
+    		exitProgram = true;
+    		timer.stop();
+    		System.out.println("Execution time: "+timer);
+    		return true;
     		default: return false;	// not a system command
     	}
     }

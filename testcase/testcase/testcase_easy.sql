@@ -8,7 +8,7 @@ CREATE TABLE Dept(
 	id int,
 	name varchar(20),
 	location varchar(40)
-)
+);
 
 INSERT INTO STUDENT VALUES (1, 'A', 'ECON', 90);
 INSERT INTO STUDENT VALUES (2, 'AB', 'EE', 91);
@@ -45,3 +45,7 @@ where id > 2 AND score <> 93;
 select *
 from Student as s, DEPT as d
 where  s.dept = d.name;
+
+
+
+
