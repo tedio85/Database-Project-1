@@ -110,17 +110,19 @@ public class QThread2 implements Runnable{
 			Set2.add(attr_value);
 		}
 		/*--------------------------------------------------*/
-		
+		/*
 		System.out.println(op1Table.getName()+"."+op1_attr);
 		System.out.println(op2Table.getName()+"."+op2_attr);
 		System.out.println(Set1.toString());
 		System.out.println(Set2.toString());
-	
+		*/
 		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
 		intersection.retainAll(Set2);
+		
+		/*
 		System.out.println("intersection size: "+intersection.size());
 		System.out.println(intersection.toString());
-		
+		*/
 		/*--------------------------------------------------*/
 		
 		if( op1Table.getName().equalsIgnoreCase( op2Table.getName() ) ) {
@@ -142,7 +144,9 @@ public class QThread2 implements Runnable{
 			Set<Object> op2tmp = new HashSet<Object>();
 			intersection.forEach( temp -> {
 				op1tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
-				op2tmp.addAll(op1Table.getAttrEquals(op2_attr, temp));
+				op2tmp.addAll(op2Table.getAttrEquals(op2_attr, temp));
+				//System.out.println(op1Table.getAttrEquals(op1_attr, temp).toString());
+				//System.out.println(op2Table.getAttrEquals(op2_attr, temp).toString());
 				} );
 			if(isOp1Smaller){
 				smallerSet = op1tmp;
@@ -153,6 +157,11 @@ public class QThread2 implements Runnable{
 				biggerSet = op1tmp;
 			}
 		}
+		
+		/*--------------------------------------------------*/
+		//System.out.println(smallerSet.toString());
+		//System.out.println(biggerSet.toString());
+		/*--------------------------------------------------*/
 		
 		result = cartesianProduct(smallerSet, biggerSet);
 		

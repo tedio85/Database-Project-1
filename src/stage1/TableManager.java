@@ -90,7 +90,7 @@ public class TableManager {
 	private void selectStmt(SelectStmt statement) throws Exception{
 		//statement.show();
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
-		processedStatement.show();
+		//processedStatement.show();
 		processedStatement = matchAllAttrName(processedStatement);
 		//processedStatement.show();
 		
@@ -334,7 +334,7 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		//cart.show();	
+		cart.show();	
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getleftTableName());
@@ -365,9 +365,16 @@ public class TableManager {
 		}
 		else {
 			IndexTable lt = tableMap.get(cart.getleftTableName());
-			IndexTable rt = tableMap.get(cart.getleftTableName());
+			IndexTable rt = tableMap.get(cart.getRightTableName());
 			ArrayList<Integer> lattrIdx = new ArrayList<Integer>();
 			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
+			
+			/*--------------------------------------------*/
+			System.out.println(cart.getRightTableName());
+			System.out.println(lt.getName());
+			System.out.println(rt.getName());
+			/*--------------------------------------------*/
+			
 			
 			for(Result_column rc : statement.getResult_column()) {
 				if(rc.isSingleStar) {
