@@ -29,6 +29,10 @@ public class Main {
 	private static BufferedReader inputBr = new BufferedReader(new InputStreamReader(System.in));
 	private static boolean fileInput = false;
 	
+	private static DB db = DBMaker
+							.heapDB()
+							.closeOnJvmShutdown()
+							.make();
 	
 	private static DB diskDB = DBMaker
 							 	.fileDB("fileDB.db")
@@ -37,7 +41,7 @@ public class Main {
 							 	.make();
 	
 	
-	private static TableManager tMgr = new TableManager(diskDB);		// map attribute table name to table
+	private static TableManager tMgr = new TableManager(db, diskDB);		// map attribute table name to table
 	
 	private static BufferedReader determineInputSrc() throws IOException {
 		

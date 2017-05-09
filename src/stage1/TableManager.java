@@ -11,7 +11,6 @@ import java.util.TreeSet;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
-import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
 public class TableManager {
@@ -21,16 +20,18 @@ public class TableManager {
 	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
 	DB db;
+	DB diskDB;
 	@SuppressWarnings("unchecked")
 	/*--------------Constructor-------------------------*/
 	
-	TableManager(DB db) {
+	TableManager(DB db, DB diskDB) {
 		this.db = db;
-		diskTableMap = db.treeMap("tableMap")
-					 .keySerializer(Serializer.STRING)
-					 .valueSerializer(Serializer.ELSA)
-					 .counterEnable()
-					 .createOrOpen();
+		this.diskDB = diskDB;
+		diskTableMap = diskDB.treeMap("tableMap")
+							 .keySerializer(Serializer.STRING)
+							 .valueSerializer(Serializer.ELSA)
+							 .counterEnable()
+							 .createOrOpen();
 	
 		tableMap = new TreeMap<String, IndexTable>(String.CASE_INSENSITIVE_ORDER);
 		tableMap.putAll(diskTableMap);
@@ -62,7 +63,7 @@ public class TableManager {
 	
 	@SuppressWarnings("unchecked")
 	private void loadSavedCreateTableStmt() {
-		createdTables =   (NavigableSet<CreateTableStmt>) db.treeSet("createdTables")
+		createdTables =   (NavigableSet<CreateTableStmt>) diskDB.treeSet("createdTables")
 						  .serializer(Serializer.JAVA)
 						  .counterEnable()
 						  .createOrOpen();
@@ -91,7 +92,7 @@ public class TableManager {
 	private void createTableStmt(CreateTableStmt statement) throws IllegalArgumentException{
 		if(!isTableExist(statement.getTable_name())) {
 			try {
-				IndexTable v = new IndexTable(db, statement);
+				IndexTable v = new IndexTable(db, diskDB, statement);
 				tableMap.put(v.getName(), v);
 				createdTables.add(statement);
 			}
@@ -178,7 +179,10 @@ public class TableManager {
 		// create map: alias -> real name
 		Map<String, String> aliasToReal = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 		for(Table_or_subquery tos : statement.getTable_or_subquery()) {
-			aliasToReal.put(tos.table_alias, tos.table_name);
+			if(tos.hasTable_alias)
+				aliasToReal.put(tos.table_alias, tos.table_name);
+			else
+				aliasToReal.put(tos.table_name, tos.table_name);
 		}
 			
 		// substitute alias table name in result column
