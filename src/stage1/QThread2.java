@@ -118,7 +118,7 @@ public class QThread2 implements Runnable{
 		intersection.retainAll(Set2);
 		
 		
-		System.out.println("intersection size: "+intersection.size());
+		//System.out.println("intersection size: "+intersection.size());
 		//System.out.println(intersection.toString());
 		
 		/*--------------------------------------------------*/

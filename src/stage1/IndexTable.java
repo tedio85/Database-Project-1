@@ -1,6 +1,7 @@
 package stage1;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -15,7 +16,7 @@ import com.google.common.collect.TreeMultimap;
 public class IndexTable extends VectorTable{
 	private int[] treeIndexType = new int[20];
 	private boolean[] listIndexType = new boolean[20];
-	private final int PARALLEL_THRESHOLD = 100000;
+	private final int PARALLEL_THRESHOLD = 1000000;
 	
 	private Map<String, TreeMultimap<Integer, String>> treemapInt 
 			= new TreeMap<String, TreeMultimap<Integer, String>>(String.CASE_INSENSITIVE_ORDER);
@@ -23,8 +24,8 @@ public class IndexTable extends VectorTable{
 	private Map<String, TreeMultimap<String, String>> treemapStr 
 	= new TreeMap<String, TreeMultimap<String, String>>(String.CASE_INSENSITIVE_ORDER);
 	
-	private Map<String, ArrayListMultimap<Object, Object>> listmap
-			= new TreeMap<String, ArrayListMultimap<Object, Object>>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, ArrayListMultimap<String, String>> listmap
+			= new TreeMap<String, ArrayListMultimap<String, String>>(String.CASE_INSENSITIVE_ORDER);
 	
 	
 	IndexTable(DB db, DB diskDB, CreateTableStmt statement){
@@ -63,14 +64,15 @@ public class IndexTable extends VectorTable{
 	}
 	
 	public void createHashIndex(String attrName) {
-		ArrayListMultimap<Object, Object> a = ArrayListMultimap.create();
+		ArrayListMultimap<String, String> a = ArrayListMultimap.create();
 		int i = getIndexOfAttr(attrName);
 		listIndexType[i] = true;
 		
 		for(Map.Entry<Object, Object[]> e : this.entrySet()) {
-			a.put(e.getValue()[i], e.getKey());
+			a.put(e.getValue()[i].toString(), e.getKey().toString());
 		}
 		listmap.put(attrName, a);
+		
 	}
 	
 	public void createIndexAll() {
@@ -95,8 +97,11 @@ public class IndexTable extends VectorTable{
 		}
 		else if(listIndexType[i]) {
 			Set<Object> ret = new HashSet<Object>();
-			ret.add(listmap.get(operand.toString()));
-			return ret;
+			List<String> l = listmap.get(attrName).get(operand.toString());
+			for(Object o : l) {
+				ret.add(o);
+			}
+			return this.castToOriginalType(ret);
 		}
 		else if(treeIndexType[i] != 0) {
 			Set<Object> ret = new HashSet<Object>();
@@ -163,9 +168,10 @@ public class IndexTable extends VectorTable{
 									.subMap(fromInt, fromInclusive, toInt, toInclusive)
 									.values();
 				
-				for(Collection<String> cs : c)
+				for(Collection<String> cs : c) {
 					ret.addAll(cs);
-							
+				}
+				
 				break;
 			case 2:
 				
@@ -212,8 +218,13 @@ public class IndexTable extends VectorTable{
 	public Set<Object> headMap(String attrName, Object toKey) {
 		int i = getIndexOfAttr(attrName);
 		
-		if(attrName.equalsIgnoreCase(primaryKey))
-			return this.headMap(toKey);
+		System.out.println("attrName: "+attrName+" "+toKey.toString());
+		
+		if(attrName.equalsIgnoreCase(primaryKey)) {
+			Set<Object> s = new HashSet<Object>();
+			s.addAll(this.headMap(toKey));
+			return s;
+		}
 		else if(treeIndexType[i] != 0){
 			Set<Object> ret = new HashSet<Object>();
 			switch(treeIndexType[i]) {
@@ -226,7 +237,7 @@ public class IndexTable extends VectorTable{
 									 .values();
 				for(Collection<String> cs : c)
 					ret.addAll(cs);
-				
+
 				break;
 			case 2:
 				Collection<Collection<String>> d =
@@ -236,7 +247,7 @@ public class IndexTable extends VectorTable{
 									 .values();
 				for(Collection<String> cs : d)
 					ret.addAll(cs);
-			
+
 				break;
 			default: throw new IllegalArgumentException("wrong indexType "+treeIndexType[i]);
 			}
@@ -267,6 +278,7 @@ public class IndexTable extends VectorTable{
 		Set<Object> s = new HashSet<Object>();
 		s.addAll(this.keySet());
 		s.removeAll(getAttrEquals(attrName, fromKey));
+		//System.out.println(s.toString());
 		s.removeAll(headMap(attrName, fromKey));
 		//System.out.println(s.toString());
 		return s;

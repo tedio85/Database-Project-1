@@ -15,7 +15,7 @@ import org.mapdb.Serializer;
 
 public class TableManager {
 	
-	private int PARALLEL_THRESHOLD = 100000;
+	private int PARALLEL_THRESHOLD = 1000000;
 	private NavigableSet<CreateTableStmt> createdTables;
 	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
@@ -325,16 +325,15 @@ public class TableManager {
 	}
 	
 	private CartesianTempCollection operationOR(CartesianTempCollection cart1, CartesianTempCollection cart2) {
+		cart1.show();
+		cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
 		s = operationHelper(s, cart1);
 		s = operationHelper(s, cart2);
-		CartesianTemp[] o = s.toArray(new CartesianTemp[s.size()]);
-		for(CartesianTemp c : o) {
-			list.add(c);
-		}
 		
+
 		if(cart1.isSingleTable() && cart2.isSingleTable())
 			return new CartesianTempCollection(list, true, cart1.getLeftTableName(), cart1.getRightTableName());
 		else
@@ -356,11 +355,6 @@ public class TableManager {
 			usesCart1 = true;
 		}
 		
-		/*
-		for(CartesianTemp c : s) {
-			c.show();
-		}
-		*/
 		
 		if(usesCart1) {
 			for(CartesianTemp c : cart2.getCartesianTempList()) {
@@ -397,6 +391,7 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
+		//cart.show();
 		
 		if(cart.isSingleTable()) {
 			IndexTable t = tableMap.get(cart.getLeftTableName());

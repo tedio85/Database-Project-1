@@ -212,7 +212,7 @@ public class VectorTable implements Table {
 	}
 	
 	public Class<?> getClassOfAttr(int idxOfAttr) {
-		return attrs.get(idxOfAttr).getClass();
+		return attrs.get(idxOfAttr).getClass_();
 	}
 	
 	public Class<?> getClassOfAttr(String attrName) {

@@ -7,6 +7,10 @@ public class CartesianTemp {
 	CartesianTemp(Object p_key1, Object p_key2) {
 		this.p_key1 = p_key1;
 		this.p_key2 = p_key2;
+		if(p_key1 == null)
+			throw new IllegalArgumentException("null value");
+		if(p_key2 == null)
+			throw new IllegalArgumentException("null value");
 	}
 	
 	public void show(){
@@ -31,23 +35,17 @@ public class CartesianTemp {
 		if (getClass() != obj.getClass())
 			return false;
 		CartesianTemp other = (CartesianTemp) obj;
-		if(this.p_key1 == null && other.p_key1 != null)
+		if (p_key1 == null) {
+			if (other.p_key1 != null)
+				return false;
+		} else if (!p_key1.equals(other.p_key1))
 			return false;
-		else if(this.p_key1 != null && other.p_key1 == null)
+		if (p_key2 == null) {
+			if (other.p_key2 != null)
+				return false;
+		} else if (!p_key2.equals(other.p_key2))
 			return false;
-		else if(this.p_key1 == null && other.p_key1 == null)
-			return false;
-		else if(this.p_key2 == null && other.p_key2 != null)
-			return false;
-		else if(this.p_key2 != null && other.p_key2 == null)
-			return false;
-		else if(this.p_key2 == null && other.p_key2 == null)
-			return false;
-		else {
-			return this.p_key1.toString().equals(other.p_key1.toString()) &&
-				   this.p_key2.toString().equals(other.p_key2.toString());
-		}
+		return true;
 	}
-	
-	
+
 }

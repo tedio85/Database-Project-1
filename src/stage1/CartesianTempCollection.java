@@ -39,6 +39,7 @@ public class CartesianTempCollection {
 	}
 	
 	public void show() {
+		System.out.println("isSingleTable :"+isSingleTable);
 		System.out.println("(p_key1, p_key2)");
 		CartesianTempList.forEach(temp -> 
 		{
