@@ -115,18 +115,23 @@ public class QThread2 implements Runnable{
 		System.out.println(op2Table.getName()+"."+op2_attr);
 		System.out.println(Set1.toString());
 		System.out.println(Set2.toString());
-	
+		
 		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
 		intersection.retainAll(Set2);
+		
+		
 		System.out.println("intersection size: "+intersection.size());
 		System.out.println(intersection.toString());
 		
 		/*--------------------------------------------------*/
 		
+		// op1 Table = op2 Table
 		if( op1Table.getName().equalsIgnoreCase( op2Table.getName() ) ) {
-				//TODO get the other Set according to //intersection\\
 			Set<Object> tmp = new HashSet<Object>();
-			intersection.forEach( temp -> tmp.addAll(op1Table.getAttrEquals(op1_attr, temp)) );
+			intersection.forEach( temp -> {
+				tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
+				tmp.addAll(op1Table.getAttrEquals(op2_attr, temp));
+			});
 			
 			if(isOp1Smaller){
 				biggerSet = tableList.get(biggerTableIndex).keySet();
@@ -140,22 +145,24 @@ public class QThread2 implements Runnable{
 			result = cartesianProduct(smallerSet, biggerSet);
 		} 
 		else {
-			Set<Object> op1tmp = new HashSet<Object>();
-			Set<Object> op2tmp = new HashSet<Object>();
-			intersection.forEach( temp -> {
+			for(Object temp : intersection) {
+				Set<Object> op1tmp = new HashSet<Object>();
+				Set<Object> op2tmp = new HashSet<Object>();
 				op1tmp.addAll(op1Table.getAttrEquals(op1_attr, temp));
 				op2tmp.addAll(op2Table.getAttrEquals(op2_attr, temp));
-				if(isOp1Smaller){
+				if(isOp1Smaller)
 					result.addAll(cartesianProduct(op1tmp, op2tmp));
-				} 
-				else {
+				else 
 					result.addAll(cartesianProduct(op2tmp, op1tmp));
-				}
-			} );
+			}
 		}
 		
-		System.out.println(smallerSet.toString());
-		System.out.println(biggerSet.toString());
+		/*--------------------------------------------------*/
+		//System.out.println(smallerSet.toString());
+		//System.out.println(biggerSet.toString());
+		/*--------------------------------------------------*/
+		
+		
 		
 		return result;
 	}
@@ -228,13 +235,16 @@ public class QThread2 implements Runnable{
 			}
 			
 			set1 = evaluate(tableList.get(comparingTableIndex), expr.operator, compared_attr_name, attr_value);
-			if(tableListNum == 2) set2 = tableList.get(theOtherOne).keySet();
+			if(tableListNum == 2) {
+				set2 = tableList.get(theOtherOne).keySet();
+				rname = tableList.get(biggerTableIndex).getName();
+			}
 			if(isCpringSmal)
 				result = cartesianProduct(set1, set2);
 			else 
 				result = cartesianProduct(set2, set1);
 			
-			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, "");
+			ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 		} 
 		else {
 			int op1Index = -1, op2Index = -1;
@@ -274,7 +284,8 @@ public class QThread2 implements Runnable{
 			// if operator is "=", use hash to speed up
 			if(expr.operator.equals("=")) {
 				result = hashSpeedUp(expr.op1_attr_name, expr.op2_attr_name, op1Table, op2Table, op1IsSmaller);
-				ctc = new CartesianTempCollection(result, tableListNum == 1, tableList.get(smallerTableIndex).getName(), "");
+				if(tableListNum == 2) rname = tableList.get(biggerTableIndex).getName();
+				ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 			} 
 			else {
 				if(expr.op1_table_name != expr.op2_table_name) {
@@ -283,14 +294,15 @@ public class QThread2 implements Runnable{
 						Object attr_value = v[op2Table.getIndexOfAttr(expr.op2_attr_name)];
 						set1 = evaluate(op1Table, expr.operator, expr.op1_attr_name, attr_value);
 						set2 = new HashSet<Object>();
+						rname = tableList.get(biggerTableIndex).getName();
 						set2.add(attr_value);
 						if(op1IsSmaller) {
 							result.addAll(cartesianProduct(set1, set2));
-							ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
+							ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 						}
 						else {
 							result.addAll(cartesianProduct(set2, set1));
-							ctc = new CartesianTempCollection(result, tableListNum == 1, op2Table.getName(), op1Table.getName());
+							ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 						}
 					}
 				}
@@ -310,14 +322,17 @@ public class QThread2 implements Runnable{
 							}	
 						}
 					}
-					if(tableListNum == 2) set2 = tableList.get(theOtherIndex).keySet();
+					if(tableListNum == 2) {
+						set2 = tableList.get(theOtherIndex).keySet();
+						rname = tableList.get(biggerTableIndex).getName();
+					}
 					if(op1IsSmaller) {
 						result.addAll(cartesianProduct(set1, set2));
-						ctc = new CartesianTempCollection(result, tableListNum == 1, op1Table.getName(), op2Table.getName());
+						ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 					}
 					else {
 						result.addAll(cartesianProduct(set2, set1));
-						ctc = new CartesianTempCollection(result, tableListNum == 1, op2Table.getName(), op1Table.getName());
+						ctc = new CartesianTempCollection(result, tableListNum == 1, lname, rname);
 					}
 				}
 			}

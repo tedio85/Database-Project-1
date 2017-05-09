@@ -34,7 +34,7 @@ public class CartesianTempCollection {
 		return rTName;
 	}
 	
-	public String getleftTableName() {
+	public String getLeftTableName() {
 		return lTName;
 	}
 	

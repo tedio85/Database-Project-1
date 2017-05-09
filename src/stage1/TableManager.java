@@ -90,7 +90,7 @@ public class TableManager {
 	private void selectStmt(SelectStmt statement) throws Exception{
 		//statement.show();
 		SelectStmt processedStatement = substituteAllTableAlias(statement);
-		processedStatement.show();
+		//processedStatement.show();
 		processedStatement = matchAllAttrName(processedStatement);
 		//processedStatement.show();
 		
@@ -281,12 +281,12 @@ public class TableManager {
 			list.add(c);
 		}
 		
-		return new CartesianTempCollection(list, false, cart1.getleftTableName(), cart1.getRightTableName());
+		return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
 	} 
 	
 	private CartesianTempCollection operationAND(CartesianTempCollection cart1, CartesianTempCollection cart2) {
-		cart1.show();
-		cart2.show();
+		//cart1.show();
+		//cart2.show();
 		
 		ArrayList<CartesianTemp> list = new ArrayList<CartesianTemp>();
 		HashSet<CartesianTemp> s = new HashSet<CartesianTemp>();
@@ -315,7 +315,7 @@ public class TableManager {
 			}
 		}
 		
-		return new CartesianTempCollection(list, false, cart1.getleftTableName(), cart1.getRightTableName());
+		return new CartesianTempCollection(list, false, cart1.getLeftTableName(), cart1.getRightTableName());
 	}
 	
 	private HashSet<CartesianTemp> operationHelper(HashSet<CartesianTemp> s, CartesianTempCollection cart) {
@@ -334,10 +334,10 @@ public class TableManager {
 	private void project(SelectStmt statement, CartesianTempCollection cart) {
 		
 		WorkingTable wt = new WorkingTable(PARALLEL_THRESHOLD);
-		//cart.show();	
+		cart.show();	
 		
 		if(cart.isSingleTable()) {
-			IndexTable t = tableMap.get(cart.getleftTableName());
+			IndexTable t = tableMap.get(cart.getLeftTableName());
 			ArrayList<Integer> attrIdx = new ArrayList<Integer>();
 			
 			// set work table attribute & get attrIdx
@@ -364,10 +364,19 @@ public class TableManager {
 			}
 		}
 		else {
-			IndexTable lt = tableMap.get(cart.getleftTableName());
-			IndexTable rt = tableMap.get(cart.getleftTableName());
+			IndexTable lt = tableMap.get(cart.getLeftTableName());
+			IndexTable rt = tableMap.get(cart.getRightTableName());
 			ArrayList<Integer> lattrIdx = new ArrayList<Integer>();
 			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
+			
+			/*--------------------------------------------*/
+			System.out.println("----project----");
+			System.out.println(cart.getRightTableName());
+			System.out.println(cart.getLeftTableName());
+			System.out.println(rt.getName());
+			System.out.println(lt.getName());
+			/*--------------------------------------------*/
+			
 			
 			for(Result_column rc : statement.getResult_column()) {
 				if(rc.isSingleStar) {
