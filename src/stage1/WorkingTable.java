@@ -21,10 +21,7 @@ public class WorkingTable {
 		boolean b = needAggregate(ar);
 		if(b == false)
 			return;
-		
 		ArrayList<Object> aggrResult = new ArrayList<Object>();
-		selectedAttrs.clear();
-		
 		
 		for(Result_column r : ar) {
 			if(r.hasFunc_name) {
@@ -36,6 +33,7 @@ public class WorkingTable {
 				}
 			}
 			
+			selectedAttrs.clear();
 			if(!r.attr_name.equals("*"))
 				selectedAttrs.add(new Attribute(r.func_name+"("+r.table_name+"."+r.attr_name+")",
 												Exception.class,
@@ -53,7 +51,7 @@ public class WorkingTable {
 		}
 		
 		table.clear();
-		table.add(aggrResult);
+		table.add(aggrResult);		
 	}
 	
 	private boolean needAggregate(ArrayList<Result_column> ar) {
@@ -76,14 +74,14 @@ public class WorkingTable {
 		int sum = 0;
 		if(table.size() > PARALLEL_THRESHOLD) {
 			sum =  table.parallelStream()
-						.filter(r -> r.get(i)==null)
-						.mapToInt(r -> Integer.parseInt((String)r.get(i)))
+						.filter(r -> r.get(i)!=null)
+						.mapToInt(r -> Integer.parseInt(r.get(i).toString()))
 						.sum();
 		}
 		else {
 			sum =  table.stream()
-					.filter(r -> r.get(i)==null)
-					.mapToInt(r -> Integer.parseInt((String)r.get(i)))
+					.filter(r -> r.get(i)!=null)
+					.mapToInt(r -> Integer.parseInt(r.get(i).toString()))
 					.sum();
 		}
 		return sum;
@@ -99,19 +97,20 @@ public class WorkingTable {
 			int count = 0;
 			int i = getIndexOfAttr(rc.table_name, rc.attr_name);
 			
-			System.out.println("t: "+rc.table_name);
-			System.out.println("a: "+rc.attr_name);
+			//System.out.println("t: "+rc.table_name);
+			//System.out.println("a: "+rc.attr_name);
 			
 			if(table.size() >  PARALLEL_THRESHOLD) {
 				count = (int) table.parallelStream()
-							 .filter(t -> t.get(i) == null)
+							 .filter(t -> t.get(i) != null)
 							 .count();
 			}
 			else {
 				count = (int) table.stream()
-						 .filter(t -> t.get(i) == null)
+						 .filter(t -> t.get(i) != null)
 						 .count();
 			}
+			
 			return count;
 		}
 	}
