@@ -29,19 +29,18 @@ public class Main {
 	private static BufferedReader inputBr = new BufferedReader(new InputStreamReader(System.in));
 	private static boolean fileInput = false;
 	
-	/*
+	
 	private static DB diskDB = DBMaker
 							 	.fileDB("fileDB.db")
 							 	.closeOnJvmShutdown()
 							 	.fileLockDisable()
-							 	.deleteFilesAfterClose()
-							 	.make();*/
+							 	.make();
 	
-	private static DB diskDB = DBMaker
+	/*private static DB diskDB = DBMaker
 								.memoryDB()
 								.closeOnJvmShutdown()
 								.make();
-	
+	*/
 	private static TableManager tMgr = new TableManager(diskDB);		// map attribute table name to table
 	
 	private static BufferedReader determineInputSrc() throws IOException {

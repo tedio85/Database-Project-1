@@ -1,5 +1,6 @@
 package stage1;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,16 +9,34 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.mapdb.BTreeMap;
 import org.mapdb.DB;
+import org.mapdb.Serializer;
 
-public class TableManager {
+public class TableManager implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2898872740830999L;
+	
 	private int PARALLEL_THRESHOLD = 1000;
+	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
 	DB db;
+	@SuppressWarnings("unchecked")
 	/*--------------Constructor-------------------------*/
 	
 	TableManager(DB db) {
+		diskTableMap = db.treeMap("tableMap")
+					 .keySerializer(Serializer.STRING)
+					 .valueSerializer(Serializer.ELSA)
+					 .counterEnable()
+					 .createOrOpen();
+		
+		System.out.println(diskTableMap.size());
 		tableMap = new TreeMap<String, IndexTable>(String.CASE_INSENSITIVE_ORDER);
+		tableMap.putAll(diskTableMap);
+		
 		this.db = db;
 	}
 	
