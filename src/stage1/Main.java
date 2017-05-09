@@ -150,7 +150,7 @@ public class Main {
 	        		break;
 	        	}
 	        }
-		    System.out.println(statement);
+		    //System.out.println(statement);
 		    
 		    // detect system command
 		    if(systemCmd(statement))	continue;

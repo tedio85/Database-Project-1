@@ -178,7 +178,10 @@ public class TableManager {
 		// create map: alias -> real name
 		Map<String, String> aliasToReal = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 		for(Table_or_subquery tos : statement.getTable_or_subquery()) {
-			aliasToReal.put(tos.table_alias, tos.table_name);
+			if(tos.hasTable_alias)
+				aliasToReal.put(tos.table_alias, tos.table_name);
+			else
+				aliasToReal.put(tos.table_name, tos.table_name);
 		}
 			
 		// substitute alias table name in result column
@@ -205,6 +208,7 @@ public class TableManager {
 	}
 	
 	private String substituteHelper(Map<String, String> aliasToReal, String tableName) {
+
 		if(aliasToReal.containsKey(tableName))	// encounter table alias
 			return aliasToReal.get(tableName);
 		else if(aliasToReal.containsValue(tableName))	// encounter real name
