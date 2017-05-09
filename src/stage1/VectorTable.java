@@ -302,7 +302,7 @@ public class VectorTable implements Table {
 			}
 			else {
 				bTable.put(primaryKeyCount, tup.toArray(new Object[attrs.size()]));
-				bDiskTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));
+				bDiskTable.put(primaryKeyCount, tup.toArray(new Object[attrs.size()]));
 				primaryKeyCount++;
 			}
 			
