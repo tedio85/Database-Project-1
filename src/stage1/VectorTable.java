@@ -295,6 +295,18 @@ public class VectorTable implements Table {
 			}
 		}
 		
+		// replace null values into ">>null<<"
+		for(int i=0;i<tup.size();i++) {
+			if(tup.get(i) == null) {
+				if(attrs.get(i).getClass_().equals(Integer.class))
+					tup.set(i, Integer.MIN_VALUE);
+				else
+					tup.set(i, new String("__null__"));
+			}
+		}
+		
+		System.out.println(tup.toString());
+		
 		if(pass) {
 			if(primaryKey != null) {
 				bTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));

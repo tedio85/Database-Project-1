@@ -78,13 +78,13 @@ public class WorkingTable {
 		int sum = 0;
 		if(table.size() > PARALLEL_THRESHOLD) {
 			sum =  table.parallelStream()
-						.filter(r -> r.get(i)!=null)
+						.filter(r -> Integer.parseInt(r.get(i).toString())!=Integer.MIN_VALUE)
 						.mapToInt(r -> Integer.parseInt(r.get(i).toString()))
 						.sum();
 		}
 		else {
 			sum =  table.stream()
-					.filter(r -> r.get(i)!=null)
+					.filter(r -> Integer.parseInt(r.get(i).toString())!=Integer.MIN_VALUE)
 					.mapToInt(r -> Integer.parseInt(r.get(i).toString()))
 					.sum();
 		}
@@ -106,12 +106,13 @@ public class WorkingTable {
 			
 			if(table.size() >  PARALLEL_THRESHOLD) {
 				count = (int) table.parallelStream()
-							 .filter(t -> t.get(i) != null)
+							 .filter(t -> !t.get(i).toString().equals("__null__"))
 							 .count();
 			}
 			else {
 				count = (int) table.stream()
-						 .filter(t -> t.get(i) != null)
+						 .filter(t -> !t.get(i).toString().equals("__null__") &&
+								      !t.get(i).toString().equals(new Integer(Integer.MIN_VALUE).toString()))
 						 .count();
 			}
 			
