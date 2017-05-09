@@ -26,6 +26,7 @@ public class VectorTable implements Table {
 	protected HashMap<String, Integer> keyToIdx = new HashMap<String, Integer>();	// map attribute name to index
 	protected HashMap<Integer, String> idxToKey = new HashMap<Integer, String>();	// map index to attribute name	
 	protected BTreeMap<Object, Object[]> bTable = null;
+	protected BTreeMap<Object, Object[]> bDiskTable = null;
 												
 	protected int[] longestStr = new int[20];
 																
@@ -56,13 +57,12 @@ public class VectorTable implements Table {
 
 	@SuppressWarnings("unchecked")
 	public VectorTable(DB db, DB diskDB, CreateTableStmt statement) throws IllegalArgumentException{
-		BTreeMap<Object, Object[]> bDiskTable =  
-			  diskDB.treeMap(statement.getTable_name())
-					.valuesOutsideNodesEnable()
-					.keySerializer(Serializer.ELSA)
-					.valueSerializer(new SerializerArray<Object[]>(Serializer.ELSA))
-					.counterEnable()
-					.createOrOpen();
+		bDiskTable =  diskDB.treeMap(statement.getTable_name())
+							.valuesOutsideNodesEnable()
+							.keySerializer(Serializer.ELSA)
+							.valueSerializer(new SerializerArray<Object[]>(Serializer.ELSA))
+							.counterEnable()
+							.createOrOpen();
 		
 		bTable =  db.treeMap(statement.getTable_name())
 					.valuesOutsideNodesEnable()
@@ -296,10 +296,13 @@ public class VectorTable implements Table {
 		}
 		
 		if(pass) {
-			if(primaryKey != null)
+			if(primaryKey != null) {
 				bTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));
+				bDiskTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));
+			}
 			else {
 				bTable.put(primaryKeyCount, tup.toArray(new Object[attrs.size()]));
+				bDiskTable.put(tup.get(primaryKeyIdx), tup.toArray(new Object[attrs.size()]));
 				primaryKeyCount++;
 			}
 			
