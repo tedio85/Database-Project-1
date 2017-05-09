@@ -237,7 +237,9 @@ public class QThread2 implements Runnable{
 			int op1Index = -1, op2Index = -1;
 			int theOtherIndex = -1;
 			boolean op1IsSmaller;
-			if(expr.op1_table_name != expr.op2_table_name) {
+			System.out.println(expr.op1_table_name);
+			System.out.println(expr.op2_table_name);
+			if(!expr.op1_table_name.equalsIgnoreCase(expr.op2_table_name)) {
 				if( expr.op1_table_name.equalsIgnoreCase( tableList.get(smallerTableIndex).getName() ) ) {
 					op1Index = smallerTableIndex;
 					op2Index = biggerTableIndex;
