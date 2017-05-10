@@ -15,7 +15,7 @@ import org.mapdb.Serializer;
 
 public class TableManager {
 	
-	private int PARALLEL_THRESHOLD = 1000000;
+	private int PARALLEL_THRESHOLD = 1000000000;
 	private NavigableSet<CreateTableStmt> createdTables;
 	private BTreeMap<String, IndexTable> diskTableMap;
 	private TreeMap<String, IndexTable> tableMap;
@@ -428,13 +428,13 @@ public class TableManager {
 			ArrayList<Integer> rattrIdx = new ArrayList<Integer>();
 			
 			/*--------------------------------------------*/
-			/*
-			System.out.println("----project----");
-			System.out.println(cart.getRightTableName());
-			System.out.println(cart.getLeftTableName());
-			System.out.println(rt.getName());
-			System.out.println(lt.getName());
-			*/
+			
+			//System.out.println("----project----");
+			//System.out.println(cart.getRightTableName());
+			//System.out.println(cart.getLeftTableName());
+			//System.out.println(rt.getName());
+			//System.out.println(lt.getName());
+			
 			/*--------------------------------------------*/
 			
 			// add Attribute class into work table & get index of selected attributes
@@ -449,16 +449,27 @@ public class TableManager {
 					break;
 				}
 				else {
-					if(rc.table_name.equals(lt)) {
+					if(rc.table_name.equalsIgnoreCase(lt.getName())) {
 						wt.addAttr(lt.getAttr(rc.attr_name));
 						lattrIdx.add(lt.getIndexOfAttr(rc.attr_name));
 					}
 					else {
 						wt.addAttr(rt.getAttr(rc.attr_name));
-						lattrIdx.add(rt.getIndexOfAttr(rc.attr_name));
+						rattrIdx.add(rt.getIndexOfAttr(rc.attr_name));
 					}
 				}
 			}
+			
+			
+			//System.out.println("lattrIdx:"+lattrIdx.toString());
+			//System.out.println("rattrIdx:"+rattrIdx.toString());
+			//int count = 0;
+			/*
+			for(Attribute a: lt.getAttrs()){
+				a.show();
+				count++;
+			}
+			*/	
 			
 			// get attribute from object[]
 			for(CartesianTemp ct : cart.getCartesianTempList()) {

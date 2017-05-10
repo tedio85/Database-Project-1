@@ -184,13 +184,8 @@ public class VectorTable implements Table {
 	
 	// get attribute by name
 	public Attribute getAttr(String attrName) {
-		Attribute ret = new Attribute();
-		for(Attribute a : attrs) {
-			if(a.getName().equals(attrName)) {
-				ret = a;
-			}
-		}
-		return ret;
+		int i = getIndexOfAttr(attrName);
+		return attrs.get(i);
 	}
 	
 	// get names of attributes

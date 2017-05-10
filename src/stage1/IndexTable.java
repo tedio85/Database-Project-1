@@ -16,7 +16,7 @@ import com.google.common.collect.TreeMultimap;
 public class IndexTable extends VectorTable{
 	private int[] treeIndexType = new int[20];
 	private boolean[] listIndexType = new boolean[20];
-	private final int PARALLEL_THRESHOLD = 1000000;
+	private final int PARALLEL_THRESHOLD = 1000000000;
 	
 	private Map<String, TreeMultimap<Integer, String>> treemapInt 
 			= new TreeMap<String, TreeMultimap<Integer, String>>(String.CASE_INSENSITIVE_ORDER);

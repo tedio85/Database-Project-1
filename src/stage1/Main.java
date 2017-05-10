@@ -144,7 +144,6 @@ public class Main {
 				br = determineInputSrc();
 			
 			// get the statement ending with ";"
-			Stopwatch timer = Stopwatch.createStarted();
 			String statement = new String();
 	        while(true) {
 	        	
@@ -163,6 +162,7 @@ public class Main {
 	        	}
 	        }
 		    System.out.println(statement);
+		    Stopwatch timer = Stopwatch.createStarted();
 		    
 		    // detect system command
 		    if(systemCmd(statement))	continue;

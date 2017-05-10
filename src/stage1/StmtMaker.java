@@ -108,7 +108,7 @@ public class StmtMaker implements SqlListener{
 		Class<?> opType = Exception.class;
 		if(op.startsWith("'"))
 			opType = String.class;
-		else if(op.matches("[0-9]+"))
+		else if(op.matches("-?[0-9]+"))
 			opType = Integer.class;
 		else
 			opType = Object.class;
@@ -269,7 +269,7 @@ public class StmtMaker implements SqlListener{
 		for(int i=0;i<exprs.size();i++) {
 			Class<?> type = null;
 			String value = exprs.get(i).getText();
-			if(value.matches("[0-9]*"))
+			if(value.matches("-?[0-9]*"))
 				type = Integer.class;
 			else
 				type = String.class;

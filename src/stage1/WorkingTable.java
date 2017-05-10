@@ -23,6 +23,9 @@ public class WorkingTable {
 			return;
 		ArrayList<Object> aggrResult = new ArrayList<Object>();
 		
+		//for(Attribute a : selectedAttrs)
+			//a.show();
+		
 		for(Result_column r : ar) {
 			if(r.hasFunc_name) {
 				if(r.func_name.equalsIgnoreCase("sum")) {
@@ -69,6 +72,10 @@ public class WorkingTable {
 		
 		//System.out.println(rc.table_name);
 		//System.out.println(rc.attr_name);
+		//System.out.println(getClassOfAttr(rc.table_name,rc.attr_name));
+		
+		//System.out.println("tname: "+rc.table_name);
+		//System.out.println("tname: "+rc.attr_name);
 		//System.out.println(getClassOfAttr(rc.table_name,rc.attr_name));
 		
 		if(!getClassOfAttr(rc.table_name,rc.attr_name).equals(Integer.class))
@@ -174,10 +181,12 @@ public class WorkingTable {
 	}
 	
 	private Class<?> getClassOfAttr(String tableName, String attrName) {
+		//System.out.println(tableName);
+		//System.out.println(attrName);
 		
 		Class<?> ret = Exception.class;
 		for(Attribute a : selectedAttrs) {
-			if(a.getTableBelong().equals(tableName) && a.getName().equals(attrName)) {
+			if(a.getTableBelong().equalsIgnoreCase(tableName) && a.getName().equalsIgnoreCase(attrName)) {
 				ret = a.getClass_();
 				break;
 			}
@@ -187,10 +196,13 @@ public class WorkingTable {
 	
 	private int getIndexOfAttr(String tableName, String attrName) {
 		
+		//System.out.println(tableName+ " " + attrName);
+		
 		int ret = -1;
 		for(int i=0;i<selectedAttrs.size();i++) {
-			if(selectedAttrs.get(i).getTableBelong().equals(tableName) &&
-			   selectedAttrs.get(i).getName().equals(attrName)) {
+			//selectedAttrs.get(i).show();
+			if(selectedAttrs.get(i).getTableBelong().equalsIgnoreCase(tableName) &&
+			   selectedAttrs.get(i).getName().equalsIgnoreCase(attrName)) {
 				ret = i;
 				break;
 			}

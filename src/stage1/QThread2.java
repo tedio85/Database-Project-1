@@ -108,12 +108,14 @@ public class QThread2 implements Runnable{
 			Set2.add(attr_value);
 		}
 		/*--------------------------------------------------*/
+		
 		/*
 		System.out.println(op1Table.getName()+"."+op1_attr);
 		System.out.println(op2Table.getName()+"."+op2_attr);
+		*/
 		System.out.println(Set1.toString());
 		System.out.println(Set2.toString());
-		*/
+		
 		Set<Object> intersection = new HashSet<Object>(Set1); // use the copy constructor
 		intersection.retainAll(Set2);
 		
